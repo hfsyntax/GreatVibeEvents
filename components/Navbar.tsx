@@ -12,7 +12,7 @@ import {
 export default function Navbar() {
   const pathname = usePathname()
   return (
-    <nav className="w-[1232px] ml-auto mr-auto mt-52 flex">
+    <nav className="w-[1232px] ml-auto mr-auto mt-8 flex items-center">
       <Link href={"/"}>
         <Image src={"/logo.png"} priority alt="logo" width={200} height={200} />
       </Link>

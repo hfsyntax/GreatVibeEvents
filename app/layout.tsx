@@ -21,14 +21,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <span className="w-full block text-center pt-3">[ad space]</span>
-        <span className="w-full block text-left pl-3">[ad space]</span>
-        <span className="w-full block text-right pr-3">[ad space]</span>
-        <Navbar />
-        <div className="flex flex-col w-[1232px] ml-auto mr-auto">
-          {children}
+        <div className="flex">
+          <div className="bg-black grow border-yellow-500 border-2 box-border">
+            <span className="text-white">[ad container left]</span>
+          </div>
+          <div className="flex flex-col w-[1232px]">
+            <div className="bg-black w-full h-[250px]">
+              <span className="text-white">[ad container middle]</span>
+            </div>
+            <Navbar />
+            {children}
+            <Footer />
+          </div>
+          <div className="bg-black grow box-border border-yellow-500 border-2">
+            <span className="text-white">[ad container right]</span>
+          </div>
         </div>
-        <Footer />
       </body>
     </html>
   )

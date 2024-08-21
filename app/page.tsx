@@ -45,8 +45,8 @@ export default async function Home() {
           </Link>
         </div>
       </div>
-      <div className="m-14">
-        <span>ad space</span>
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+        <span>content ad space</span>
       </div>
       <Image
         src={"/event_image.png"}
@@ -54,7 +54,7 @@ export default async function Home() {
         width={0}
         sizes="100%"
         alt="logo_welcome"
-        className="w-full mt-16 h-auto"
+        className="w-full h-auto"
         priority
       />
       <span
@@ -120,8 +120,8 @@ export default async function Home() {
           </Link>
         </div>
       </div>
-      <div className="m-14">
-        <span>ad space</span>
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+        <span>content ad space</span>
       </div>
       <span className={`text-[#49740B] text-lg ${openSans.className} mb-8`}>
         GREAT TIMES AND GREAT PEOPLE CREATE GREAT VIBES!
@@ -167,16 +167,16 @@ export default async function Home() {
       <p className={`${openSans.className} text-lg mt-5`}>
         [mission statement here]
       </p>
-      <div className="m-14">
-        <span>ad space</span>
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+        <span>content ad space</span>
       </div>
       <div className="flex">
         <span className={`${openSans.className} text-lg mt-5`}>
           [quote cards with pagination]
         </span>
       </div>
-      <div className="m-14">
-        <span>ad space</span>
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+        <span>content ad space</span>
       </div>
       <span
         className={`${playfairDisplay.className} w-full text-center text-4xl mb-8`}
@@ -201,8 +201,8 @@ export default async function Home() {
           className="bg-[#49740B] text-white font-bold h-[50px] w-[150px] cursor-pointer hover:bg-lime-600"
         />
       </form>
-      <div className="m-14">
-        <span>ad space</span>
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+        <span>content ad space</span>
       </div>
       <div className="w-full bg-[#DAFFC0] p-10 flex flex-col">
         <span
