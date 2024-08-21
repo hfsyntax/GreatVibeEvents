@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Playfair_Display, Open_Sans } from "next/font/google"
+import QuoteSlider from "@/components/home/QuoteSlider"
 import Schedule from "@/components/home/Schedule"
 import type { Weekday } from "@/components/home/Schedule"
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
@@ -167,14 +168,11 @@ export default async function Home() {
       <p className={`${openSans.className} text-lg mt-5`}>
         [mission statement here]
       </p>
+
       <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
         <span>content ad space</span>
       </div>
-      <div className="flex">
-        <span className={`${openSans.className} text-lg mt-5`}>
-          [quote cards with pagination]
-        </span>
-      </div>
+      <QuoteSlider />
       <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
         <span>content ad space</span>
       </div>
