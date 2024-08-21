@@ -24,7 +24,7 @@ export default async function Home() {
           className="w-1/2 h-auto"
           priority
         />
-        <div className="w-1/2 h-[650px] bg-[#DAFFC0] p-10 flex flex-col justify-center">
+        <div className="w-1/2 bg-[#DAFFC0] p-10 flex flex-col justify-center">
           <span
             className={`${openSans.className} text-center text-lg mb-4 text-[#49740B]`}
           >
@@ -204,7 +204,7 @@ export default async function Home() {
       <div className="m-14">
         <span>ad space</span>
       </div>
-      <div className="w-full h-[650px] bg-[#DAFFC0] p-10 flex flex-col">
+      <div className="w-full bg-[#DAFFC0] p-10 flex flex-col">
         <span
           className={`${openSans.className} text-center text-lg mb-8 text-[#49740B]`}
         >
