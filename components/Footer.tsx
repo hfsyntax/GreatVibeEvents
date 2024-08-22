@@ -10,13 +10,13 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 export default function Footer() {
   return (
-    <div className="flex flex-col mt-14 ml-auto mr-auto w-[1232px]">
-      <div className="flex mb-14">
-        <span className={`${openSans.className} text-sm text-gray-500`}>
+    <div className="flex flex-col mt-14 ml-auto mr-auto w-full xl:w-[1232px]">
+      <div className="flex flex-col mb-14 sm:flex-row">
+        <span className={`${openSans.className} text-sm text-gray-500 ml-1`}>
           COPYRIGHT © {new Date().getFullYear()} GREAT VIBE EVENTS - ALL RIGHTS
           RESERVED.
         </span>
-        <div className="ml-auto mr-28">
+        <div className="mr-auto ml-auto sm:ml-auto sm:mr-28">
           <Link href={"#"}>
             <FontAwesomeIcon
               icon={faFacebook}
@@ -47,7 +47,7 @@ export default function Footer() {
         </div>
       </div>
       <div
-        className={`flex gap-6 justify-center mb-14 text-lg ${openSans.className}`}
+        className={`flex flex-col items-center gap-6 justify-center mb-14 text-lg ${openSans.className} md:flex-row`}
       >
         <Link className="text-[#49740B] hover:text-black" href={"#"}>
           HOME

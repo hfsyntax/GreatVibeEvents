@@ -21,19 +21,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex">
-          <div className="bg-black grow border-yellow-500 border-2 box-border">
+        <div className="flex flex-col 2xl:flex-row">
+          <div className="bg-black border-yellow-500 border-2 box-border w-full xl:grow">
             <span className="text-white">[ad container left]</span>
           </div>
-          <div className="flex flex-col w-[1232px]">
-            <div className="bg-black w-full h-[250px]">
+          <div className="flex flex-col xl:w-[1232px] ml-auto mr-auto w-full">
+            <div className="bg-black w-full hidden 2xl:inline-block">
               <span className="text-white">[ad container middle]</span>
             </div>
             <Navbar />
             {children}
             <Footer />
           </div>
-          <div className="bg-black grow box-border border-yellow-500 border-2">
+          <div className="bg-black box-border border-yellow-500 border-2 w-full xl:grow">
             <span className="text-white">[ad container right]</span>
           </div>
         </div>

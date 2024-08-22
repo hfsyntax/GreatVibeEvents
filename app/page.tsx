@@ -15,17 +15,17 @@ export default async function Home() {
   const dayOfWeek = dateFormatter.format(new Date()) as Weekday
   return (
     <>
-      <div className="w-full flex">
+      <div className="w-full flex flex-col md:flex-row">
         <Image
           src={"/logo_welcome.png"}
           height={0}
           width={0}
           sizes="50%"
           alt="logo_welcome"
-          className="w-1/2 h-auto"
+          className="w-1/2 h-auto mr-auto ml-auto object-contain"
           priority
         />
-        <div className="w-1/2 bg-[#DAFFC0] p-10 flex flex-col justify-center">
+        <div className="bg-[#DAFFC0] p-10 flex flex-col justify-center ml-auto mr-auto w-full md:w-1/2">
           <span
             className={`${openSans.className} text-center text-lg mb-4 text-[#49740B]`}
           >
@@ -63,8 +63,8 @@ export default async function Home() {
       >
         SATURDAY, AUGUST 10th, 2024
       </span>
-      <div className="flex mb-10">
-        <div className="w-[70%] pr-6 flex flex-col">
+      <div className="flex flex-col mb-10 lg:flex-row">
+        <div className="w-full flex flex-col lg:w-[70%]">
           <span className={`mb-6 text-2xl ${openSans.className}`}>
             SUMMER SLAM SOLD OUT
           </span>
@@ -109,7 +109,7 @@ export default async function Home() {
             </li>
           </ol>
         </div>
-        <div className="w-[30%] pr-6 pl-6 h-fit bg-[#DAFFC0] flex flex-col justify-center">
+        <div className="w-full lg:w-[30%] pr-6 pl-6 h-fit bg-[#DAFFC0] flex flex-col justify-center">
           <span className="pl-8 pr-8 mt-8 block text-2xl mb-6">
             SUMMER SLAM IS SOLD OUT-GVE OCTOBER HALLOWEEN FEST COMING SOON!
           </span>
@@ -134,7 +134,7 @@ export default async function Home() {
           width={0}
           sizes="100%"
           alt="logo_welcome"
-          className="h-full w-auto"
+          className="w-full h-auto object-contain"
           priority
         />
         <Image
@@ -143,7 +143,7 @@ export default async function Home() {
           width={0}
           sizes="100%"
           alt="logo_welcome"
-          className="h-full w-auto"
+          className="w-full h-auto object-contain"
           priority
         />
         <Image
@@ -152,7 +152,7 @@ export default async function Home() {
           width={0}
           sizes="100%"
           alt="logo_welcome"
-          className="h-full w-auto"
+          className="w-full h-auto object-contain"
           priority
         />
         <Image
@@ -161,7 +161,7 @@ export default async function Home() {
           width={0}
           sizes="100%"
           alt="logo_welcome"
-          className="h-full w-auto"
+          className="w-full h-auto object-contain"
           priority
         />
       </div>
@@ -186,17 +186,17 @@ export default async function Home() {
       >
         Learn more about our upcoming events, fundraisers, and more!
       </span>
-      <form className="w-fit ml-auto mr-auto">
+      <form className="w-full lg:w-fit ml-auto mr-auto">
         <input
           type="text"
           placeholder="Email address"
-          className="mr-6 w-[600px] h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+          className="block w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border lg:w-[600px] lg:mr-6 lg:inline focus:border-black"
           autoComplete="email"
         />
         <input
           type="submit"
           value={"SIGN UP"}
-          className="bg-[#49740B] text-white font-bold h-[50px] w-[150px] cursor-pointer hover:bg-lime-600"
+          className="w-full bg-[#49740B] text-white font-bold h-[50px] cursor-pointer lg:w-[150px] hover:bg-lime-600"
         />
       </form>
       <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">

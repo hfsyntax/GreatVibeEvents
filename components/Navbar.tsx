@@ -7,17 +7,18 @@ import {
   faCartShopping,
   faMagnifyingGlass,
   faUser,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons"
 
 export default function Navbar() {
   const pathname = usePathname()
   return (
-    <nav className="w-[1232px] ml-auto mr-auto mt-8 flex items-center">
+    <nav className="flex items-center mt-8 w-full xl:w-[1232px] ml-auto mr-auto">
       <Link href={"/"}>
         <Image src={"/logo.png"} priority alt="logo" width={200} height={200} />
       </Link>
-      <ul className="flex font-sans text-lg">
-        <li className="pl-24">
+      <ul className=" font-sans text-lg hidden lg:flex">
+        <li className="pl-3 lg:pl-24">
           <Link
             href={"/"}
             className={
@@ -35,7 +36,7 @@ export default function Navbar() {
             className={
               pathname === "/events"
                 ? "border-b-2 border-black box-border hover:text-green-700"
-                : "hover:text-green-700"
+                : "hover:text-green-700 "
             }
           >
             EVENTS
@@ -47,7 +48,7 @@ export default function Navbar() {
             className={
               pathname === "/shop"
                 ? "border-b-2 border-black box-border hover:text-green-700"
-                : "hover:text-green-700"
+                : "hover:text-green-700 "
             }
           >
             SHOP
@@ -83,7 +84,7 @@ export default function Navbar() {
             className={
               pathname === "/contact"
                 ? "border-b-2 border-black box-border hover:text-green-700"
-                : "hover:text-green-700"
+                : "hover:text-green-700 "
             }
           >
             CONTACT
@@ -92,14 +93,19 @@ export default function Navbar() {
       </ul>
       <div className="ml-auto">
         <FontAwesomeIcon
+          icon={faBars}
+          size="lg"
+          className="p-2 text-green-700 hover:text-black cursor-pointer md:!hidden "
+        />
+        <FontAwesomeIcon
           icon={faMagnifyingGlass}
           size="lg"
-          className="p-2 text-green-700 hover:text-black cursor-pointer"
+          className="p-2 text-green-700 hover:text-black cursor-pointer !hidden md:!inline-block"
         />
         <FontAwesomeIcon
           icon={faUser}
           size="lg"
-          className="p-2 text-green-700 hover:text-black cursor-pointer"
+          className="p-2 text-green-700 hover:text-black cursor-pointer !hidden md:!inline-block"
         />
 
         <FontAwesomeIcon
