@@ -18,7 +18,7 @@ export default function Navbar() {
         <Image src={"/logo.png"} priority alt="logo" width={200} height={200} />
       </Link>
       <ul className=" font-sans text-lg hidden lg:flex">
-        <li className="pl-3 lg:pl-24">
+        <li className="pl-3 lg:pl-10">
           <Link
             href={"/"}
             className={
@@ -76,6 +76,18 @@ export default function Navbar() {
             }
           >
             GALLERY
+          </Link>
+        </li>
+        <li className="pl-8">
+          <Link
+            href={"/Volunteer"}
+            className={
+              pathname === "/Volunteer"
+                ? "border-b-2 border-black box-border hover:text-green-700"
+                : "hover:text-green-700"
+            }
+          >
+            VOLUNTEER
           </Link>
         </li>
         <li className="pl-8">

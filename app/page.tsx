@@ -46,7 +46,7 @@ export default async function Home() {
           </Link>
         </div>
       </div>
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
       <Image
@@ -121,7 +121,7 @@ export default async function Home() {
           </Link>
         </div>
       </div>
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
       <span className={`text-[#49740B] text-lg ${openSans.className} mb-8`}>
@@ -169,11 +169,11 @@ export default async function Home() {
         [mission statement here]
       </p>
 
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
       <QuoteSlider />
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
       <span
@@ -199,7 +199,7 @@ export default async function Home() {
           className="w-full bg-[#49740B] text-white font-bold h-[50px] cursor-pointer lg:w-[150px] hover:bg-lime-600"
         />
       </form>
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full">
+      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
       <div className="w-full bg-[#DAFFC0] p-10 flex flex-col">
