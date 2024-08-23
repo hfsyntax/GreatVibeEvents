@@ -2,8 +2,6 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import Faq from "@/components/about/Faq"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons"
 import { Open_Sans } from "next/font/google"
 const openSans = Open_Sans({ subsets: ["latin"] })
 
