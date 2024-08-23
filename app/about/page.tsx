@@ -15,7 +15,9 @@ export const metadata: Metadata = {
 export default function About() {
   return (
     <>
-      <span className={`text-[#49740B] text-lg ${openSans.className} mb-8`}>
+      <span
+        className={`text-[#49740B] text-lg ${openSans.className} mb-8 ml-3 xl:ml-0`}
+      >
         WHO WE ARE
       </span>
       <Image
@@ -28,7 +30,7 @@ export default function About() {
         priority
       />
       <div
-        className={`bg-[#DAFFC0] p-10 ml-auto mr-auto w-full ${openSans.className} mb-12`}
+        className={`bg-[#DAFFC0] p-10 ml-auto mr-auto w-full ${openSans.className} xl:mb-12`}
       >
         <span className="text-center text-2xl mb-4 w-full block">
           Our Mission
@@ -50,8 +52,8 @@ export default function About() {
           or circumstances.
         </p>
       </div>
-      <div className="flex gap-2">
-        <div className={`bg-[#DAFFC0] ${openSans.className} w-1/2`}>
+      <div className="flex flex-col xl:flex-row xl:gap-2">
+        <div className={`bg-[#DAFFC0] ${openSans.className} w-full xl:w-1/2`}>
           <Image
             src={"/company_values.png"}
             alt="company_values"
@@ -100,7 +102,7 @@ export default function About() {
             </ul>
           </div>
         </div>
-        <div className={`bg-[#DAFFC0] ${openSans.className} w-1/2`}>
+        <div className={`bg-[#DAFFC0] ${openSans.className} w-full xl:w-1/2`}>
           <Image
             src={"/company_team.png"}
             alt="company_team"
@@ -108,6 +110,7 @@ export default function About() {
             height={0}
             sizes="100%"
             className="w-full h-auto mr-auto ml-auto object-contain"
+            priority
           />
           <div className="p-10">
             <span className="text-center text-2xl mb-4 w-full block">
@@ -130,10 +133,14 @@ export default function About() {
           </div>
         </div>
       </div>
-      <span className={`text-[#49740B] text-lg ${openSans.className} mt-16`}>
+      <span
+        className={`text-[#49740B] text-lg ${openSans.className} mt-16 ml-3 xl:ml-0`}
+      >
         FREQUENTLY ASKED QUESTIONS
       </span>
-      <p className={`text-[#575757] text-lg ${openSans.className} mt-4`}>
+      <p
+        className={`text-[#575757] text-lg ${openSans.className} mt-4 ml-3 xl:ml-0`}
+      >
         Please reach us at
         <Link
           href={"mailto:info@greatvibeevents.org"}
@@ -147,24 +154,34 @@ export default function About() {
       <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
-      <span className={`text-[#49740B] text-lg ${openSans.className} mb-8`}>
+      <span
+        className={`text-[#49740B] text-lg ${openSans.className} mb-8 ml-3 xl:ml-0`}
+      >
         GREAT VIBE EVENTS-THE DRIVING FORCE
       </span>
-      <span className={`text-2xl text-[#575757] ${openSans.className}`}>
+      <span
+        className={`text-2xl text-[#575757] ${openSans.className} ml-3 xl:ml-0`}
+      >
         Meet the Boone's : A story of love, loss, and service
       </span>
-      <p className={`text-lg text-[#575757] ${openSans.className} block mt-6`}>
+      <p
+        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
+      >
         Jimmy, Andy and Mark Boone are brothers who have dedicated their lives
         to helping people with disabilities.
       </p>
-      <p className={`text-lg text-[#575757] ${openSans.className} block mt-6`}>
+      <p
+        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
+      >
         Their desire to be involved with the intellectually and physically
         disabled community transpired from the love of their sister, Faith
         Boone, who was born with Down Syndrome and passed away at a very young
         age from heart disease. Faith's impact on her brothers' lives was
         immediate and profound.
       </p>
-      <p className={`text-lg text-[#575757] ${openSans.className} block mt-6`}>
+      <p
+        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
+      >
         The Boone’s started volunteering with Best Buddies. They enjoyed
         mentoring and received great pleasure when their buddies would achieve
         their goals. The Boone's also learned valuable lessons in compassion,
@@ -175,7 +192,9 @@ export default function About() {
         fitness course offered at Fairfax County, where they still enjoy
         teaching today.
       </p>
-      <p className={`text-lg text-[#575757] ${openSans.className} block mt-6`}>
+      <p
+        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
+      >
         The Boone’s realized social events for adults with intellectual
         disabilities are lacking and Great Vibes Events was created. Great Vibes
         offers a safe place for adults aged 18 and older to gather, learn,

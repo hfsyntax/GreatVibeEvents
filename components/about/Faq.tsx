@@ -19,7 +19,7 @@ export default function Faq() {
   return (
     <>
       <div
-        className={`flex flex-col w-[800px] border-b-[1px] border-gray-200 box-border items-center ml-auto mr-auto ${openSans.className} mt-10 select-none cursor-pointer`}
+        className={`flex flex-col w-[95%] lg:w-[800px] border-b-[1px] border-gray-200 box-border items-center ml-auto mr-auto ${openSans.className} mt-10 select-none cursor-pointer`}
       >
         <div
           className="w-full pb-3 hover:first:text-[#49740B]"
@@ -56,7 +56,7 @@ export default function Faq() {
         )}
       </div>
       <div
-        className={`flex flex-col w-[800px] border-b-[1px] border-gray-200 box-border items-center ml-auto mr-auto ${openSans.className} select-none cursor-pointer`}
+        className={`flex flex-col w-[95%] lg:w-[800px] border-b-[1px] border-gray-200 box-border items-center ml-auto mr-auto ${openSans.className} select-none cursor-pointer`}
       >
         <div
           className="w-full pb-3 pt-3 hover:first:text-[#49740B]"
@@ -117,7 +117,7 @@ export default function Faq() {
         )}
       </div>
       <div
-        className={`flex flex-col w-[800px] border-b-[1px] border-gray-200 box-border items-center ml-auto mr-auto ${openSans.className} select-none cursor-pointer`}
+        className={`flex flex-col w-[95%] lg:w-[800px] border-b-[1px] border-gray-200 box-border items-center ml-auto mr-auto ${openSans.className} select-none cursor-pointer`}
       >
         <div
           className="w-full pt-3 pb-3 hover:first:text-[#49740B]"
