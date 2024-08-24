@@ -12,7 +12,14 @@ export default function ContentWrapper({
   children: React.ReactNode
 }>) {
   const [navbar, showNavbar] = useState(false)
-  const openNavbar = () => showNavbar(true)
+  const openNavbar = () => {
+    showNavbar(true)
+  }
+  useEffect(() => {
+    if (navbar) {
+      window.scrollTo(0, 0)
+    }
+  }, [navbar])
   const closeNavbar = () => showNavbar(false)
   return (
     <html lang="en">
