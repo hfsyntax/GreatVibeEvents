@@ -22,35 +22,43 @@ export default function Volunteer() {
         <label>FULL NAME</label>
         <input
           type="text"
+          name="name"
           placeholder="Full Name"
-          className="pl-3  border border-black mt-3"
+          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
           autoComplete="name"
+          required
         />
         <label className=" mt-3">ADDRESS</label>
         <input
           type="text"
+          name="address"
           placeholder="Address"
-          className="pl-3  border border-black mt-3"
+          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
           autoComplete="street-address"
+          required
         />
         <label className="mt-3">PHONE NUMBER</label>
         <input
           type="text"
+          name="number"
           placeholder="Phone Number"
-          className="pl-3  border border-black mt-3"
+          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
           autoComplete="tel"
+          required
         />
         <label className=" mt-3">EMAIL</label>
         <input
           type="text"
+          name="email"
           placeholder="Email"
-          className="pl-3  border border-black mt-3"
+          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
           autoComplete="email"
+          required
         />
         <label className=" mt-3">AVAILABILITY AND AREAS OF INTEREST</label>
         <textarea
           placeholder="Availability and areas of interest."
-          className=" pl-3 mt-3 border border-black h-[100px]"
+          className=" pl-3 mt-3 outline-none border border-b-gray-200 h-[100px] focus:border-black"
         ></textarea>
         <input
           type="submit"
