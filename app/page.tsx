@@ -197,12 +197,13 @@ export default async function Home() {
           type="submit"
           value={"SIGN UP"}
           className="w-full bg-[#49740B] text-white font-bold h-[50px] cursor-pointer lg:w-[150px] hover:bg-lime-600"
+          disabled
         />
       </form>
       <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
-      <div className="w-full bg-[#DAFFC0] p-10 flex flex-col">
+      <div className="w-full bg-[#DAFFC0] p-10 flex flex-col" id="contact">
         <span
           className={`${openSans.className} text-center text-lg mb-8 text-[#49740B]`}
         >

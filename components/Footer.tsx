@@ -49,14 +49,11 @@ export default function Footer() {
       <div
         className={`flex flex-col items-center gap-6 justify-center mb-14 text-lg ${openSans.className} md:flex-row`}
       >
-        <Link className="text-[#49740B] hover:text-black" href={"#"}>
+        <Link className="text-[#49740B] hover:text-black" href={"/"}>
           HOME
         </Link>
         <Link className="text-[#49740B] hover:text-black" href={"#"}>
           FORMS
-        </Link>
-        <Link className="text-[#49740B] hover:text-black" href={"#"}>
-          Calendar
         </Link>
         <Link className="text-[#49740B] hover:text-black" href={"#"}>
           Privacy Policy
@@ -64,8 +61,8 @@ export default function Footer() {
         <Link className="text-[#49740B] hover:text-black" href={"#"}>
           Terms And Conditions
         </Link>
-        <Link className="text-[#49740B] hover:text-black" href={"#"}>
-          GVE GALLERY
+        <Link className="text-[#49740B] hover:text-black" href={"/#contact"}>
+          Contact Us
         </Link>
       </div>
     </div>

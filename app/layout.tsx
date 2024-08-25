@@ -14,5 +14,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <ContentWrapper children={children} />
+  return <ContentWrapper>{children}</ContentWrapper>
 }

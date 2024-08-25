@@ -38,7 +38,7 @@ export default function Navbar({
   }, [search])
   return (
     <nav
-      className={`select-none flex items-center mt-8 w-full ${navbar ? "bg-[#DAFFC0] flex-col fixed !top-0 !mt-0 h-full overflow-auto" : "bg-transparent flex-row top-auto"}  xl:h-fit xl:top-auto xl:!mt-8 xl:relative xl:flex xl:flex-row xl:bg-transparent xl:w-[1232px] ml-auto mr-auto`}
+      className={`z-10 select-none flex items-center mt-8 w-full ${navbar ? "bg-[#DAFFC0] flex-col fixed !top-0 !mt-0 h-full overflow-auto" : "bg-transparent flex-row top-auto"}  xl:h-fit xl:top-auto xl:!mt-8 xl:relative xl:flex xl:flex-row xl:bg-transparent xl:w-[1232px] ml-auto mr-auto`}
     >
       <Link
         href={"/"}
@@ -128,9 +128,9 @@ export default function Navbar({
         </li>
         <li className={`pl-16 ${navbar && "pb-6"} xl:pl-8 xl:pb-0`}>
           <Link
-            href={"/Volunteer"}
+            href={"/volunteer"}
             className={
-              pathname === "/Volunteer"
+              pathname === "/volunteer"
                 ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
                 : "hover:text-green-700"
             }
@@ -189,7 +189,7 @@ export default function Navbar({
         {!loggedIn ? (
           <Link
             href={"/login"}
-            className={`${openSans.className} ${navbar && `!inline text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase`} ${!navbar && "md:inline md:!font-normal md:text-lg !text-green-700 hover:!text-black mr-3"} xl:mr-0 xl:!text-green-700 xl:!text-lg xl:!normal-case xl:!font-normal xl:hover:!text-black`}
+            className={`${openSans.className} ${pathname === "/login" && "font-bold"} ${navbar && `!inline text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase`} ${!navbar && "md:inline md:!font-normal md:text-lg !text-green-700 hover:!text-black mr-3"} xl:mr-0 xl:!text-green-700 xl:!text-lg xl:!normal-case xl:!font-normal xl:hover:!text-black`}
           >
             Login
           </Link>

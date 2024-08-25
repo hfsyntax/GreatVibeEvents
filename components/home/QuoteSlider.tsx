@@ -42,7 +42,7 @@ export default function QuoteSlider() {
     <div className="flex flex-wrap gap-3 justify-center">
       {currentItems.map((item) => (
         <div
-          className="bg-gray-400 w-[200px] h-[200px] flex flex-col text-white items-center justify-center fade-in"
+          className="bg-black w-[200px] h-[200px] flex flex-col text-white items-center justify-center fade-in"
           key={item.id}
         >
           <span className="m-3">{item.name}</span>
