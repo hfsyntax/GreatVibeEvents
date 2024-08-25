@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -23,13 +24,18 @@ export default function Navbar({
   openNavbar: () => void
   closeNavbar: () => void
 }) {
+  const router = useRouter()
   const pathname = usePathname()
   const [search, showSearch] = useState(false)
   const searchBar = useRef<HTMLInputElement>(null)
   const loggedIn = false
   const toggleSearch = () => showSearch(!search)
+  const handleContactClick = () => {
+    router.push("/#contact")
+    if (navbar) closeNavbar()
+  }
   useEffect(() => {
-    closeNavbar()
+    //closeNavbar()
   }, [pathname])
   useEffect(() => {
     if (search) {
@@ -139,16 +145,12 @@ export default function Navbar({
           </Link>
         </li>
         <li className={`pl-16 ${navbar && "pb-6"} xl:pl-8 xl:pb-0`}>
-          <Link
-            href={"/contact"}
-            className={
-              pathname === "/contact"
-                ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
-                : "hover:text-green-700 "
-            }
+          <span
+            className="cursor-pointer hover:text-green-700"
+            onClick={handleContactClick}
           >
             CONTACT
-          </Link>
+          </span>
         </li>
       </ul>
       <div

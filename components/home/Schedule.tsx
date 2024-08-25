@@ -45,10 +45,10 @@ export default function Schedule({ dayOfWeek }: { dayOfWeek: Weekday }) {
             Fri 09:00 am – 05:00 pm
           </span>
           <span className={dayOfWeek === "Sat" ? "font-bold block" : "block"}>
-            Sat 09:00 am – 05:00 pm
+            Sat Closed
           </span>
           <span className={dayOfWeek === "Sun" ? "font-bold block" : "block"}>
-            Sun 09:00 am – 05:00 pm
+            Sun Closed
           </span>
         </>
       ) : (
