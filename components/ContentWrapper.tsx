@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Inter } from "next/font/google"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
@@ -15,11 +15,6 @@ export default function ContentWrapper({
   const openNavbar = () => {
     showNavbar(true)
   }
-  useEffect(() => {
-    if (navbar) {
-      window.scrollTo(0, 0)
-    }
-  }, [navbar])
   const closeNavbar = () => showNavbar(false)
   return (
     <html lang="en">
