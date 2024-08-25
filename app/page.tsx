@@ -32,10 +32,10 @@ export default async function Home() {
             Where phenomenal people get together for Great Times!
           </span>
           <Link
-            href={"#"}
+            href={"/about"}
             className="m-6 bg-[#49740B] text-white text-base text-center block p-4 font-bold hover:bg-lime-600"
           >
-            JOIN US
+            LEARN MORE
           </Link>
         </div>
       </div>
