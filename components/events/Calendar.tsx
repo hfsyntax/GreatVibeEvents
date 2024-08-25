@@ -113,7 +113,7 @@ export default function Schedule() {
             4pm - 7pm
           </span>
           <span
-            className={`${openSans.className} text-2xl text-gray-500 block text-right`}
+            className={`${openSans.className} text-2xl text-gray-500 block text-center xl:text-right`}
           >
             Unity of Fairfax 2854 Hunter Mill Rd, Oakton, VA 22124
           </span>
@@ -139,7 +139,9 @@ export default function Schedule() {
             FEBRUARY FUNFEST
           </span>
           <div>
-            <p className={`text-gray-500 ${openSans.className} text-2xl pt-5`}>
+            <p
+              className={`text-gray-500 ${openSans.className} text-2xl pt-5 ml-3 xl:ml-0`}
+            >
               We are kicking off spring with phenomenal new activities that will
               blow you away!
             </p>
@@ -158,7 +160,7 @@ export default function Schedule() {
             4pm - 7pm
           </span>
           <span
-            className={`${openSans.className} text-2xl text-gray-500 block text-right`}
+            className={`${openSans.className} text-2xl text-gray-500 block text-center xl:text-right`}
           >
             Unity of Fairfax 2854 Hunter Mill Rd, Oakton, VA 22124
           </span>
