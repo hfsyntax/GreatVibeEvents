@@ -30,13 +30,6 @@ export default function Navbar({
   const searchBar = useRef<HTMLInputElement>(null)
   const loggedIn = false
   const toggleSearch = () => showSearch(!search)
-  const handleContactClick = () => {
-    router.push("/#contact")
-    if (navbar) closeNavbar()
-  }
-  useEffect(() => {
-    //closeNavbar()
-  }, [pathname])
   useEffect(() => {
     if (search) {
       searchBar.current?.focus()
@@ -75,6 +68,7 @@ export default function Navbar({
         >
           <Link
             href={"/"}
+            onClick={closeNavbar}
             className={
               pathname === "/"
                 ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
@@ -87,6 +81,7 @@ export default function Navbar({
         <li className={`pl-16 xl:pl-8 xl:pb-0 ${navbar && "pb-6"}`}>
           <Link
             href={"/events"}
+            onClick={closeNavbar}
             className={
               pathname === "/events"
                 ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
@@ -99,6 +94,7 @@ export default function Navbar({
         <li className={`pl-16 ${navbar && "pb-6"} xl:pl-8 xl:pb-0`}>
           <Link
             href={"/shop"}
+            onClick={closeNavbar}
             className={
               pathname === "/shop"
                 ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
@@ -111,6 +107,7 @@ export default function Navbar({
         <li className={`pl-16 ${navbar && "pb-6"} xl:pl-8 xl:pb-0`}>
           <Link
             href={"/about"}
+            onClick={closeNavbar}
             className={
               pathname === "/about"
                 ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
@@ -123,6 +120,7 @@ export default function Navbar({
         <li className={`pl-16 ${navbar && "pb-6"} xl:pl-8 xl:pb-0`}>
           <Link
             href={"/gallery"}
+            onClick={closeNavbar}
             className={
               pathname === "/gallery"
                 ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
@@ -135,6 +133,7 @@ export default function Navbar({
         <li className={`pl-16 ${navbar && "pb-6"} xl:pl-8 xl:pb-0`}>
           <Link
             href={"/volunteer"}
+            onClick={closeNavbar}
             className={
               pathname === "/volunteer"
                 ? "font-bold xl:font-normal xl:border-b-2 xl:border-black xl:box-border hover:text-green-700"
@@ -145,12 +144,13 @@ export default function Navbar({
           </Link>
         </li>
         <li className={`pl-16 ${navbar && "pb-6"} xl:pl-8 xl:pb-0`}>
-          <span
+          <Link
+            href={"/#contact"}
             className="cursor-pointer hover:text-green-700"
-            onClick={handleContactClick}
+            onClick={closeNavbar}
           >
             CONTACT
-          </span>
+          </Link>
         </li>
       </ul>
       <div

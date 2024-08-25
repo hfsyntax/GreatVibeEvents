@@ -15,7 +15,9 @@ export default function ContentWrapper({
   const openNavbar = () => {
     showNavbar(true)
   }
-  const closeNavbar = () => showNavbar(false)
+  const closeNavbar = () => {
+    if (navbar) showNavbar(false)
+  }
   return (
     <html lang="en">
       <body
