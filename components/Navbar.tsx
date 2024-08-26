@@ -208,6 +208,7 @@ export default function Navbar({
         <Link
           href={"/login"}
           className={`hidden ${pathname === "/login" && "font-bold"} ${navbar && `!inline text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase`}`}
+          onClick={closeNavbar}
         >
           Login
         </Link>
@@ -222,8 +223,10 @@ export default function Navbar({
             id="userDropdown"
             className={`hidden ${!navbar && "md:inline-block"} absolute top-full w-full shadow-md bg-white p-4`}
           >
-            <Link href={"#"}>
-              <li id="loginLink">login</li>
+            <Link href={"/login"} onClick={() => showUserDropdown(false)}>
+              <li id="loginLink" className="text-[#49740B]">
+                Sign In
+              </li>
             </Link>
           </ul>
         )}
