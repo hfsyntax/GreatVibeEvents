@@ -91,7 +91,11 @@ export default function ContactForm() {
               className="w-full bg-[#49740B] text-white font-bold h-[50px] cursor-pointer lg:w-[150px] hover:bg-lime-600"
               disabled
             />
-            <button className="ml-3 underline" onClick={toggleForm}>
+            <button
+              type="button"
+              className="ml-3 underline"
+              onClick={toggleForm}
+            >
               cancel
             </button>
           </div>
