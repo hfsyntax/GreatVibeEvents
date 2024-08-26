@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState, useRef } from "react"
-import { useRouter } from "next/navigation"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -24,12 +23,30 @@ export default function Navbar({
   openNavbar: () => void
   closeNavbar: () => void
 }) {
-  const router = useRouter()
   const pathname = usePathname()
   const [search, showSearch] = useState(false)
+  const [userDropdown, showUserDropdown] = useState(false)
+  const userDropdownVisible = useRef(userDropdown)
   const searchBar = useRef<HTMLInputElement>(null)
-  const loggedIn = false
   const toggleSearch = () => showSearch(!search)
+  const handleUserDropDown = (event: MouseEvent) => {
+    const target = event.target as HTMLElement
+    if (target.id === "loginLink") return
+    if (target.id === "userIcon" || target?.parentElement?.id === "userIcon") {
+      showUserDropdown(!userDropdownVisible.current)
+    } else if (userDropdownVisible.current) {
+      showUserDropdown(false)
+    }
+  }
+  useEffect(() => {
+    document.addEventListener("mousedown", handleUserDropDown)
+    return () => {
+      document.removeEventListener("mousedown", handleUserDropDown)
+    }
+  }, [])
+  useEffect(() => {
+    userDropdownVisible.current = userDropdown
+  }, [userDropdown])
   useEffect(() => {
     if (search) {
       searchBar.current?.focus()
@@ -154,18 +171,18 @@ export default function Navbar({
         </li>
       </ul>
       <div
-        className={`flex ${navbar ? "flex-col mr-auto ml-16" : "flex-row ml-auto"} items-center xl:flex-row`}
+        className={`relative flex ${navbar ? "flex-col mr-auto ml-16" : "flex-row ml-auto"} items-center xl:flex-row`}
       >
         <FontAwesomeIcon
           icon={faBars}
           size="lg"
-          className={`p-2 text-green-700 hover:text-black cursor-pointer xl:!hidden ${navbar && "!hidden"}`}
+          className={`p-2 text-[#49740B] hover:text-black cursor-pointer xl:!hidden ${navbar && "!hidden"}`}
           onClick={openNavbar}
         />
         <FontAwesomeIcon
           icon={search ? faX : faMagnifyingGlass}
           size="lg"
-          className={`p-2 text-green-700 hover:text-black cursor-pointer !hidden xl:!inline`}
+          className={`p-2 text-[#49740B] hover:text-black cursor-pointer !hidden xl:!inline`}
           onClick={toggleSearch}
         />
         {navbar && (
@@ -186,21 +203,29 @@ export default function Navbar({
         <FontAwesomeIcon
           icon={faCartShopping}
           size="lg"
-          className={`p-2 text-green-700 hover:text-black cursor-pointer ${navbar && "!hidden"} xl:!inline`}
+          className={`p-2 text-[#49740B] hover:text-black cursor-pointer ${navbar && "!hidden"} xl:!inline`}
         />
-        {!loggedIn ? (
-          <Link
-            href={"/login"}
-            className={`${openSans.className} ${pathname === "/login" && "font-bold"} ${navbar && `!inline text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase`} ${!navbar && "md:inline md:!font-normal md:text-lg !text-green-700 hover:!text-black mr-3"} xl:mr-0 xl:!text-green-700 xl:!text-lg xl:!normal-case xl:!font-normal xl:hover:!text-black`}
+        <Link
+          href={"/login"}
+          className={`hidden ${pathname === "/login" && "font-bold"} ${navbar && `!inline text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase`}`}
+        >
+          Login
+        </Link>
+        <FontAwesomeIcon
+          id="userIcon"
+          icon={faUser}
+          size="lg"
+          className={`p-2 text-[#49740B] hover:text-black cursor-pointer !hidden ${!navbar && "md:!inline-block"}`}
+        />
+        {userDropdown && (
+          <ul
+            id="userDropdown"
+            className={`hidden ${!navbar && "md:inline-block"} absolute top-full w-full shadow-md bg-white p-4`}
           >
-            Login
-          </Link>
-        ) : (
-          <FontAwesomeIcon
-            icon={faUser}
-            size="lg"
-            className="p-2 text-green-700 hover:text-black cursor-pointer !hidden md:!inline-block"
-          />
+            <Link href={"#"}>
+              <li id="loginLink">login</li>
+            </Link>
+          </ul>
         )}
       </div>
     </nav>
