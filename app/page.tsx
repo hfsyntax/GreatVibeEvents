@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Playfair_Display, Open_Sans } from "next/font/google"
 import QuoteSlider from "@/components/home/QuoteSlider"
+import NewsletterForm from "@/components/home/NewsletterForm"
 import ContactForm from "@/components/home/ContactForm"
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 const openSans = Open_Sans({ subsets: ["latin"] })
@@ -179,21 +180,7 @@ export default async function Home() {
       >
         Learn more about our upcoming events, fundraisers, and more!
       </span>
-      <form className="w-full lg:w-fit ml-auto mr-auto">
-        <input
-          type="text"
-          placeholder="Email address"
-          className="block w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border lg:w-[600px] lg:mr-6 lg:inline focus:border-black"
-          autoComplete="email"
-          required
-        />
-        <input
-          type="submit"
-          value={"SIGN UP"}
-          className="w-full bg-[#49740B] text-white font-bold h-[50px] cursor-pointer lg:w-[150px] hover:bg-lime-600"
-          disabled
-        />
-      </form>
+      <NewsletterForm />
       <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
