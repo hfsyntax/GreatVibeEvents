@@ -61,12 +61,17 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
               className={`relative overflow-hidden w-1/2 h-[100px] md:h-[200px] xl:h-[300px] xl:w-1/4 ${showImage && showImage === imageUrl.url && "select-none !w-full !h-screen z-10 bg-gray-500 flex !fixed top-0 left-0 overflow-hidden"}`}
               key={`img_container_${index + 1}`}
             >
+              {showImage && showImage === imageUrl.url && (
+                <span className="absolute text-white bg-black h-fit ml-1 md:ml-5 xl:ml-10 mt-3 p-2">
+                  {index + 1}/{imageUrls.length}
+                </span>
+              )}
               {showImage &&
                 showImage === imageUrl.url &&
                 imageUrls[index - 1] && (
                   <FontAwesomeIcon
                     icon={faArrowLeft}
-                    className="z-10 mt-auto mb-auto ml-1 md:ml-5 xl:ml-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
+                    className="z-10 mt-auto mb-auto ml-1 md:ml-3 xl:ml-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
                     onClick={() => showSingleImage(index - 1)}
                   />
                 )}
@@ -95,7 +100,9 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 key={`img_${index + 1}`}
                 priority
                 className={`cursor-pointer ${showImage && showImage === imageUrl.url && "!w-[75%] !object-contain xl:!h-[500px] mt-auto mb-auto ml-auto mr-auto z-20"} object-cover transition-transform duration-300 ease-in-out transform hover:scale-110`}
-                onClick={() => showSingleImage(index)}
+                onClick={
+                  showImage ? closeSingleImage : () => showSingleImage(index)
+                }
               />
             </div>
           ))}
