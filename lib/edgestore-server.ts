@@ -1,3 +1,4 @@
+import { NextRequest, NextResponse } from "next/server"
 import { initEdgeStoreClient } from "@edgestore/server/core"
 import { initEdgeStore } from "@edgestore/server"
 import { createEdgeStoreNextHandler } from "@edgestore/server/adapters/next/app"
@@ -9,9 +10,16 @@ const edgeStoreRouter = es.router({
   }),
 })
 
-export const handler = createEdgeStoreNextHandler({
-  router: edgeStoreRouter,
-})
+export async function GET(request: NextRequest) {
+  return createEdgeStoreNextHandler({ router: edgeStoreRouter })(request)
+}
+
+export async function POST(request: NextRequest) {
+  if (request.nextUrl.pathname === "/api/edgestore/request-upload") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+  }
+  return createEdgeStoreNextHandler({ router: edgeStoreRouter })(request)
+}
 
 export const backendClient = initEdgeStoreClient({
   router: edgeStoreRouter,
