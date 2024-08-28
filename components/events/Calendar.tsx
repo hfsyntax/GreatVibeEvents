@@ -103,7 +103,7 @@ export default function Schedule() {
             href={"#"}
             className="bg-[#49740B] text-white text-base text-center block p-4 font-bold hover:bg-lime-600 mt-3"
           >
-            Register
+            Purchase Ticket
           </Link>
         </div>
         <div className="grow basis-0 ml-auto mr-auto order-2 xl:order-3">
@@ -149,7 +149,7 @@ export default function Schedule() {
               href={"#"}
               className="bg-[#49740B] text-white text-base text-center block p-4 font-bold hover:bg-lime-600 mt-3"
             >
-              Register
+              Purchase Ticket
             </Link>
           </div>
         </div>

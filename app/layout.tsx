@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import "@fortawesome/fontawesome-svg-core/styles.css"
 import ContentWrapper from "@/components/ContentWrapper"
+import { EdgeStoreProvider } from "@/lib/edgestore"
 
 export const metadata: Metadata = {
   title:
@@ -14,5 +15,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <ContentWrapper>{children}</ContentWrapper>
+  return (
+    <ContentWrapper>
+      <EdgeStoreProvider>{children}</EdgeStoreProvider>
+    </ContentWrapper>
+  )
 }
