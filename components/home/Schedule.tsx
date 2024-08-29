@@ -5,14 +5,14 @@ import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons"
 import { useState } from "react"
 const openSans = Open_Sans({ subsets: ["latin"] })
 
-export type Weekday = "Mon" | "Tue" | "Wed" | "Thurs" | "Fri" | "Sat" | "Sun"
+export type Weekday = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
 
 export default function Schedule({ dayOfWeek }: { dayOfWeek: Weekday }) {
   const days = {
     Mon: "09:00 am – 05:00 pm",
     Tue: "09:00 am – 05:00 pm",
     Wed: "09:00 am – 05:00 pm",
-    Thurs: "09:00 am – 05:00 pm",
+    Thu: "09:00 am – 05:00 pm",
     Fri: "09:00 am – 05:00 pm",
     Sat: "Sat Closed",
     Sun: "Sun Closed",
@@ -38,7 +38,7 @@ export default function Schedule({ dayOfWeek }: { dayOfWeek: Weekday }) {
           <span className={dayOfWeek === "Wed" ? "font-bold block" : "block"}>
             Wed 09:00 am – 05:00 pm
           </span>
-          <span className={dayOfWeek === "Thurs" ? "font-bold block" : "block"}>
+          <span className={dayOfWeek === "Thu" ? "font-bold block" : "block"}>
             Thurs 09:00 am – 05:00 pm
           </span>
           <span className={dayOfWeek === "Fri" ? "font-bold block" : "block"}>
@@ -54,7 +54,11 @@ export default function Schedule({ dayOfWeek }: { dayOfWeek: Weekday }) {
       ) : (
         <>
           <p className={`inline `}>
-            <span className="text-gray-500">Open today</span>
+            <span className="text-gray-500">
+              {["Sat", "Sun"].includes(dayOfWeek)
+                ? " Closed today"
+                : "Open today"}
+            </span>
             <span className="text-[#49740B] pl-1">{days[dayOfWeek]}</span>
           </p>
           <FontAwesomeIcon

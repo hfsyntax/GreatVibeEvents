@@ -17,7 +17,10 @@ export default function Footer() {
           RESERVED.
         </span>
         <div className="mr-auto ml-auto sm:ml-auto sm:mr-28">
-          <Link href={"#"}>
+          <Link
+            href={"https://www.facebook.com/188549064338074"}
+            target="_blank"
+          >
             <FontAwesomeIcon
               icon={faFacebook}
               size="lg"
@@ -25,7 +28,10 @@ export default function Footer() {
             />
           </Link>
 
-          <Link href={"#"}>
+          <Link
+            href={"https://www.instagram.com/greatvibeevent"}
+            target="_blank"
+          >
             <FontAwesomeIcon
               icon={faInstagram}
               size="lg"
@@ -33,11 +39,14 @@ export default function Footer() {
             />
           </Link>
 
-          <Link href={"#"}>
+          <Link href={"https://www.x.com/greatvibeevents"} target="_blank">
             <FontAwesomeIcon icon={faXTwitter} size="lg" className="mr-3" />
           </Link>
 
-          <Link href={"#"}>
+          <Link
+            href={"https://www.youtube.com/@greatvibeevents"}
+            target="_blank"
+          >
             <FontAwesomeIcon
               icon={faYoutube}
               size="lg"
