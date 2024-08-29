@@ -1,7 +1,7 @@
 "use client"
 import type { FormEvent } from "react"
 import { useState, useEffect, useRef } from "react"
-import { signUpForNewsletter } from "@/actions/server"
+import { signUpForNewsletter } from "@/actions/user"
 import ReCAPTCHA from "react-google-recaptcha"
 
 export default function NewsletterForm() {
@@ -34,6 +34,13 @@ export default function NewsletterForm() {
       return setFormResponse({
         ...formResponse,
         error: "Error: not a valid email.",
+      })
+    }
+
+    if (email.length > 128) {
+      return setFormResponse({
+        ...formResponse,
+        error: "Error: email must be 128 characters or less.",
       })
     }
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import QuoteSlider from "@/components/home/QuoteSlider"
+import VolunteerForm from "@/components/volunteer/VolunteerForm"
 import { Open_Sans } from "next/font/google"
 const openSans = Open_Sans({ subsets: ["latin"] })
 
@@ -18,55 +19,7 @@ export default function Volunteer() {
       </span>
       <span className="mt-3 mb-3">[volunteer description]</span>
       <QuoteSlider />
-      <form className="flex flex-col mt-3">
-        <label>FULL NAME</label>
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
-          autoComplete="name"
-          required
-        />
-        <label className=" mt-3">ADDRESS</label>
-        <input
-          type="text"
-          name="address"
-          placeholder="Address"
-          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
-          autoComplete="street-address"
-          required
-        />
-        <label className="mt-3">PHONE NUMBER</label>
-        <input
-          type="text"
-          name="number"
-          placeholder="Phone Number"
-          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
-          autoComplete="tel"
-          required
-        />
-        <label className=" mt-3">EMAIL</label>
-        <input
-          type="text"
-          name="email"
-          placeholder="Email"
-          className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
-          autoComplete="email"
-          required
-        />
-        <label className=" mt-3">AVAILABILITY AND AREAS OF INTEREST</label>
-        <textarea
-          placeholder="Availability and areas of interest."
-          className=" pl-3 mt-3 outline-none border border-b-gray-200 h-[100px] focus:border-black"
-        ></textarea>
-        <input
-          type="submit"
-          value={"SIGN UP"}
-          className="bg-[#49740B] p-3 mt-3 text-white cursor-pointer hover:bg-lime-600"
-          disabled
-        />
-      </form>
+      <VolunteerForm />
       <div className="mt-3 flex flex-wrap gap-3 justify-center">
         <div className="bg-black w-[180px] h-[150px]">
           <span className="text-white">sponsor space</span>
