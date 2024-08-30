@@ -30,11 +30,11 @@ export default function VolunteerForm() {
 
     const name = String(formData.get("name"))
 
-    if (!name.match(/^\S{1,127} \S{1,127}$/)) {
+    if (!name.match(/^\S{1,63} \S{1,63}$/)) {
       return setFormResponse({
         message: "",
         error:
-          "Error: Full name must include a space with 128 characters or less.",
+          "Error: Full name must include a space with less than 128 characters.",
       })
     }
 

@@ -19,7 +19,7 @@ export default function About() {
         WHO WE ARE
       </span>
       <Image
-        src={"/about.png"}
+        src={"/img/about.png"}
         alt="about_image"
         width={0}
         height={0}
@@ -53,7 +53,7 @@ export default function About() {
       <div className="flex flex-col xl:flex-row xl:gap-2">
         <div className={`bg-[#DAFFC0] ${openSans.className} w-full xl:w-1/2`}>
           <Image
-            src={"/company_values.png"}
+            src={"/img/company_values.png"}
             alt="company_values"
             width={0}
             height={0}
@@ -102,7 +102,7 @@ export default function About() {
         </div>
         <div className={`bg-[#DAFFC0] ${openSans.className} w-full xl:w-1/2`}>
           <Image
-            src={"/company_team.png"}
+            src={"/img/company_team.png"}
             alt="company_team"
             width={0}
             height={0}

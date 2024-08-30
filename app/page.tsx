@@ -11,7 +11,7 @@ export default async function Home() {
     <>
       <div className="w-full flex flex-col md:flex-row">
         <Image
-          src={"/logo_welcome.png"}
+          src={"/img/logo_welcome.png"}
           height={0}
           width={0}
           sizes="50%"
@@ -44,7 +44,7 @@ export default async function Home() {
         <span>content ad space</span>
       </div>
       <Image
-        src={"/event_image.png"}
+        src={"/img/event_image.png"}
         height={0}
         width={0}
         sizes="100%"
@@ -123,7 +123,7 @@ export default async function Home() {
       </span>
       <div className="w-full h-[500px] flex overflow-auto gap-3">
         <Image
-          src={"/event_image.png"}
+          src={"/img/event_image.png"}
           height={0}
           width={0}
           sizes="100%"
@@ -132,7 +132,7 @@ export default async function Home() {
           priority
         />
         <Image
-          src={"/event_image.png"}
+          src={"/img/event_image.png"}
           height={0}
           width={0}
           sizes="100%"
@@ -141,7 +141,7 @@ export default async function Home() {
           priority
         />
         <Image
-          src={"/event_image.png"}
+          src={"/img/event_image.png"}
           height={0}
           width={0}
           sizes="100%"
@@ -150,7 +150,7 @@ export default async function Home() {
           priority
         />
         <Image
-          src={"/event_image.png"}
+          src={"/img/event_image.png"}
           height={0}
           width={0}
           sizes="100%"

@@ -13,15 +13,18 @@ import {
   faBars,
   faX,
 } from "@fortawesome/free-solid-svg-icons"
+import { logout } from "@/lib/session"
 
 export default function Navbar({
   navbar,
   openNavbar,
   closeNavbar,
+  session,
 }: {
   navbar: boolean
   openNavbar: () => void
   closeNavbar: () => void
+  session: any
 }) {
   const pathname = usePathname()
   const [search, showSearch] = useState(false)
@@ -31,12 +34,16 @@ export default function Navbar({
   const toggleSearch = () => showSearch(!search)
   const handleUserDropDown = (event: MouseEvent) => {
     const target = event.target as HTMLElement
-    if (target.id === "loginLink") return
+    if (target.id === "loginLink" || target.id === "logoffLink") return
     if (target.id === "userIcon" || target?.parentElement?.id === "userIcon") {
       showUserDropdown(!userDropdownVisible.current)
     } else if (userDropdownVisible.current) {
       showUserDropdown(false)
     }
+  }
+  const handleLogout = async () => {
+    await logout()
+    showUserDropdown(false)
   }
   useEffect(() => {
     document.addEventListener("mousedown", handleUserDropDown)
@@ -60,7 +67,13 @@ export default function Navbar({
         href={"/"}
         className={`${navbar ? "hidden" : "inline-flex"} xl:inline-flex`}
       >
-        <Image src={"/logo.png"} priority alt="logo" width={200} height={200} />
+        <Image
+          src={"/img/logo.png"}
+          priority
+          alt="logo"
+          width={200}
+          height={200}
+        />
       </Link>
       {search && (
         <input
@@ -223,11 +236,22 @@ export default function Navbar({
             id="userDropdown"
             className={`hidden ${!navbar && "md:inline-block"} absolute top-full w-full shadow-md bg-white p-4`}
           >
-            <Link href={"/login"} onClick={() => showUserDropdown(false)}>
-              <li id="loginLink" className="text-[#49740B]">
-                Sign In
+            {!session && (
+              <Link href={"/login"} onClick={() => showUserDropdown(false)}>
+                <li id="loginLink" className="text-[#49740B]">
+                  Sign In
+                </li>
+              </Link>
+            )}
+            {session && (
+              <li
+                id="logoffLink"
+                className="text-[#49740B] cursor-pointer"
+                onClick={handleLogout}
+              >
+                Logoff
               </li>
-            </Link>
+            )}
           </ul>
         )}
       </div>

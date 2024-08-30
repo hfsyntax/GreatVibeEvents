@@ -1,8 +1,8 @@
 "use server"
 import { sql } from "@vercel/postgres"
-import { error } from "console"
+import { genSalt, hash } from "bcryptjs"
 
-async function validateRecaptcha(token: string): Promise<boolean> {
+export async function validateRecaptcha(token: string): Promise<boolean> {
   try {
     const recaptchaResponse = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
@@ -15,11 +15,121 @@ async function validateRecaptcha(token: string): Promise<boolean> {
   }
 }
 
-export async function signUpForNewsletter(formData: FormData) {
-  if (!formData) {
-    return { error: "Error: no form data.", message: "" }
+export async function createAccount(formData: FormData) {
+  if (!formData.get("g-recaptcha-response")) {
+    return { error: "Error: failed to set recaptcha token.", message: "" }
   }
 
+  const recaptchaToken = String(formData.get("g-recaptcha-response"))
+  const validRecaptchaResponse = await validateRecaptcha(recaptchaToken)
+
+  if (!validRecaptchaResponse) {
+    return { error: "Error: reCAPTCHA validation failed.", message: "" }
+  }
+
+  const fields = ["first", "last", "email", "password", "password-repeat"]
+  for (let field of fields) {
+    if (!formData.get(field)) {
+      return {
+        error: `Error: ${field.charAt(0).toUpperCase() + field.slice(1)} cannot be empty`,
+        message: "",
+      }
+    }
+  }
+
+  const first = String(formData.get("first"))
+
+  if (first.length > 63) {
+    return {
+      error: "Error: First name must be 63 characters or less.",
+      message: "",
+    }
+  }
+
+  const last = String(formData.get("last"))
+
+  if (last.length > 63) {
+    return {
+      error: "Error: Last name must be 63 characters or less.",
+      message: "",
+    }
+  }
+
+  const email = String(formData.get("email"))
+
+  const validEmail =
+    /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+
+  if (!email.match(validEmail)) {
+    return {
+      error: "Error: not a valid email.",
+      message: "",
+    }
+  }
+
+  if (email.length > 128) {
+    return {
+      error: "Error: Email must be 128 characters or less.",
+      message: "",
+    }
+  }
+
+  const number = String(formData.get("number"))
+
+  if (formData.get("number") && !number.match(/^\d{7,20}$/)) {
+    return {
+      error: "Error: Phone number must be between 7-20 numbers.",
+      message: "",
+    }
+  }
+
+  const password = String(formData.get("password"))
+
+  const validPassword = /^(?=.*[A-Z])(?=.*\d).{6,}$/
+
+  if (!password.match(validPassword)) {
+    return {
+      error:
+        "Error: password must contain at least 6 characters, 1 uppercase letter and 1 number",
+      message: "",
+    }
+  }
+
+  if (password.length > 128) {
+    return {
+      error: "Error: Password must be 128 characters or less.",
+      message: "",
+    }
+  }
+
+  const repeatPassword = String(formData.get("password-repeat"))
+
+  if (password !== repeatPassword) {
+    return { error: "Error: Passwords do not match.", message: "" }
+  }
+
+  try {
+    const userExists = await sql`SELECT 1 from users WHERE email = ${email}`
+    if (userExists.rows.length > 0) {
+      return {
+        error: "Error: a user already exists with this email.",
+        message: "",
+      }
+    }
+
+    const salt = await genSalt()
+    const hashedPassword = await hash(password, salt)
+
+    await sql`INSERT INTO users (first, last, email, password, number) VALUES (${first}, ${last}, ${email}, ${hashedPassword}, ${number})`
+
+    return { message: "Success.", error: "" }
+  } catch (error) {
+    console.log(error)
+    return { error: "Error: Database connection error.", message: "" }
+  }
+}
+
+export async function signUpForNewsletter(formData: FormData) {
   if (!formData.get("g-recaptcha-response")) {
     return { error: "Error: failed to set recaptcha token.", message: "" }
   }
@@ -66,10 +176,6 @@ export async function signUpForNewsletter(formData: FormData) {
 }
 
 export async function signUpVolunteer(formData: FormData) {
-  if (!formData) {
-    return { error: "Error: no form data.", message: "" }
-  }
-
   if (!formData.get("g-recaptcha-response")) {
     return { error: "Error: failed to set recaptcha token.", message: "" }
   }
@@ -93,10 +199,10 @@ export async function signUpVolunteer(formData: FormData) {
 
   const name = String(formData.get("name"))
 
-  if (!name.match(/^\S{1,127} \S{1,127}$/)) {
+  if (!name.match(/^\S{1,63} \S{1,63}$/)) {
     return {
       error:
-        "Error: Full name must include a space with 128 characters or less.",
+        "Error: Full name must include a space with less than 128 characters.",
       message: "",
     }
   }

@@ -8,8 +8,10 @@ const inter = Inter({ subsets: ["latin"] })
 
 export default function ContentWrapper({
   children,
+  session,
 }: Readonly<{
   children: React.ReactNode
+  session: any
 }>) {
   const [navbar, showNavbar] = useState(false)
   const openNavbar = () => {
@@ -37,6 +39,7 @@ export default function ContentWrapper({
               navbar={navbar}
               openNavbar={openNavbar}
               closeNavbar={closeNavbar}
+              session={session}
             />
             {children}
             <Footer />
