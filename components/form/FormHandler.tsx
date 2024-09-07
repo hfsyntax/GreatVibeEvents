@@ -1036,7 +1036,7 @@ export default function FormHandler({
             name="emergency-contact"
             placeholder="Emergency contact:"
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px]  box-border ${errors["emergency-contact"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
-            autoComplete="tel"
+            autoComplete="name"
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
@@ -1054,7 +1054,6 @@ export default function FormHandler({
             name="emergency-relationship"
             placeholder="Realtionship"
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["emergency-relationship"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
-            autoComplete="tel"
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
