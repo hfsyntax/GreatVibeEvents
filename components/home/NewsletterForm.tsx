@@ -78,11 +78,13 @@ export default function NewsletterForm() {
         className="w-full bg-[#49740B] text-white font-bold h-[50px] cursor-pointer lg:w-[150px] hover:bg-lime-600"
         disabled={formButton.disabled}
       />
-      <ReCAPTCHA
-        ref={recaptcha}
-        sitekey="6Lc2eDEqAAAAAJmEYBpH6fnoNmRq46CnV6NSin3e"
-        size="invisible"
-      />
+      {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+        <ReCAPTCHA
+          ref={recaptcha}
+          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+          size="invisible"
+        />
+      )}
       {formResponse.error && (
         <span className="text-red-500 block">{formResponse.error}</span>
       )}

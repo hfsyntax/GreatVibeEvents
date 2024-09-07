@@ -22,6 +22,10 @@
 package-lock.json
 TODO
 
+#autocert
+anchor.toml
+/tmp
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -15,12 +15,17 @@
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@stripe/react-stripe-js": "^2.8.0",
+    "@stripe/stripe-js": "^4.4.0",
+    "@types/react-signature-canvas": "^1.0.5",
     "@vercel/postgres": "^0.9.0",
     "bcryptjs": "^2.4.3",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
-    "react-google-recaptcha": "^3.1.0"
+    "react-google-recaptcha": "^3.1.0",
+    "react-signature-canvas": "^1.0.6",
+    "stripe": "^16.9.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -28,6 +33,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-google-recaptcha": "^2.1.9",
+    "anchor-pki": "^0.3.2",
     "postcss": "^8",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.5",

@@ -153,11 +153,13 @@ export default function VolunteerForm() {
         className="bg-[#49740B] p-3 mt-3 text-white cursor-pointer hover:bg-lime-600"
         disabled={formButton.disabled}
       />
-      <ReCAPTCHA
-        ref={recaptcha}
-        sitekey="6Lc2eDEqAAAAAJmEYBpH6fnoNmRq46CnV6NSin3e"
-        size="invisible"
-      />
+      {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+        <ReCAPTCHA
+          ref={recaptcha}
+          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+          size="invisible"
+        />
+      )}
       {formResponse.error && (
         <span className="text-red-500 block">{formResponse.error}</span>
       )}

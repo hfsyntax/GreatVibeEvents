@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Gallery from "@/components/gallery/Gallery"
 import { getGalleryImageUrls } from "@/actions/server"
 import { Open_Sans } from "next/font/google"
+import { EdgeStoreProvider } from "@/lib/edgestore"
 const openSans = Open_Sans({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export default async function GalleryPage() {
     error = e.message
   }
   return (
-    <>
+    <EdgeStoreProvider>
       <h1 className={`ml-auto mr-auto text-2xl ${openSans.className}`}>
         Welcome
       </h1>
@@ -31,6 +32,6 @@ export default async function GalleryPage() {
       {error && (
         <span className="text-red-500 block mt-3">{error.message}</span>
       )}
-    </>
+    </EdgeStoreProvider>
   )
 }

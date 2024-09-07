@@ -235,11 +235,13 @@ export default function LoginHandler() {
               </span>
               .
             </p>
-            <ReCAPTCHA
-              ref={recaptcha}
-              sitekey="6Lc2eDEqAAAAAJmEYBpH6fnoNmRq46CnV6NSin3e"
-              size="invisible"
-            />
+            {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+              <ReCAPTCHA
+                ref={recaptcha}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                size="invisible"
+              />
+            )}
             {formResponse?.error && (
               <span className="text-red-500 block">{formResponse.error}</span>
             )}
@@ -326,11 +328,13 @@ export default function LoginHandler() {
               </span>
               .
             </p>
-            <ReCAPTCHA
-              ref={recaptcha}
-              sitekey="6Lc2eDEqAAAAAJmEYBpH6fnoNmRq46CnV6NSin3e"
-              size="invisible"
-            />
+            {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+              <ReCAPTCHA
+                ref={recaptcha}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                size="invisible"
+              />
+            )}
             {formResponse?.error && (
               <span className="text-red-500 block">{formResponse.error}</span>
             )}

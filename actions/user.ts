@@ -1,6 +1,11 @@
 "use server"
+import type { FormEntry } from "@/components/form/FormHandler"
+import { getSession } from "@/lib/session"
 import { sql } from "@vercel/postgres"
 import { genSalt, hash } from "bcryptjs"
+import { getEventById } from "@/actions/server"
+import Stripe from "stripe"
+import { revalidatePath } from "next/cache"
 
 export async function validateRecaptcha(token: string): Promise<boolean> {
   try {
@@ -124,7 +129,7 @@ export async function createAccount(formData: FormData) {
 
     return { message: "Success.", error: "" }
   } catch (error) {
-    console.log(error)
+    console.error(error)
     return { error: "Error: Database connection error.", message: "" }
   }
 }
@@ -170,7 +175,7 @@ export async function signUpForNewsletter(formData: FormData) {
     await sql`INSERT INTO newsletter(email) VALUES(${email})`
     return { error: "", message: "Success." }
   } catch (error) {
-    console.log(error)
+    console.error(error)
     return { error: "Error: Database connection error.", message: "" }
   }
 }
@@ -263,7 +268,190 @@ export async function signUpVolunteer(formData: FormData) {
     await sql`INSERT INTO volunteers (name, address, phone_number, email, message) VALUES (${name}, ${address}, ${number}, ${email}, ${message})`
     return { message: "Success.", error: "" }
   } catch (error) {
-    console.log(error)
+    console.error(error)
     return { error: "Error: Database connection error.", message: "" }
+  }
+}
+
+export async function handleEventForm(
+  formData: FormData,
+  paymentIntent: string
+): Promise<FormEntry> {
+  try {
+    const session = await getSession()
+    if (!session) return { no_session: "Error: no session" }
+    if (!formData)
+      return {
+        no_data: "Error: form data cannot be empty",
+      }
+    if (!paymentIntent)
+      return {
+        no_payment: "Error: payment intent cannot be empty",
+      }
+
+    const token = formData.get("g-recaptcha-response")
+
+    if (!token) {
+      return {
+        no_token: "Error: could not set recaptcha token",
+      }
+    }
+
+    const validToken = await validateRecaptcha(String(token))
+
+    if (!validToken) {
+      return {
+        invalid_token: "Error: invalid recaptcha token",
+      }
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    const paymentData = await stripe.paymentIntents.retrieve(paymentIntent)
+    const eventId = paymentData.metadata?.eventId
+    const userId = Number(paymentData.metadata?.userId)
+    if (!eventId)
+      return {
+        invalid_eventid: "Error: event id not found for payment.",
+      }
+    if (!userId) {
+      return {
+        no_userid: "Error: user id not found for payment.",
+      }
+    }
+    const event = await getEventById(eventId)
+
+    if (!event || event?.id !== Number(eventId)) {
+      return {
+        invalid_event_id: "Error: event id not found for payment.",
+      }
+    }
+    if (session?.user?.id !== userId) {
+      return { no_user_id: "Error: not authenticated." }
+    }
+
+    const formValues: FormEntry = {
+      "participant-name": "Participant First/Last Name",
+      "participant-gender": "Participant Gender",
+      "participant-birthday": "Participant Date of Birth",
+      "participant-cell": "Participant Cell #",
+      "participant-email": "Participant Email",
+      "participant-address": "Participant Address",
+      "participant-eaosh": "Epilepsy and/or Seizure History",
+      "participant-dols": "Date of last seizure",
+      "participant-r11r": "Does the participant require 1:1 attendant ratio",
+      "participant-uafd":
+        "Does the participant understand and follow directions",
+      "participant-allergies": "Participant Allergies & Dietary Restrictions",
+      "participant-medications": "Participant medications",
+      "participant-bites-or-stings": "Participant bites or stings",
+      "participant-food-allergies": "Participant food allergies",
+      "participant-special-dietary-needs": "Participant dietary needs",
+      "participant-ctctmt": "Consent to medical treatment on his or her behalf",
+      "participant-activity-interests": "Participant activity interests",
+      "participant-additional-enjoyment": "Participant additional enjoyment",
+      "guardian-name": "Guardian First & Last Name",
+      "guardian-relationship": "Guardian Relationship",
+      "guardian-number": "Guardian Cell #",
+      "guardian-email": "Guardian Email",
+      "guardian-address": "Guardian Address",
+      "emergency-contact": "Emergency contact",
+      "emergency-relationship": "Emergency Relationship",
+      "emergency-number": "Emergency Cell #",
+      "emergency-email": "Emergency Email",
+      "participant-name-confirm": "Name of participant",
+      "participant-signature": "Participant Signature",
+      "participant-date-signed": "Participant Date Signed",
+      "guardian-name-confirm": "Name of Guardian",
+      "guardian-signature": "Guardian Signature",
+      "guardian-date-signed": "Guardian Date Signed",
+    }
+
+    const errors: FormEntry = {}
+    for (let key of Object.keys(formValues)) {
+      if (
+        key === "participant-dols" &&
+        formValues["participant-eaosh"] !== "yes"
+      ) {
+        continue
+      }
+
+      if (!formData.get(key)) {
+        errors[key] = `${formValues[key]} is required.`
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return errors
+    }
+
+    const participantName = String(formData.get("participant-name"))
+    const participantGender = String(formData.get("participant-gender"))
+    const participantBirthday = String(formData.get("participant-birthday"))
+    const participantCell = String(formData.get("participant-cell"))
+    const participantEmail = String(formData.get("participant-email"))
+    const participantAddress = String(formData.get("participant-address"))
+    const participantOtherDisorders = String(
+      formData.get("participant-other-disorders")
+    )
+    const participantEaosh = String(formData.get("participant-eaosh"))
+    const participantDols = String(formData.get("participant-dols"))
+      ? String(formData.get("participant-dols"))
+      : null
+    const participantR11r = String(formData.get("participant-r11r"))
+    const participantUafd = String(formData.get("participant-uafd"))
+    const participantAllergies = String(formData.get("participant-allergies"))
+    const participantMedications = String(
+      formData.get("participant-medications")
+    )
+    const participantBitesOrStrings = String(
+      formData.get("participant-bites-or-stings")
+    )
+    const participantFoodAllergies = String(
+      formData.get("participant-food-allergies")
+    )
+    const participantDietary = String(
+      formData.get("participant-special-dietary-needs")
+    )
+    const participantCtctmt = String(formData.get("participant-ctctmt"))
+    const participantInterests = String(
+      formData.get("participant-activity-interests")
+    )
+    const participantEnjoyment = String(
+      formData.get("participant-additional-enjoyment")
+    )
+    const guardianName = String(formData.get("guardian-name"))
+    const guardianRelationship = String(formData.get("guardian-relationship"))
+    const guardianCell = String(formData.get("guardian-number"))
+    const guardianEmail = String(formData.get("guardian-email"))
+    const guardianAddress = String(formData.get("guardian-address"))
+    const emergencyContact = String(formData.get("emergency-contact"))
+    const emergencyRelationship = String(formData.get("emergency-relationship"))
+    const emergencyCell = String(formData.get("emergency-number"))
+    const emergencyEmail = String(formData.get("emergency-email"))
+    const participantNameConfirm = String(
+      formData.get("participant-name-confirm")
+    )
+    const participantDateSigned = String(
+      formData.get("participant-date-signed")
+    )
+    const guardianNameConfirm = String(formData.get("guardian-name-confirm"))
+    const guardianDateSigned = String(formData.get("guardian-date-signed"))
+    const participantSignature = String(formData.get("participant-signature"))
+    const guardianSignature = String(formData.get("guardian-signature"))
+    await sql`INSERT INTO event_form_data 
+    (user_id, participant_name, participant_gender, participant_birthday, participant_number, participant_email, participant_address, participant_other_disorders, participant_eaosh, participant_dols, participant_r11r, participant_uafd, participant_allergies, participant_medications, participant_bites_or_stings, participant_food_allergies, participant_special_dietary_needs, participant_ctctmt, participant_activity_interests, participant_additional_enjoyment, guardian_name, guardian_relationship, guardian_number, guardian_email, guardian_address, emergency_contact, emergency_relationship, emergency_number, emergency_email, participant_name_confirm, participant_date_signed, guardian_name_confirm, guardian_date_signed, participant_signed, guardian_signed) 
+    VALUES (${userId}, ${participantName}, ${participantGender}, ${participantBirthday}, ${participantCell}, ${participantEmail}, ${participantAddress}, ${participantOtherDisorders}, ${participantEaosh}, ${participantDols}, ${participantR11r}, ${participantUafd}, ${participantAllergies}, ${participantMedications}, ${participantBitesOrStrings}, ${participantFoodAllergies}, ${participantDietary}, ${participantCtctmt}, ${participantInterests}, ${participantEnjoyment}, ${guardianName}, ${guardianRelationship}, ${guardianCell}, ${guardianEmail}, ${guardianAddress}, ${emergencyContact}, ${emergencyRelationship}, ${emergencyCell}, ${emergencyEmail}, ${participantNameConfirm}, ${participantDateSigned}, ${guardianNameConfirm}, ${guardianDateSigned}, ${participantSignature}, ${guardianSignature})`
+
+    await sql`UPDATE event_payments SET form_completed = true WHERE payment_intent = ${paymentIntent}`
+    revalidatePath(`/form?payment_intent=${paymentIntent}`)
+    return {}
+  } catch (error: any) {
+    if (error.type === "StripeInvalidRequestError") {
+      return { error: error.raw.message, message: "" }
+    }
+    console.error(error)
+    return {
+      other_error: "Internal server error processing form",
+    }
   }
 }

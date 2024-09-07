@@ -15,18 +15,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import { logout } from "@/lib/session"
 
-export default function Navbar({
-  navbar,
-  openNavbar,
-  closeNavbar,
-  session,
-}: {
-  navbar: boolean
-  openNavbar: () => void
-  closeNavbar: () => void
-  session: any
-}) {
+export default function Navbar({ session }: { session: any }) {
   const pathname = usePathname()
+  const [navbar, showNavbar] = useState(false)
   const [search, showSearch] = useState(false)
   const [userDropdown, showUserDropdown] = useState(false)
   const userDropdownVisible = useRef(userDropdown)
@@ -41,8 +32,15 @@ export default function Navbar({
       showUserDropdown(false)
     }
   }
+  const openNavbar = () => {
+    showNavbar(true)
+  }
+  const closeNavbar = () => {
+    if (navbar) showNavbar(false)
+  }
   const handleLogout = async () => {
     await logout()
+    closeNavbar()
     showUserDropdown(false)
   }
   useEffect(() => {
@@ -184,7 +182,7 @@ export default function Navbar({
         </li>
       </ul>
       <div
-        className={`relative flex ${navbar ? "flex-col mr-auto ml-16" : "flex-row ml-auto"} items-center xl:flex-row`}
+        className={`relative flex ${navbar ? "flex-col mr-auto ml-16 xl:ml-auto xl:mr-0" : "flex-row ml-auto"} items-center xl:flex-row`}
       >
         <FontAwesomeIcon
           icon={faBars}
@@ -218,23 +216,32 @@ export default function Navbar({
           size="lg"
           className={`p-2 text-[#49740B] hover:text-black cursor-pointer ${navbar && "!hidden"} xl:!inline`}
         />
-        <Link
-          href={"/login"}
-          className={`hidden ${pathname === "/login" && "font-bold"} ${navbar && `!inline text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase`}`}
-          onClick={closeNavbar}
-        >
-          Login
-        </Link>
+        {!session ? (
+          <Link
+            href={"/login"}
+            className={`hidden ${pathname === "/login" && "font-bold"} ${navbar && `!inline xl:!hidden text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase`}`}
+            onClick={closeNavbar}
+          >
+            Login
+          </Link>
+        ) : (
+          <span
+            className={`hidden ${navbar && `!inline xl:!hidden text-black ${openSans.className} text-2xl hover:!text-green-700 mr-auto uppercase cursor-pointer`}`}
+            onClick={handleLogout}
+          >
+            logout
+          </span>
+        )}
         <FontAwesomeIcon
           id="userIcon"
           icon={faUser}
           size="lg"
-          className={`p-2 text-[#49740B] hover:text-black cursor-pointer !hidden ${!navbar && "md:!inline-block"}`}
+          className={`p-2 text-[#49740B] hover:text-black cursor-pointer ${navbar ? "!hidden xl:!inline-block" : "!hidden md:!inline-block"}`}
         />
         {userDropdown && (
           <ul
             id="userDropdown"
-            className={`hidden ${!navbar && "md:inline-block"} absolute top-full w-full shadow-md bg-white p-4`}
+            className={`hidden ${navbar ? "xl:inline-block" : "md:inline-block"} absolute top-full w-full shadow-md bg-white p-4`}
           >
             {!session && (
               <Link href={"/login"} onClick={() => showUserDropdown(false)}>

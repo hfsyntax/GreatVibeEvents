@@ -7,11 +7,19 @@ export const config = {
 }
 
 export async function middleware(request: NextRequest) {
-  console.log(`path is ${request.nextUrl.pathname}`)
+  const { pathname, searchParams } = request.nextUrl
   const response = await updateSession(request)
   const session = await getSession()
-  if (session && request.nextUrl.pathname === "/login") {
+  console.log(`pathname is ${pathname}`)
+  if (session && pathname === "/login") {
     return NextResponse.redirect(new URL("/", request.url))
+  } else if (!session && pathname === "/checkout") {
+    const eventId = searchParams.get("event_id")
+    if (eventId) {
+      return NextResponse.redirect(
+        new URL(`/login?redirect=checkout&event_id=${eventId}`, request.url)
+      )
+    }
   } else {
     return response
   }

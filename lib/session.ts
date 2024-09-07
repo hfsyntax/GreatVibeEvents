@@ -6,6 +6,8 @@ import { redirect } from "next/navigation"
 import { NextRequest, NextResponse } from "next/server"
 import { compare } from "bcryptjs"
 import { sql } from "@vercel/postgres"
+import { headers } from "next/headers"
+import { validateRecaptcha } from "@/actions/user"
 
 const secretKey = process.env.JWT_SECRET_KEY
 const key = new TextEncoder().encode(secretKey)
@@ -28,19 +30,19 @@ export async function decrypt(input: string): Promise<any> {
   }
 }
 
-async function validateRecaptcha(token: string) {
-  const recaptchaResponse = await fetch(
-    `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
-  )
-  const responseBody = await recaptchaResponse.json()
-  return responseBody?.success && responseBody?.score >= 0.3
+async function insertLoginToken(token: string) {
+  try {
+    await sql`INSERT INTO checkout_tokens (token) VALUES (${token})`
+  } catch (error) {
+    throw error
+  }
 }
 
 export async function login(formData: FormData) {
   // Verify credentials && get the user
   const email = String(formData.get("email"))
   const password = String(formData.get("password"))
-  const recaptchaResponse = String(formData.get("g-recaptcha-response"))
+  const token = String(formData.get("g-recaptcha-response"))
 
   if (!email || !password) {
     return { error: "incorrect username or password", message: "" }
@@ -50,18 +52,18 @@ export async function login(formData: FormData) {
     return { error: "incorrect username or password", message: "" }
   }
 
-  if (!recaptchaResponse) {
+  if (!token) {
     return { error: "no reCAPTCHA token set.", message: "" }
   }
 
-  const recaptchaValidated = await validateRecaptcha(recaptchaResponse)
+  const recaptchaValidated = await validateRecaptcha(token)
 
   if (!recaptchaValidated) {
     return { error: "reCAPTCHA validation failed", message: "" }
   }
 
   const dbUser =
-    await sql`SELECT user_id, password, disabled, type FROM users WHERE email = ${email}`
+    await sql`SELECT id, password, disabled, type, first, last FROM users WHERE email = ${email}`
 
   if (dbUser.rowCount === 1) {
     const hashedPassword = String(dbUser?.rows?.[0]?.["password"])
@@ -69,15 +71,30 @@ export async function login(formData: FormData) {
     if (correctPassword) {
       if (!dbUser?.rows?.[0]?.["disabled"]) {
         const userType = String(dbUser?.rows?.[0]?.["type"])
-        const userId = Number(dbUser?.rows?.[0]?.["user_id"])
+        const userId = Number(dbUser?.rows?.[0]?.["id"])
+        const firstName = String(dbUser?.rows?.[0]?.["first"])
+        const lastName = String(dbUser?.rows?.[0]?.["last"])
         const user = {
           email: email,
+          firstName: firstName,
+          lastName: lastName,
           password: hashedPassword,
           type: userType,
           id: userId,
         }
         const session = await encrypt({ user })
         cookies().set("session", session, { httpOnly: true })
+        const headersList = headers()
+        const referer = headersList.get("referer")
+        if (referer) {
+          const refererUrl = new URL(referer)
+          const refererParams = refererUrl.searchParams
+          const eventId = refererParams.get("event_id")
+          if (eventId && !isNaN(parseInt(eventId))) {
+            await insertLoginToken(token)
+            return redirect(`/checkout?event_id=${eventId}&token=${token}`)
+          }
+        }
         return redirect("/")
       } else {
         return {

@@ -55,11 +55,11 @@ export default function Schedule({ dayOfWeek }: { dayOfWeek: Weekday }) {
         <>
           <p className={`inline `}>
             <span className="text-gray-500">
-              {["Sat", "Sun"].includes(dayOfWeek)
-                ? " Closed today"
-                : "Open today"}
+              {["Sat", "Sun"].includes(dayOfWeek) ? " Today" : "Open today"}
             </span>
-            <span className="text-[#49740B] pl-1">{days[dayOfWeek]}</span>
+            <span className="text-[#49740B] pl-1">
+              {["Sat", "Sun"].includes(dayOfWeek) ? "Closed" : days[dayOfWeek]}
+            </span>
           </p>
           <FontAwesomeIcon
             icon={faCaretDown}
