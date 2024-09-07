@@ -1054,6 +1054,7 @@ export default function FormHandler({
             name="emergency-relationship"
             placeholder="Realtionship"
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["emergency-relationship"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            autoComplete="name"
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
