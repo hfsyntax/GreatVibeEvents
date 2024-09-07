@@ -65,11 +65,11 @@ export default async function Checkout({
     if (!eventPayment?.payment_intent) {
       const token = searchParams.token
       if (token) {
-        const validToken = await validateRecaptcha(token)
-        const loginToken = await validLoginCheckoutToken(token)
-        if (validToken || loginToken) {
-          return <StripeLoader event={event} />
-        }
+        //const validToken = await validateRecaptcha(token)
+        //const loginToken = await validLoginCheckoutToken(token)
+        //if (validToken || loginToken) {
+        return <StripeLoader event={event} />
+        // }
       }
       return (
         <span className="text-red-500">
