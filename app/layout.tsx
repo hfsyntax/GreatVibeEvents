@@ -22,7 +22,7 @@ export default async function RootLayout({
   const session = await getSession()
   return (
     <html lang="en">
-      <body className={`${inter.className}`}>
+      <body className={`${inter.className} xl:!overflow-auto`}>
         <div className={`flex flex-col 2xl:flex-row`}>
           <div
             className={`bg-black border-yellow-500 border-2 box-border w-full h-[90px] 2xl:w-[160px] 2xl:h-auto`}

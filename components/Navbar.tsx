@@ -59,7 +59,7 @@ export default function Navbar({ session }: { session: any }) {
   }, [search])
   return (
     <nav
-      className={`z-10 select-none flex items-center mt-8 w-full ${navbar ? "bg-[#DAFFC0] flex-col fixed !top-0 !mt-0 h-full overflow-auto" : "bg-transparent flex-row top-auto"}  xl:h-fit xl:top-auto xl:!mt-8 xl:relative xl:flex xl:flex-row xl:bg-transparent xl:w-[1232px] ml-auto mr-auto`}
+      className={`z-10 select-none flex items-center mt-8 w-full ${navbar ? "mobile-navbar" : "bg-transparent flex-row top-auto"}  xl:h-fit xl:top-auto xl:!mt-8 xl:relative xl:flex xl:flex-row xl:bg-transparent xl:w-[1232px] ml-auto mr-auto`}
     >
       <Link
         href={"/"}

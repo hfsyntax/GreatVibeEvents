@@ -28,3 +28,17 @@ input:-webkit-autofill:focus {
     background-color 31540000s 0s,
     color 31540000s 0s;
 }
+
+.mobile-navbar {
+  position: fixed;
+  top: 0px !important;
+  margin-top: 0px !important;
+  height: 100%;
+  overflow: auto;
+  flex-direction: column;
+  background-color: #daffc0;
+}
+
+body:has(.mobile-navbar) {
+  overflow: hidden;
+}
