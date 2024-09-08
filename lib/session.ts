@@ -16,6 +16,7 @@ export async function encrypt(payload: any) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
+    .setExpirationTime("60d")
     .sign(key)
 }
 
@@ -82,8 +83,9 @@ export async function login(formData: FormData) {
           type: userType,
           id: userId,
         }
-        const session = await encrypt({ user })
-        cookies().set("session", session, { httpOnly: true })
+        const expires = new Date(Date.now() + 60 * 60 * 24 * 60 * 1000)
+        const session = await encrypt({ user, expires })
+        cookies().set("session", session, { expires, httpOnly: true })
         const headersList = headers()
         const referer = headersList.get("referer")
         if (referer) {
@@ -113,9 +115,6 @@ export async function login(formData: FormData) {
 export async function logout() {
   // Destroy the session
   cookies().delete("session")
-  cookies().delete("error")
-  cookies().delete("edgestore-ctx")
-  cookies().delete("edgestore-token")
   revalidatePath("/")
   return redirect("/")
 }
@@ -133,17 +132,18 @@ export async function updateSession(request: NextRequest) {
       return
     }
     const parsed = await decrypt(session)
+    parsed.expires = new Date(Date.now() + 60 * 60 * 24 * 60 * 1000)
     const res = NextResponse.next()
     res.cookies.set({
       name: "session",
       value: await encrypt(parsed),
       httpOnly: true,
+      expires: parsed.expires,
     })
     return res
   } catch (error: any) {
     if (error?.name === "JWTExpired") {
-      revalidatePath("/")
-      return redirect("/")
+      return NextResponse.redirect(new URL("/", request.url))
     } else {
       throw error
     }

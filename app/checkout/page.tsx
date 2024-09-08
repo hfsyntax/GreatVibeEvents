@@ -66,7 +66,7 @@ export default async function Checkout({
       const token = searchParams.token
       if (token) {
         //const validToken = await validateRecaptcha(token)
-        //const loginToken = await validLoginCheckoutToken(token)
+        const loginToken = await validLoginCheckoutToken(token)
         //if (validToken || loginToken) {
         return <StripeLoader event={event} />
         // }
