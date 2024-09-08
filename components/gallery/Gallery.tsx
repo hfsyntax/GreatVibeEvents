@@ -58,7 +58,7 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
         <div className="flex flex-wrap w-full mt-10">
           {imageUrls.map((imageUrl, index) => (
             <div
-              className={`relative overflow-hidden w-1/2 h-[100px] md:h-[200px] xl:h-[300px] xl:w-1/4 ${showImage && showImage === imageUrl.url && "select-none !w-full !h-screen z-10 bg-gray-500 flex !fixed top-0 left-0 overflow-hidden"}`}
+              className={`relative overflow-hidden w-1/2 h-[100px] md:h-[200px] xl:h-[300px] xl:w-1/4 ${showImage && showImage === imageUrl.url && "single-gallery-image-container"}`}
               key={`img_container_${index + 1}`}
             >
               {showImage && showImage === imageUrl.url && (

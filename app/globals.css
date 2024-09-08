@@ -39,6 +39,29 @@ input:-webkit-autofill:focus {
   background-color: #daffc0;
 }
 
+.single-gallery-image-container {
+  position: fixed !important;
+  top: 0px;
+  left: 0px;
+  width: 100% !important;
+  height: 100vh !important;
+  z-index: 10;
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  background-color: #6b7280;
+}
+
+body:has(.single-gallery-image-container) {
+  overflow: hidden;
+}
+
 body:has(.mobile-navbar) {
   overflow: hidden;
+}
+
+@media (min-width: 1280px) {
+  body:not(:has(.single-gallery-image-container)) {
+    overflow: auto !important;
+  }
 }
