@@ -1,9 +1,8 @@
-import Stripe from "stripe"
 import Link from "next/link"
+import { getProduct, listPrices } from "@/lib/stripe"
 export default async function EventId({ params }: { params: { id: string } }) {
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-    const product = await stripe.products.retrieve(params.id)
+    const product = await getProduct(params.id)
     const eventTime = Number(parseInt(product.metadata.starts))
     if (isNaN(eventTime)) {
       return <span className="text-red-500">Event start time not found</span>
@@ -17,7 +16,7 @@ export default async function EventId({ params }: { params: { id: string } }) {
         </span>
       )
     }
-    const priceList = await stripe.prices.list({
+    const priceList = await listPrices({
       product: params.id,
     })
     return (

@@ -1,4 +1,5 @@
 "use client"
+import type { Stripe } from "stripe"
 import { getEvents } from "@/actions/server"
 import { useRouter } from "next/navigation"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -6,7 +7,6 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { useState, Fragment, FormEvent, useRef } from "react"
 import { Playfair_Display, Open_Sans } from "next/font/google"
 import ReCAPTCHA from "react-google-recaptcha"
-import Stripe from "stripe"
 
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 const openSans = Open_Sans({ subsets: ["latin"] })

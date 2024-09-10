@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { getSession } from "@/lib/session"
 import FormHandler from "@/components/form/FormHandler"
-import Stripe from "stripe"
+import { getPaymentIntent, getProduct } from "@/lib/stripe"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Form",
@@ -19,15 +19,10 @@ export default async function Form({
       return <span className="text-red-500">Invalid form data.</span>
     }
 
-    if (process.env.STRIPE_SECRET_KEY === undefined) {
-      throw new Error("Stripe secret key is not defined!")
-    }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent)
+    const paymentIntent = await getPaymentIntent(payment_intent)
     const userId = Number(paymentIntent.metadata.userId)
     const eventId = paymentIntent.metadata.eventId
-    const event = await stripe.products.retrieve(eventId)
+    const event = await getProduct(eventId)
     const eventDate = Number(event.metadata.starts)
     const formCompleted = paymentIntent.metadata.formCompleted
     if (!userId || !eventId || !eventDate || !formCompleted) {

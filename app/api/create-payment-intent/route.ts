@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import Stripe from "stripe"
 import { getSession } from "@/lib/session"
 import { getStripeCustomerId, storeStripeCustomer } from "@/actions/server"
-
-if (process.env.STRIPE_SECRET_KEY === undefined) {
-  throw new Error("Stripe secret key is not defined!")
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+import { createCustomer, createPaymentIntent, getCustomer } from "@/lib/stripe"
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,31 +16,29 @@ export async function POST(request: NextRequest) {
     const existingCustomerId = await getStripeCustomerId()
     let customer
     if (!existingCustomerId) {
-      customer = await stripe.customers.create({
+      customer = await createCustomer({
         email: session?.user?.email,
         name: `${session?.user?.firstName} ${session?.user?.lastName}`,
       })
     } else {
-      customer = await stripe.customers
-        .retrieve(existingCustomerId)
-        .catch(async (error) => {
-          if (
-            error.type === "StripeInvalidRequestError" &&
-            error.raw.code === "resource_missing"
-          ) {
-            return await stripe.customers.create({
-              email: session?.user?.email,
-              name: `${session?.user?.firstName} ${session?.user?.lastName}`,
-            })
-          } else {
-            throw new Error(error)
-          }
-        })
+      customer = await getCustomer(existingCustomerId).catch(async (error) => {
+        if (
+          error.type === "StripeInvalidRequestError" &&
+          error.raw.code === "resource_missing"
+        ) {
+          return await createCustomer({
+            email: session?.user?.email,
+            name: `${session?.user?.firstName} ${session?.user?.lastName}`,
+          })
+        } else {
+          throw new Error(error)
+        }
+      })
     }
 
     if (!existingCustomerId) storeStripeCustomer(customer.id)
 
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await createPaymentIntent({
       amount: amount,
       currency: "usd",
       customer: customer.id,

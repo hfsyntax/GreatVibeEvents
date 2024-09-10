@@ -1,7 +1,6 @@
-import { convertToSubcurrency } from "@/lib/utils"
 import { getSession } from "@/lib/session"
 import RedirectToForm from "@/components/payment-success/RedirectToForm"
-import Stripe from "stripe"
+import { getPaymentIntent } from "@/lib/stripe"
 export default async function PaymentSuccess({
   searchParams,
 }: {
@@ -13,12 +12,7 @@ export default async function PaymentSuccess({
       return <span className="text-red-500">Invalid payment data.</span>
     }
 
-    if (process.env.STRIPE_SECRET_KEY === undefined) {
-      throw new Error("Stripe secret key is not defined!")
-    }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent)
+    const paymentIntent = await getPaymentIntent(payment_intent)
     const amount = Number(payment)
 
     if (paymentIntent.amount !== amount) {

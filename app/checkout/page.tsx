@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { validLoginCheckoutToken } from "@/actions/server"
 import StripeLoader from "@/components/checkout/StripeLoader"
 import { validateRecaptcha } from "@/actions/user"
-import Stripe from "stripe"
+import { getProduct, getProductPrice } from "@/lib/stripe"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Checkout",
@@ -19,15 +19,13 @@ export default async function Checkout({
       return <span className="text-red-500">Invalid event data.</span>
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
-    const event = await stripe.products.retrieve(searchParams.event_id)
+    const event = await getProduct(searchParams.event_id)
 
     if (!event) {
       return <span className="text-red-500">Event not found.</span>
     }
 
-    const price = await stripe.prices.retrieve(searchParams.price)
+    const price = await getProductPrice(searchParams.price)
 
     if (!price.unit_amount) {
       return <span className="text-red-500">Event price not found.</span>

@@ -3,8 +3,8 @@ import type { FormEntry } from "@/components/form/FormHandler"
 import { getSession } from "@/lib/session"
 import { sql } from "@vercel/postgres"
 import { genSalt, hash } from "bcryptjs"
-import Stripe from "stripe"
 import { revalidatePath } from "next/cache"
+import { getPaymentIntent, updatePaymentIntent } from "@/lib/stripe"
 
 export async function validateRecaptcha(token: string): Promise<boolean> {
   try {
@@ -304,8 +304,7 @@ export async function handleEventForm(
       }
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-    const paymentData = await stripe.paymentIntents.retrieve(paymentIntent)
+    const paymentData = await getPaymentIntent(paymentIntent)
     const eventId = paymentData.metadata?.eventId
     const userId = Number(paymentData.metadata?.userId)
     const eventName = paymentData.metadata?.eventName
@@ -435,7 +434,7 @@ export async function handleEventForm(
     await sql`INSERT INTO event_form_data 
     (user_id, participant_name, participant_gender, participant_birthday, participant_number, participant_email, participant_address, participant_other_disorders, participant_eaosh, participant_dols, participant_r11r, participant_uafd, participant_allergies, participant_medications, participant_bites_or_stings, participant_food_allergies, participant_special_dietary_needs, participant_ctctmt, participant_activity_interests, participant_additional_enjoyment, guardian_name, guardian_relationship, guardian_number, guardian_email, guardian_address, emergency_contact, emergency_relationship, emergency_number, emergency_email, participant_name_confirm, participant_date_signed, guardian_name_confirm, guardian_date_signed, participant_signed, guardian_signed) 
     VALUES (${userId}, ${participantName}, ${participantGender}, ${participantBirthday}, ${participantCell}, ${participantEmail}, ${participantAddress}, ${participantOtherDisorders}, ${participantEaosh}, ${participantDols}, ${participantR11r}, ${participantUafd}, ${participantAllergies}, ${participantMedications}, ${participantBitesOrStrings}, ${participantFoodAllergies}, ${participantDietary}, ${participantCtctmt}, ${participantInterests}, ${participantEnjoyment}, ${guardianName}, ${guardianRelationship}, ${guardianCell}, ${guardianEmail}, ${guardianAddress}, ${emergencyContact}, ${emergencyRelationship}, ${emergencyCell}, ${emergencyEmail}, ${participantNameConfirm}, ${participantDateSigned}, ${guardianNameConfirm}, ${guardianDateSigned}, ${participantSignature}, ${guardianSignature})`
-    await stripe.paymentIntents.update(paymentIntent, {
+    await updatePaymentIntent(paymentIntent, {
       metadata: {
         eventId: eventId,
         eventName: eventName,

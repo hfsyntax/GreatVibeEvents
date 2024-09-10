@@ -1,9 +1,9 @@
 "use server"
-import type { QueryResultRow } from "@vercel/postgres"
+import type { Stripe } from "stripe"
 import { backendClient } from "@/lib/edgestore-server"
 import { sql } from "@vercel/postgres"
 import { getSession } from "@/lib/session"
-import Stripe from "stripe"
+import { getProducts, listPrices } from "@/lib/stripe"
 
 export type GalleryImage = {
   url: string
@@ -56,11 +56,10 @@ export async function getEvents(amount: number) {
   let more = true
   let canRequestMore = false
   let startingAfter: string | undefined = undefined
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   while (more && events.length < amount) {
     const response: Stripe.Response<Stripe.ApiList<Stripe.Product>> =
-      await stripe.products.list({
+      await getProducts({
         limit: 100,
         starting_after: startingAfter,
       })
@@ -84,18 +83,6 @@ export async function getEvents(amount: number) {
     }
   }
   return { events: events, canRequestMore: canRequestMore }
-}
-
-export async function getProductPrices(eventId: string) {
-  try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-    const priceList = await stripe.prices.list({
-      product: eventId,
-    })
-    return priceList.data.map((price) => price.unit_amount)
-  } catch (error: any) {
-    throw error
-  }
 }
 
 export async function getStripeCustomerId(): Promise<string> {
