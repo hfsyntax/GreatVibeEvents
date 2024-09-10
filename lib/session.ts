@@ -92,9 +92,9 @@ export async function login(formData: FormData) {
           const refererUrl = new URL(referer)
           const refererParams = refererUrl.searchParams
           const eventId = refererParams.get("event_id")
-          if (eventId && !isNaN(parseInt(eventId))) {
-            await insertLoginToken(token)
-            return redirect(`/checkout?event_id=${eventId}&token=${token}`)
+          const price = refererParams.get("price")
+          if (eventId && price) {
+            return redirect(`/checkout?event_id=${eventId}&price=${price}`)
           }
         }
         return redirect("/")

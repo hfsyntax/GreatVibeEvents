@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
         eventId: eventId,
         userId: session.user.id,
         eventName: eventName,
+        formCompleted: "false",
       },
     })
     return NextResponse.json({ clientSecret: paymentIntent.client_secret })

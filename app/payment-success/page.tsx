@@ -1,12 +1,11 @@
 import { convertToSubcurrency } from "@/lib/utils"
 import { getSession } from "@/lib/session"
-import { storeEventPayment, getEventPayment } from "@/actions/server"
 import RedirectToForm from "@/components/payment-success/RedirectToForm"
 import Stripe from "stripe"
 export default async function PaymentSuccess({
   searchParams,
 }: {
-  searchParams: { payment?: number; payment_intent?: string }
+  searchParams: { payment?: string; payment_intent?: string }
 }) {
   try {
     const { payment, payment_intent } = searchParams
@@ -20,10 +19,9 @@ export default async function PaymentSuccess({
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent)
+    const amount = Number(payment)
 
-    const paymentInCents = convertToSubcurrency(payment)
-
-    if (paymentIntent.amount !== paymentInCents) {
+    if (paymentIntent.amount !== amount) {
       return <span className="text-red-500">Invalid payment data.</span>
     }
 
@@ -34,14 +32,11 @@ export default async function PaymentSuccess({
       return <span className="text-red-500">Invalid payment data.</span>
     }
 
-    const eventId = Number(paymentIntent.metadata.eventId)
-    const paymentExists = await getEventPayment(eventId)
+    const paymentExists = paymentIntent.metadata.formCompleted === "true"
 
     if (paymentExists) {
       return <span className="text-red-500">Invalid payment data.</span>
     }
-
-    await storeEventPayment(paymentIntent.id, eventId)
 
     const eventName = paymentIntent.metadata.eventName
 
@@ -53,7 +48,7 @@ export default async function PaymentSuccess({
           </h1>
           <h2 className="text-2xl">You successfully sent</h2>
           <div className="bg-white p-2 rounded-md text-black mt-5 text-4xl font-bold">
-            ${payment}
+            ${amount / 100}
           </div>
           <span className="block text-2xl mt-5">
             do not close this window, redirecting to Participation and Release

@@ -15,9 +15,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url))
   } else if (!session && pathname === "/checkout") {
     const eventId = searchParams.get("event_id")
-    if (eventId) {
+    const price = searchParams.get("price")
+    if (eventId && price) {
       return NextResponse.redirect(
-        new URL(`/login?redirect=checkout&event_id=${eventId}`, request.url)
+        new URL(
+          `/login?redirect=checkout&event_id=${eventId}&price=${price}`,
+          request.url
+        )
       )
     }
   } else {

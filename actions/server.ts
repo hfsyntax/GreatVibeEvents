@@ -3,6 +3,7 @@ import type { QueryResultRow } from "@vercel/postgres"
 import { backendClient } from "@/lib/edgestore-server"
 import { sql } from "@vercel/postgres"
 import { getSession } from "@/lib/session"
+import Stripe from "stripe"
 
 export type GalleryImage = {
   url: string
@@ -51,33 +52,48 @@ export async function getGalleryImageUrls(
 }
 
 export async function getEvents(amount: number) {
-  try {
-    const events = await sql`SELECT * FROM events ORDER BY date DESC`
-    return events.rows
-  } catch (error) {
-    return [] as Array<QueryResultRow>
+  let events: Stripe.Product[] = []
+  let more = true
+  let canRequestMore = false
+  let startingAfter: string | undefined = undefined
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+  while (more && events.length < amount) {
+    const response: Stripe.Response<Stripe.ApiList<Stripe.Product>> =
+      await stripe.products.list({
+        limit: 100,
+        starting_after: startingAfter,
+      })
+
+    const filteredProducts = response.data.filter(
+      (product) => product.metadata.type === "Event Ticket"
+    )
+
+    events = events.concat(filteredProducts)
+
+    more = response.has_more
+    startingAfter =
+      response.data.length > 0
+        ? response.data[response.data.length - 1].id
+        : undefined
+
+    if (events.length >= amount) {
+      canRequestMore = more || filteredProducts.length + events.length > amount
+      events = events.slice(0, amount)
+      more = false
+    }
   }
+  return { events: events, canRequestMore: canRequestMore }
 }
 
-export async function getEventById(id: string) {
+export async function getProductPrices(eventId: string) {
   try {
-    const events = await sql`SELECT * from events WHERE id = ${id}`
-    return events.rows?.[0]
-  } catch (error) {
-    throw error
-  }
-}
-
-export async function getEventPayment(
-  eventId: number
-): Promise<QueryResultRow> {
-  try {
-    const customerId = await getStripeCustomerId()
-    const paymentIntent =
-      await sql`SELECT payment_intent, form_completed FROM event_payments WHERE customer_id = ${customerId} AND event_id = ${eventId}`
-    return paymentIntent.rows?.[0]
-  } catch (error) {
-    console.error(error)
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    const priceList = await stripe.prices.list({
+      product: eventId,
+    })
+    return priceList.data.map((price) => price.unit_amount)
+  } catch (error: any) {
     throw error
   }
 }
@@ -99,20 +115,6 @@ export async function storeStripeCustomer(customerId: string) {
     const session = await getSession()
     const userId = session?.user?.id
     await sql`INSERT INTO customers (customer_id, user_id) VALUES (${customerId}, ${userId}) ON CONFLICT (customer_id, user_id) DO NOTHING`
-  } catch (error) {
-    throw error
-  }
-}
-
-export async function storeEventPayment(
-  paymentIntent: string,
-  eventId: number
-) {
-  try {
-    const customerId = await getStripeCustomerId()
-    const session = await getSession()
-    const userId = session?.user?.id
-    await sql`INSERT INTO event_payments (payment_intent, customer_id, event_id) VALUES (${paymentIntent}, ${customerId}, ${eventId}) ON CONFLICT (customer_id, event_id) DO NOTHING`
   } catch (error) {
     throw error
   }

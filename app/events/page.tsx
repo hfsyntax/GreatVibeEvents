@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Events() {
-  const events = await getEvents(8)
+  const initialEvents = await getEvents(8)
   return (
     <>
       <span
@@ -23,7 +23,7 @@ export default async function Events() {
       >
         Calendar of fun, inclusive and exciting events
       </span>
-      <Calendar initalEvents={events} />
+      {<Calendar initalEvents={initialEvents} />}
       <span
         className={`text-[#49740B] text-lg ${openSans.className} mt-10 ml-3 xl:ml-0`}
       >

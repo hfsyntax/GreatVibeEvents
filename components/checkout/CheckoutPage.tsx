@@ -53,7 +53,7 @@ export default function CheckoutPage({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        amount: convertToSubcurrency(amount),
+        amount: amount,
         eventId: eventId,
         eventName: eventName,
       }),
@@ -86,7 +86,7 @@ export default function CheckoutPage({
         disabled={!stripe || loading}
         className="text-white w-full p-5 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
       >
-        {!loading ? `Pay ${amount}` : "Processing..."}
+        {!loading ? `Pay $${amount / 100}` : "Processing..."}
       </button>
     </form>
   )

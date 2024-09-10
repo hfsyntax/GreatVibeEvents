@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { getEventById, getEventPayment } from "@/actions/server"
 import { getSession } from "@/lib/session"
 import FormHandler from "@/components/form/FormHandler"
 import Stripe from "stripe"
@@ -27,43 +26,33 @@ export default async function Form({
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent)
     const userId = Number(paymentIntent.metadata.userId)
+    const eventId = paymentIntent.metadata.eventId
+    const event = await stripe.products.retrieve(eventId)
+    const eventDate = Number(event.metadata.starts)
+    const formCompleted = paymentIntent.metadata.formCompleted
+    if (!userId || !eventId || !eventDate || !formCompleted) {
+      return <span className="text-red-500">Invalid form data.</span>
+    }
+
     const session = await getSession()
 
     if (userId !== session?.user?.id) {
       return <span className="text-red-500">Invalid form data.</span>
     }
 
-    const eventId = paymentIntent.metadata.eventId
-    const event = await getEventById(eventId)
-    if (!event) {
-      return <span className="text-red-500">Event not found.</span>
+    const now = Date.now()
+
+    if (formCompleted === "true") {
+      return (
+        <span className="text-green-500">You have completed this form.</span>
+      )
     }
 
-    const today = new Date()
-    const eventDate = new Date(event.date)
-    const timeFormatter = new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      hour12: false,
-    })
-    const currentTime = timeFormatter.format(today)
-
-    if (
-      today > eventDate ||
-      (today === eventDate && currentTime >= event.start_time)
-    ) {
+    if (now > eventDate) {
       return (
         <span className="text-red-500">
           Form cannot be completed because the event has already started.
         </span>
-      )
-    }
-
-    const eventPayment = await getEventPayment(event.id)
-    if (eventPayment?.form_completed) {
-      return (
-        <span className="text-green-500">You have completed this form.</span>
       )
     }
 

@@ -3,7 +3,6 @@ import type { FormEntry } from "@/components/form/FormHandler"
 import { getSession } from "@/lib/session"
 import { sql } from "@vercel/postgres"
 import { genSalt, hash } from "bcryptjs"
-import { getEventById } from "@/actions/server"
 import Stripe from "stripe"
 import { revalidatePath } from "next/cache"
 
@@ -309,6 +308,7 @@ export async function handleEventForm(
     const paymentData = await stripe.paymentIntents.retrieve(paymentIntent)
     const eventId = paymentData.metadata?.eventId
     const userId = Number(paymentData.metadata?.userId)
+    const eventName = paymentData.metadata?.eventName
     if (!eventId)
       return {
         invalid_eventid: "Error: event id not found for payment.",
@@ -318,13 +318,7 @@ export async function handleEventForm(
         no_userid: "Error: user id not found for payment.",
       }
     }
-    const event = await getEventById(eventId)
 
-    if (!event || event?.id !== Number(eventId)) {
-      return {
-        invalid_event_id: "Error: event id not found for payment.",
-      }
-    }
     if (session?.user?.id !== userId) {
       return { no_user_id: "Error: not authenticated." }
     }
@@ -441,8 +435,14 @@ export async function handleEventForm(
     await sql`INSERT INTO event_form_data 
     (user_id, participant_name, participant_gender, participant_birthday, participant_number, participant_email, participant_address, participant_other_disorders, participant_eaosh, participant_dols, participant_r11r, participant_uafd, participant_allergies, participant_medications, participant_bites_or_stings, participant_food_allergies, participant_special_dietary_needs, participant_ctctmt, participant_activity_interests, participant_additional_enjoyment, guardian_name, guardian_relationship, guardian_number, guardian_email, guardian_address, emergency_contact, emergency_relationship, emergency_number, emergency_email, participant_name_confirm, participant_date_signed, guardian_name_confirm, guardian_date_signed, participant_signed, guardian_signed) 
     VALUES (${userId}, ${participantName}, ${participantGender}, ${participantBirthday}, ${participantCell}, ${participantEmail}, ${participantAddress}, ${participantOtherDisorders}, ${participantEaosh}, ${participantDols}, ${participantR11r}, ${participantUafd}, ${participantAllergies}, ${participantMedications}, ${participantBitesOrStrings}, ${participantFoodAllergies}, ${participantDietary}, ${participantCtctmt}, ${participantInterests}, ${participantEnjoyment}, ${guardianName}, ${guardianRelationship}, ${guardianCell}, ${guardianEmail}, ${guardianAddress}, ${emergencyContact}, ${emergencyRelationship}, ${emergencyCell}, ${emergencyEmail}, ${participantNameConfirm}, ${participantDateSigned}, ${guardianNameConfirm}, ${guardianDateSigned}, ${participantSignature}, ${guardianSignature})`
-
-    await sql`UPDATE event_payments SET form_completed = true WHERE payment_intent = ${paymentIntent}`
+    await stripe.paymentIntents.update(paymentIntent, {
+      metadata: {
+        eventId: eventId,
+        eventName: eventName,
+        userId: userId,
+        formCompleted: "true",
+      },
+    })
     revalidatePath(`/form?payment_intent=${paymentIntent}`)
     return {}
   } catch (error: any) {

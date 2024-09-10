@@ -1,14 +1,8 @@
 import type { Metadata } from "next"
-import {
-  getEventById,
-  getEventPayment,
-  validLoginCheckoutToken,
-} from "@/actions/server"
-import { getSession } from "@/lib/session"
-import Link from "next/link"
+import { validLoginCheckoutToken } from "@/actions/server"
 import StripeLoader from "@/components/checkout/StripeLoader"
 import { validateRecaptcha } from "@/actions/user"
-import { redirect } from "next/navigation"
+import Stripe from "stripe"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Checkout",
@@ -18,91 +12,52 @@ export const metadata: Metadata = {
 export default async function Checkout({
   searchParams,
 }: {
-  searchParams: { event_id?: string; token?: string }
+  searchParams: { event_id?: string; token?: string; price?: string }
 }) {
   try {
-    if (!searchParams.event_id) {
+    if (!searchParams.event_id || !searchParams.price) {
       return <span className="text-red-500">Invalid event data.</span>
     }
 
-    const event = await getEventById(searchParams.event_id)
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+    const event = await stripe.products.retrieve(searchParams.event_id)
 
     if (!event) {
       return <span className="text-red-500">Event not found.</span>
     }
 
-    const today = new Date()
-    const eventDate = new Date(event.date)
-    const timeFormatter = new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      hour12: false,
-    })
-    const currentTime = timeFormatter.format(today)
+    const price = await stripe.prices.retrieve(searchParams.price)
 
-    if (
-      today > eventDate ||
-      (today === eventDate && currentTime >= event.start_time)
-    ) {
+    if (!price.unit_amount) {
+      return <span className="text-red-500">Event price not found.</span>
+    }
+
+    if (!price.nickname) {
+      return <span className="text-red-500">Price name not found.</span>
+    }
+
+    const now = Date.now()
+    const eventDate = Number(event.metadata.starts)
+    const eventEnds = Number(event.metadata.ends)
+    const eventAddress = event.metadata.address
+
+    if (now > eventDate) {
       return (
         <span className="text-red-500">
           Event ticket is not available for purchase.
         </span>
       )
     }
-
-    const session = await getSession()
-
-    if (!session) {
-      return redirect(
-        `/login?redirect=checkout&event_id=${searchParams.event_id}`
-      )
-    }
-
-    const eventPayment = await getEventPayment(event.id)
-
-    if (!eventPayment?.payment_intent) {
-      const token = searchParams.token
-      if (token) {
-        //const validToken = await validateRecaptcha(token)
-        const loginToken = await validLoginCheckoutToken(token)
-        //if (validToken || loginToken) {
-        return <StripeLoader event={event} />
-        // }
-      }
-      return (
-        <span className="text-red-500">
-          Unauthenticated, please select the event from the events page.
-        </span>
-      )
-    }
-
-    if (process.env.STRIPE_SECRET_KEY === undefined) {
-      throw new Error("Stripe secret key is not defined!")
-    }
-
-    if (eventPayment?.form_completed) {
-      return (
-        <span className="text-green-500">
-          You already have a ticket for this event.
-        </span>
-      )
-    }
-
     return (
-      <>
-        <span className="text-2xl mr-auto ml-auto">
-          You have already have a ticket for this event but still need to
-          complete the form.
-        </span>
-        <Link
-          href={`/form?payment_intent=${eventPayment?.payment_intent}`}
-          className="bg-black text-white p-3 w-fit mr-auto ml-auto mt-3"
-        >
-          COMPLETE PARTICIPATION AND RELEASE FORM
-        </Link>
-      </>
+      <StripeLoader
+        name={event.name}
+        starts={eventDate}
+        ends={eventEnds}
+        address={eventAddress}
+        packageName={price.nickname}
+        amount={price.unit_amount}
+      />
     )
   } catch (error: any) {
     console.error(error)
