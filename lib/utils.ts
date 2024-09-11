@@ -1,3 +1,7 @@
+export function normalizeDate(date: Date) {
+  return new Date(date.toISOString().split("T")[0])
+}
+
 export function convertToSubcurrency(amount: number, factor = 100) {
   return Math.round(amount * factor)
 }

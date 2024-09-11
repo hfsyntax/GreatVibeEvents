@@ -5,6 +5,7 @@ import SignatureCanvas from "react-signature-canvas"
 import ReCAPTCHA from "react-google-recaptcha"
 import { useState, useRef, FormEvent, ChangeEvent, useEffect } from "react"
 import { handleEventForm } from "@/actions/user"
+import { normalizeDate } from "@/lib/utils"
 
 export type FormEntry = {
   [key: string]: string
@@ -118,6 +119,9 @@ export default function FormHandler({
 
   const checkboxes = useRef<Array<HTMLInputElement | null>>([])
 
+  const validEmail =
+    /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+
   const handleValueFocus = (
     e: FocusEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -127,9 +131,82 @@ export default function FormHandler({
       if (!value && formValues["participant-eaosh"] === "yes") {
         setErrors({
           ...errors,
-          [name]: String(
-            elementRefs["participant-eaosh"].current?.ariaRoleDescription
-          ),
+          [name]: `${elementRefs["participant-eaosh"].current?.ariaDescription} is required`,
+        })
+      } else {
+        const currentErrors = { ...errors }
+        if (currentErrors[name]) {
+          delete currentErrors[name]
+          setErrors(currentErrors)
+        }
+      }
+    } else if (
+      ["participant-cell", "guardian-number", "emergency-number"].includes(name)
+    ) {
+      if (isNaN(parseInt(value))) {
+        setErrors({
+          ...errors,
+          [name]: `${elementRefs[name as keyof ElementRefs].current?.ariaDescription} must be 20 numbers or less.`,
+        })
+      } else {
+        const currentErrors = { ...errors }
+        if (currentErrors[name]) {
+          delete currentErrors[name]
+          setErrors(currentErrors)
+        }
+      }
+    } else if (
+      ["participant-email", "guardian-email", "emergency-email"].includes(name)
+    ) {
+      if (!value.trim().match(validEmail)) {
+        setErrors({
+          ...errors,
+          [name]: `${elementRefs[name as keyof ElementRefs].current?.ariaDescription} must be a valid email.`,
+        })
+      } else {
+        const currentErrors = { ...errors }
+        if (currentErrors[name]) {
+          delete currentErrors[name]
+          setErrors(currentErrors)
+        }
+      }
+    } else if (name === "participant-name-confirm") {
+      if (value.trim() !== formValues["participant-name"]) {
+        setErrors({
+          ...errors,
+          [name]: `${elementRefs["participant-name-confirm"].current?.ariaDescription} must match Participant First/Last Name.`,
+        })
+      } else {
+        const currentErrors = { ...errors }
+        if (currentErrors[name]) {
+          delete currentErrors[name]
+          setErrors(currentErrors)
+        }
+      }
+    } else if (name === "guardian-name-confirm") {
+      if (value.trim() !== formValues["guardian-name"]) {
+        setErrors({
+          ...errors,
+          [name]: `${elementRefs["guardian-name-confirm"].current?.ariaDescription} must match Guardian First/Last Name.`,
+        })
+      } else {
+        const currentErrors = { ...errors }
+        if (currentErrors[name]) {
+          delete currentErrors[name]
+          setErrors(currentErrors)
+        }
+      }
+    } else if (
+      ["participant-date-signed", "guardian-date-signed"].includes(name) &&
+      value
+    ) {
+      if (
+        normalizeDate(new Date(value.trim())).getTime() !==
+        normalizeDate(new Date()).getTime()
+      ) {
+        setErrors({
+          ...errors,
+          [name]: `${elementRefs[name as keyof ElementRefs].current?.ariaDescription} must be todays date.`,
         })
       } else {
         const currentErrors = { ...errors }
@@ -141,9 +218,7 @@ export default function FormHandler({
     } else if (!value) {
       setErrors({
         ...errors,
-        [name]: String(
-          elementRefs[name as keyof ElementRefs].current?.ariaDescription
-        ),
+        [name]: `${elementRefs[name as keyof ElementRefs].current?.ariaDescription} is required.`,
       })
     } else {
       const currentErrors = { ...errors }
@@ -166,9 +241,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[0]?.checked) {
         setErrors({
           ...errors,
-          ["participant-eaosh"]: String(
-            elementRefs["participant-eaosh"].current?.ariaDescription
-          ),
+          ["participant-eaosh"]: `${elementRefs["participant-eaosh"].current?.ariaDescription} is required`,
         })
       } else {
         const formErrors = { ...errors }
@@ -195,9 +268,7 @@ export default function FormHandler({
         }
         setErrors({
           ...formErrors,
-          ["participant-eaosh"]: String(
-            elementRefs["participant-eaosh"].current?.ariaDescription
-          ),
+          ["participant-eaosh"]: `${elementRefs["participant-eaosh"].current?.ariaDescription} is required.`,
         })
       } else {
         if (!value) {
@@ -227,9 +298,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[2]?.checked) {
         setErrors({
           ...errors,
-          ["participant-r11r"]: String(
-            elementRefs["participant-r11r"].current?.ariaDescription
-          ),
+          ["participant-r11r"]: `${elementRefs["participant-r11r"].current?.ariaDescription} is required.`,
         })
       } else {
         if (errors["participant-r11r"]) {
@@ -249,9 +318,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[3]?.checked) {
         setErrors({
           ...errors,
-          ["participant-r11r"]: String(
-            elementRefs["participant-r11r"].current?.ariaDescription
-          ),
+          ["participant-r11r"]: `${elementRefs["participant-r11r"].current?.ariaDescription} is required.`,
         })
       } else {
         if (errors["participant-r11r"]) {
@@ -271,9 +338,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[4]?.checked) {
         setErrors({
           ...errors,
-          ["participant-uafd"]: String(
-            elementRefs["participant-address"].current?.ariaDescription
-          ),
+          ["participant-uafd"]: `${elementRefs["participant-address"].current?.ariaDescription} is required.`,
         })
       } else {
         if (errors["participant-uafd"]) {
@@ -293,9 +358,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[5]?.checked) {
         setErrors({
           ...errors,
-          ["participant-uafd"]: String(
-            elementRefs["participant-uafd"].current?.ariaDescription
-          ),
+          ["participant-uafd"]: `${elementRefs["participant-uafd"].current?.ariaDescription} is required.`,
         })
       } else {
         if (errors["participant-uafd"]) {
@@ -315,9 +378,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[9]?.checked) {
         setErrors({
           ...errors,
-          ["participant-allergies"]: String(
-            elementRefs["participant-allergies"].current?.ariaDescription
-          ),
+          ["participant-allergies"]: `${elementRefs["participant-allergies"].current?.ariaDescription} is required.`,
         })
       } else {
         if (errors["participant-allergies"]) {
@@ -337,9 +398,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[8]?.checked) {
         setErrors({
           ...errors,
-          ["participant-allergies"]: String(
-            elementRefs["participant-allergies"].current?.ariaDescription
-          ),
+          ["participant-allergies"]: `${elementRefs["participant-allergies"].current?.ariaDescription} is required.`,
         })
       } else {
         if (errors["participant-allergies"]) {
@@ -359,9 +418,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[6]?.checked) {
         setErrors({
           ...errors,
-          ["participant-ctctmt"]: String(
-            elementRefs["participant-ctctmt"].current?.ariaDescription
-          ),
+          ["participant-ctctmt"]: `${elementRefs["participant-ctctmt"].current?.ariaDescription} is required`,
         })
       } else {
         if (errors["participant-ctctmt"]) {
@@ -381,9 +438,7 @@ export default function FormHandler({
       if (!value && !checkboxes.current[7]?.checked) {
         setErrors({
           ...errors,
-          ["participant-ctctmt"]: String(
-            elementRefs["participant-ctctmt"].current?.ariaDescription
-          ),
+          ["participant-ctctmt"]: `${elementRefs["participant-ctctmt"].current?.ariaDescription} is required.`,
         })
       } else {
         if (errors["participant-ctctmt"]) {
@@ -458,8 +513,121 @@ export default function FormHandler({
         }
         if (elementRefs[key as keyof ElementRefs]) {
           formErrors[key] =
-            `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} is required`
+            `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} ${["participant-cell", "guardian-number", "emergency-number"].includes(key) ? "must be 20 numbers or less" : "is required"}`
         }
+      } else if (
+        [
+          "participant-food-allergies",
+          "participant-special-dietary-needs",
+          "guardian-name",
+          "emergency-contact",
+          "participant-name-confirm",
+          "guardian-name-confirm",
+          "participant-name",
+          "guardian-address",
+          "participant-address",
+        ].includes(key) &&
+        value.trim().length > 255
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be 255 characters or less.`
+      } else if (
+        [
+          "participant-other-disorders",
+          "participant-medications",
+          "participant-activity-interests",
+          "participant-additional-enjoyment",
+        ].includes(key) &&
+        value.trim().length > 500
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be 500 characters or less.`
+      } else if (
+        ["guardian-number", "emergency-number", "participant-number"].includes(
+          key
+        ) &&
+        (value.trim().length > 20 || isNaN(parseInt(value)))
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be 20 numbers or less.`
+      } else if (
+        [
+          "participant-eaosh",
+          "participant-r11r",
+          "participant-uafd",
+          "participant-bites-or-stings",
+          "participant-ctctmt",
+        ].includes(key) &&
+        value.trim().length > 3
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be 3 characters or less.`
+      } else if (
+        [
+          "participant-date-signed",
+          "participant-dols",
+          "guardian-date-signed",
+          "participant-birthday",
+        ].includes(key) &&
+        (value.trim().length != 10 ||
+          !(new Date(value.trim()) instanceof Date) ||
+          isNaN(new Date(value.trim()).valueOf()))
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be a 10 character date.`
+      } else if (
+        ["emergency-email", "guardian-email", "participant-email"].includes(key)
+      ) {
+        if (!value.trim().match(validEmail)) {
+          formErrors[key] =
+            `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be a valid email.`
+        } else if (value.trim().length > 255) {
+          formErrors[key] =
+            `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be 255 characters or less.`
+        }
+      } else if (
+        ["emergency-relationship", "guardian-relationship"].includes(key) &&
+        value.trim().length > 64
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be 64 characters or less.`
+      } else if (
+        ["participant-signed", "guardian-signed"].includes(key) &&
+        value.trim() !== "yes"
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be yes.`
+      } else if (
+        key === "participant-allergies" &&
+        !["latex", "no"].includes(value.trim())
+      ) {
+        formErrors[key] =
+          `${elementRefs["participant-allergies"].current?.ariaDescription} must be either latex or no.`
+      } else if (
+        key === "participant-gender" &&
+        !["male", "female", "other"].includes(value.trim())
+      ) {
+        formErrors[key] =
+          `${elementRefs["participant-gender"].current?.ariaDescription} must be male, female or other.`
+      } else if (key === "participant-name-confirm") {
+        console.log(value.trim() !== formValues["participant-name"])
+        if (value.trim() !== formValues["participant-name"]) {
+          formErrors[key] =
+            `${elementRefs["participant-name-confirm"].current?.ariaDescription} must match Particpant First/Last Name.`
+        }
+      } else if (key === "guardian-name-confirm") {
+        console.log(value.trim() !== formValues["guardian-name"])
+        if (value.trim() !== formValues["guardian-name"]) {
+          formErrors[key] =
+            `${elementRefs["guardian-name-confirm"].current?.ariaDescription} must match Guardian First/Last Name.`
+        }
+      } else if (
+        ["participant-date-signed", "guardian-date-signed"].includes(key) &&
+        normalizeDate(new Date(value.trim())).getTime() !==
+          normalizeDate(new Date()).getTime()
+      ) {
+        formErrors[key] =
+          `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be todays date.`
       }
     }
 
@@ -498,7 +666,8 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Participant First/Last Name"
+            aria-description="Participant First/Last Name"
+            maxLength={255}
             ref={elementRefs["participant-name"]}
           />
           {errors["participant-name"] && (
@@ -511,7 +680,7 @@ export default function FormHandler({
             name="participant-gender"
             className={`lg:flex-1 w-full outline-none border box-border h-[50px] ${errors["participant-gender"] ? "border-red-500 focus:border-red-500" : "focus:border-black"}`}
             defaultValue={"select-participant-gender"}
-            aria-describedby="Participant Gender"
+            aria-description="Participant Gender"
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
@@ -540,7 +709,8 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Participant Date of Birth"
+            aria-description="Participant Date of Birth"
+            maxLength={10}
             ref={elementRefs["participant-birthday"]}
           />
           {errors["participant-birthday"] && (
@@ -556,14 +726,16 @@ export default function FormHandler({
             placeholder="Cell #:"
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] ${errors["participant-cell"] ? "border-red-500" : "border-gray-200 focus:border-black"} box-border `}
             autoComplete="tel"
-            aria-describedby="Participant Cell #"
+            aria-description="Participant Cell #"
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
             ref={elementRefs["participant-cell"]}
           />
           {errors["participant-cell"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be 20 numbers or less
+            </span>
           )}
         </div>
       </div>
@@ -576,14 +748,17 @@ export default function FormHandler({
             placeholder=" Email:"
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] ${errors["participant-email"] ? "border-red-500" : "border-gray-200 focus:border-black"}  box-border`}
             autoComplete="email"
-            aria-describedby="Participant Email"
+            aria-description="Participant Email"
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
+            maxLength={255}
             ref={elementRefs["participant-email"]}
           />
           {errors["participant-email"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be a valid email
+            </span>
           )}
         </div>
       </div>
@@ -596,10 +771,11 @@ export default function FormHandler({
             placeholder="Address:"
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["participant-address"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="street-address"
-            aria-describedby="Participant address"
+            aria-description="Participant address"
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
+            maxLength={255}
             ref={elementRefs["participant-address"]}
           />
           {errors["participant-address"] && (
@@ -643,6 +819,7 @@ export default function FormHandler({
           name="participant-other-disorders"
           placeholder="Other, please specify:"
           className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          maxLength={500}
           onChange={handleValueChange}
         />
       </div>
@@ -659,7 +836,7 @@ export default function FormHandler({
           <input
             type="checkbox"
             name="participant-yes-eaosh"
-            aria-describedby="Participant yes to Epilepsy and/or Seizure History"
+            aria-description="Participant yes to Epilepsy and/or Seizure History"
             onChange={handleValueChange}
             ref={(element) => {
               checkboxes.current[0] = element
@@ -669,7 +846,7 @@ export default function FormHandler({
           <input
             type="checkbox"
             name="participant-no-eaosh"
-            aria-describedby="Participant no to Epilepsy and/or Seizure History"
+            aria-description="Participant no to Epilepsy and/or Seizure History"
             onChange={handleValueChange}
             ref={(element) => {
               checkboxes.current[1] = element
@@ -692,6 +869,7 @@ export default function FormHandler({
               aria-description="Participant date of last seizure"
               onBlur={handleValueFocus}
               onChange={handleValueChange}
+              maxLength={10}
               ref={elementRefs["participant-dols"]}
             />
             {errors["participant-dols"] && (
@@ -718,7 +896,7 @@ export default function FormHandler({
           <input
             type="checkbox"
             name="participant-yes-r11r"
-            aria-describedby="Participant yes to require 1:1 attendant ratio"
+            aria-description="Participant yes to require 1:1 attendant ratio"
             onChange={handleValueChange}
             ref={(element) => {
               checkboxes.current[2] = element
@@ -728,7 +906,7 @@ export default function FormHandler({
           <input
             type="checkbox"
             name="participant-no-r11r"
-            aria-describedby="Participant no to require 1:1 attendant ratio"
+            aria-description="Participant no to require 1:1 attendant ratio"
             onChange={handleValueChange}
             ref={(element) => {
               checkboxes.current[3] = element
@@ -750,7 +928,7 @@ export default function FormHandler({
           <input
             type="checkbox"
             name="participant-yes-uafd"
-            aria-describedby="Participant yes to understand and follow directions"
+            aria-description="Participant yes to understand and follow directions"
             onChange={handleValueChange}
             ref={(element) => {
               checkboxes.current[4] = element
@@ -766,7 +944,7 @@ export default function FormHandler({
           <input
             type="checkbox"
             name="participant-no-uafd"
-            aria-describedby="Participant yes to understand and follow directions"
+            aria-description="Participant yes to understand and follow directions"
             onChange={handleValueChange}
             ref={(element) => {
               checkboxes.current[5] = element
@@ -788,7 +966,7 @@ export default function FormHandler({
         <input
           type="checkbox"
           name="participant-nka"
-          aria-describedby="Participant no known allergies"
+          aria-description="Participant no known allergies"
           onChange={handleValueChange}
           ref={(element) => {
             checkboxes.current[8] = element
@@ -798,7 +976,7 @@ export default function FormHandler({
         <input
           type="checkbox"
           name="participant-latex"
-          aria-describedby="Participant latex"
+          aria-description="Participant latex"
           onChange={handleValueChange}
           ref={(element) => {
             checkboxes.current[9] = element
@@ -817,6 +995,7 @@ export default function FormHandler({
           name="participant-medications"
           placeholder="Medications, please list:"
           className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          maxLength={500}
           onChange={handleValueChange}
         />
       </div>
@@ -839,6 +1018,7 @@ export default function FormHandler({
           name="participant-food-allergies"
           placeholder="Food Allergies:"
           className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          maxLength={255}
           onChange={handleValueChange}
         />
       </div>
@@ -851,6 +1031,7 @@ export default function FormHandler({
           name="participant-special-dietary-needs"
           placeholder="List any special dietary needs:"
           className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          maxLength={255}
           onChange={handleValueChange}
         />
       </div>
@@ -868,7 +1049,7 @@ export default function FormHandler({
         <input
           type="checkbox"
           name="participant-yes-ctctmt"
-          aria-describedby="Participant capacity to consent to medical treatment"
+          aria-description="Participant capacity to consent to medical treatment"
           onChange={handleValueChange}
           ref={(element) => {
             checkboxes.current[6] = element
@@ -878,7 +1059,7 @@ export default function FormHandler({
         <input
           type="checkbox"
           name="participant-no-ctctmt"
-          aria-describedby="Participant no capacity to consent to medical treatment"
+          aria-description="Participant no capacity to consent to medical treatment"
           onChange={handleValueChange}
           ref={(element) => {
             checkboxes.current[7] = element
@@ -897,6 +1078,7 @@ export default function FormHandler({
           name="participant-activity-interests"
           placeholder="Please list all activities the participant enjoys:"
           className="lg:flex-1 w-full pl-3 h-[200px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          maxLength={500}
           onChange={handleValueChange}
         />
       </div>
@@ -909,6 +1091,7 @@ export default function FormHandler({
           name="participant-additional-enjoyment"
           placeholder="Please provide additional information to enhance participant's enjoyment and positive experience:"
           className="flex-1 pl-3 h-[200px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          maxLength={500}
           onChange={handleValueChange}
         />
       </div>
@@ -943,7 +1126,8 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Guardian First & Last Name"
+            aria-description="Guardian First & Last Name"
+            maxLength={255}
             ref={elementRefs["guardian-name"]}
           />
           {errors["guardian-name"] && (
@@ -962,7 +1146,8 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Guardian relationship"
+            aria-description="Guardian relationship"
+            maxLength={64}
             ref={elementRefs["guardian-relationship"]}
           />
           {errors["guardian-relationship"] && (
@@ -982,11 +1167,14 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Guardian cell #"
+            aria-description="Guardian cell #"
+            maxLength={20}
             ref={elementRefs["guardian-number"]}
           />
           {errors["guardian-number"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be 20 numbers or less
+            </span>
           )}
         </div>
         <label className="ml-2 mr-2 whitespace-nowrap">Email</label>
@@ -1000,11 +1188,14 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Guardian email"
+            aria-description="Guardian email"
+            maxLength={255}
             ref={elementRefs["guardian-email"]}
           />
           {errors["guardian-email"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be a valid email
+            </span>
           )}
         </div>
       </div>
@@ -1020,7 +1211,8 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Guardian address"
+            aria-description="Guardian address"
+            maxLength={255}
             ref={elementRefs["guardian-address"]}
           />
           {errors["guardian-address"] && (
@@ -1040,7 +1232,8 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Emergency contact"
+            aria-description="Emergency contact"
+            maxLength={255}
             ref={elementRefs["emergency-contact"]}
           />
           {errors["emergency-contact"] && (
@@ -1058,7 +1251,8 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Emergency relationship"
+            aria-description="Emergency relationship"
+            maxLength={64}
             ref={elementRefs["emergency-relationship"]}
           />
           {errors["emergency-relationship"] && (
@@ -1076,13 +1270,16 @@ export default function FormHandler({
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["emergency-number"] ? "border-red-500" : "border-gray-200 focus:border-black"} `}
             autoComplete="tel"
             required
-            aria-describedby="Emergency cell #"
+            aria-description="Emergency cell #"
             onBlur={handleValueFocus}
             onChange={handleValueChange}
+            maxLength={20}
             ref={elementRefs["emergency-number"]}
           />
           {errors["emergency-number"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be 20 numbers or less
+            </span>
           )}
         </div>
         <label className="mr-2 whitespace-nowrap">Email:</label>
@@ -1094,13 +1291,16 @@ export default function FormHandler({
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["emergency-email"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="email"
             required
-            aria-describedby="Emergency email"
+            aria-description="Emergency email"
             onBlur={handleValueFocus}
             onChange={handleValueChange}
+            maxLength={255}
             ref={elementRefs["emergency-email"]}
           />
           {errors["emergency-email"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be a valid email
+            </span>
           )}
         </div>
       </div>
@@ -1191,11 +1391,14 @@ export default function FormHandler({
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
-            aria-describedby="Name of participant before signature"
+            aria-description="Name of participant before signature"
+            maxLength={255}
             ref={elementRefs["participant-name-confirm"]}
           />
           {errors["participant-name-confirm"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must match Participant First/Last Name.
+            </span>
           )}
         </div>
       </div>
@@ -1237,13 +1440,16 @@ export default function FormHandler({
             placeholder="Date of Birth(mm/dd/yyyy):"
             className={`flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["participant-date-signed"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             required
-            aria-describedby="Paricipant date signed"
+            aria-description="Paricipant date signed"
             onBlur={handleValueFocus}
             onChange={handleValueChange}
+            maxLength={10}
             ref={elementRefs["participant-date-signed"]}
           />
           {errors["participant-date-signed"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be today todays date
+            </span>
           )}
         </div>
       </div>
@@ -1274,13 +1480,16 @@ export default function FormHandler({
             className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["guardian-name-confirm"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="name"
             required
-            aria-describedby="Name of guardian before signature"
+            aria-description="Name of guardian before signature"
             onBlur={handleValueFocus}
             onChange={handleValueChange}
+            maxLength={255}
             ref={elementRefs["guardian-name-confirm"]}
           />
           {errors["guardian-name-confirm"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must match Guardian First/Last Name.
+            </span>
           )}
         </div>
       </div>
@@ -1321,13 +1530,16 @@ export default function FormHandler({
             placeholder="Date of Birth(mm/dd/yyyy):"
             className={`flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["guardian-date-signed"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             required
-            aria-describedby="Guardian date signed"
+            aria-description="Guardian date signed"
             onBlur={handleValueFocus}
             onChange={handleValueChange}
+            maxLength={10}
             ref={elementRefs["guardian-date-signed"]}
           />
           {errors["guardian-date-signed"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="text-red-500 block">
+              this field must be todays date
+            </span>
           )}
         </div>
       </div>

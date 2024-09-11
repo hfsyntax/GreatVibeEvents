@@ -1,6 +1,7 @@
 "use server"
 import type { FormEntry } from "@/components/form/FormHandler"
 import { getSession } from "@/lib/session"
+import { normalizeDate } from "@/lib/utils"
 import { sql } from "@vercel/postgres"
 import { genSalt, hash } from "bcryptjs"
 import { revalidatePath } from "next/cache"
@@ -363,13 +364,119 @@ export async function handleEventForm(
     for (let key of Object.keys(formValues)) {
       if (
         key === "participant-dols" &&
-        formValues["participant-eaosh"] !== "yes"
+        formData.get("participant-eaosh") !== "yes"
       ) {
         continue
       }
 
       if (!formData.get(key)) {
         errors[key] = `${formValues[key]} is required.`
+        continue
+      }
+
+      const value = String(formData.get(key))
+      const validEmail =
+        /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+
+      if (
+        [
+          "participant-food-allergies",
+          "participant-special-dietary-needs",
+          "guardian-name",
+          "emergency-contact",
+          "participant-name-confirm",
+          "guardian-name-confirm",
+          "participant-name",
+          "guardian-address",
+          "participant-address",
+        ].includes(key) &&
+        value.trim().length > 255
+      ) {
+        errors[key] = `${formValues[key]} must be 255 characters or less.`
+      } else if (
+        [
+          "participant-other-disorders",
+          "participant-medications",
+          "participant-activity-interests",
+          "participant-additional-enjoyment",
+        ].includes(key) &&
+        value.trim().length > 500
+      ) {
+        errors[key] = `${formValues[key]} must be 500 characters or less.`
+      } else if (
+        ["guardian-number", "emergency-number", "participant-number"].includes(
+          key
+        ) &&
+        (value.trim().length > 20 || isNaN(parseInt(value)))
+      ) {
+        errors[key] = `${formValues[key]} must be 20 numbers or less.`
+      } else if (
+        [
+          "participant-eaosh",
+          "participant-r11r",
+          "participant-uafd",
+          "participant-bites-or-stings",
+          "participant-ctctmt",
+        ].includes(key) &&
+        value.trim().length > 3
+      ) {
+        errors[key] = `${formValues[key]} must be 3 characters or less.`
+      } else if (
+        [
+          "participant-date-signed",
+          "participant-dols",
+          "guardian-date-signed",
+          "participant-birthday",
+        ].includes(key) &&
+        (value.trim().length != 10 ||
+          !(new Date(value.trim()) instanceof Date) ||
+          isNaN(new Date(value.trim()).valueOf()))
+      ) {
+        errors[key] = `${formValues[key]} must be a 10 character date.`
+      } else if (
+        ["emergency-email", "guardian-email", "participant-email"].includes(key)
+      ) {
+        if (!value.trim().match(validEmail)) {
+          errors[key] = `${formValues[key]} must be a valid email.`
+        } else if (value.trim().length > 255) {
+          errors[key] = `${formValues[key]} must be 255 characters or less.`
+        }
+      } else if (
+        ["emergency-relationship", "guardian-relationship"].includes(key) &&
+        value.trim().length > 64
+      ) {
+        errors[key] = `${formValues[key]} must be 64 characters or less.`
+      } else if (
+        ["participant-signed", "guardian-signed"].includes(key) &&
+        value.trim() !== "yes"
+      ) {
+        errors[key] = `${formValues[key]} must be yes.`
+      } else if (
+        key === "participant-allergies" &&
+        !["latex", "no"].includes(value.trim())
+      ) {
+        errors[key] = `${formValues[key]} must be either latex or no.`
+      } else if (
+        key === "participant-gender" &&
+        !["male", "female", "other"].includes(value.trim())
+      ) {
+        errors[key] = `${formValues[key]} must be male, female or other.`
+      } else if (key === "participant-name-confirm") {
+        if (value.trim() !== formData.get("participant-name")) {
+          errors[key] =
+            `${formValues[key]} must match Particpant First/Last Name.`
+        }
+      } else if (key === "guardian-name-confirm") {
+        if (value.trim() !== formData.get("guardian-name")) {
+          errors[key] =
+            `${formValues[key]} must match Guardian First/Last Name.`
+        }
+      } else if (
+        ["participant-date-signed", "guardian-date-signed"].includes(key) &&
+        normalizeDate(new Date(value.trim())).getTime() !==
+          normalizeDate(new Date()).getTime()
+      ) {
+        errors[key] = `${formValues[key]} must be todays date.`
       }
     }
 
