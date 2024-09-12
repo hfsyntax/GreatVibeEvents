@@ -39,7 +39,7 @@ export default function ContactForm() {
             2700 Ankeny Street, Oakton, Virginia 22124, United States
           </span>
           <Link
-            className={`text-lg text-[#49740B] text-center mb-12 ${openSans.className}`}
+            className={`text-lg text-[#49740B] w-fit ml-auto mr-auto mb-12 ${openSans.className}`}
             href={"tel:7034034913"}
           >
             703-403-4913
