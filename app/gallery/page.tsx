@@ -32,6 +32,70 @@ export default async function GalleryPage() {
       {error && (
         <span className="text-red-500 block mt-3">{error.message}</span>
       )}
+      <span
+        className={`text-[#49740B] text-lg ${openSans.className} mt-10 ml-3 xl:ml-0`}
+      >
+        GVE VIDEO MOMENTS
+      </span>
+      <div className="bg-[#DAFFC0] pt-8 pb-8 flex flex-col items-center mt-8 ml-auto mr-auto w-full">
+        <span className={`${openSans.className} text-2xl`}>
+          GVE moments captured on video
+        </span>
+        <span className="text-lg text-[#5e5e5e] mt-6">
+          Dedicated to individuals with different abilities 18+{" "}
+        </span>
+      </div>
+      <div className="flex flex-col md:flex-row pt-8 pb-8 w-full">
+        <div
+          className={`w-full md:w-1/2 mr-6 xl:w-[600px] bg-[#DAFFC0] flex flex-col pt-8 pb-8 ${openSans.className}`}
+        >
+          <iframe
+            src="https://player.vimeo.com/video/907190546?h=a5998224ed"
+            className="w-full h-[350px]"
+          />
+
+          <span className="text-2xl text-center mt-6">
+            Team work makes the dream work!
+          </span>
+          <span className="text-lg text-center text-[#5e5e5e] mt-6 pl-8 pr-8">
+            The Great Vibe Events Team video of preparing for one of our events.
+            We love what we do and love our Great Vibe Events participants!
+          </span>
+        </div>
+        <div
+          className={`w-full mt-6 md:mt-0 md:w-1/2 ml-6 xl:w-[600px] bg-[#DAFFC0] flex flex-col ${openSans.className} ml-auto pt-8 pb-8`}
+        >
+          <iframe
+            src="https://player.vimeo.com/video/907190546?h=a5998224ed"
+            className="w-full h-[350px] mr-auto"
+          />
+          <span className="text-2xl text-center mt-6">
+            Team work makes the dream work!
+          </span>
+          <span className="text-lg text-center text-[#5e5e5e] mt-6 pl-8 pr-8">
+            The Great Vibe Events Team video of preparing for one of our events.
+            We love what we do and love our Great Vibe Events participants!
+          </span>
+        </div>
+      </div>
+      <div
+        className={`bg-[#DAFFC0] w-full flex flex-col ${openSans.className} pt-8 pb-8`}
+      >
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/G4RnYT1vb8w"
+          className="w-full h-[700px] mr-auto"
+          title="YouTube video player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        ></iframe>
+        <span className="text-center text-2xl mt-6">
+          january 13th great vibe events grand opening
+        </span>
+        <span className="text-lg text-[#5e5e5e] mt-6 text-center">
+          GVE is all about our special guests!
+        </span>
+      </div>
     </EdgeStoreProvider>
   )
 }
