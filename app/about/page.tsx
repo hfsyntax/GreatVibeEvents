@@ -16,6 +16,68 @@ export default function About() {
       <span
         className={`text-[#49740B] text-lg ${openSans.className} mb-8 ml-3 xl:ml-0`}
       >
+        FAITH BOONE, THE DRIVING FORCE BEHIND GREAT VIBE EVENTS
+      </span>
+      <div className="flex flex-col mb-10 lg:flex-row">
+        <div className="flex-1 order-2 lg:order-1">
+          <span className={`${openSans.className} text-2xl text-center block`}>
+            Meet the Boone's : A story of love, loss, and service
+          </span>
+          <span
+            className={`block mt-4 text-center text-lg ${openSans.className} text-[#5e5e5e]`}
+          >
+            Susan, Jim and their sons Jimmy, Andy and Mark Boone have dedicated
+            their lives to helping people with disabilities.
+          </span>
+          <p
+            className={`text-[#5e5e5e] text-center text-lg ${openSans.className} mt-8`}
+          >
+            Their desire to be involved with the intellectually and physically
+            disabled community transpired from the love of their Daughter and
+            Sister, Faith Boone. Faith was born with Down Syndrome and passed
+            away at a very young age of 3 from complications due to a heart
+            defect. Faith's impact on the Boone's entire family was immediate
+            and profound.
+          </p>
+          <p
+            className={`text-[#5e5e5e] text-center text-lg ${openSans.className}`}
+          >
+            The Boone’s started volunteering with Best Buddies. They enjoyed
+            mentoring and received great pleasure when their buddies would
+            achieve their goals. The Boone's also learned valuable lessons in
+            compassion, empathy, and determination.
+          </p>
+          <p
+            className={`text-[#5e5e5e] text-center text-lg ${openSans.className}`}
+          >
+            The Boone’s realized social events for adults with intellectual and
+            physical disabilities are lacking and Great Vibes Events was created
+            to provide fun social events for the adult community. Great Vibe
+            Events offers a safe place for adults aged 18 and older to gather,
+            learn, exchange ideas, acquire new skills and participate in fun
+            social activities.
+          </p>
+        </div>
+        <div className="w-full lg:w-[400px] h-fit lg:ml-8 relative order-1 lg:order-2">
+          <Image
+            src={"/img/faith.png"}
+            height={0}
+            width={0}
+            sizes="100%"
+            alt="logo_welcome"
+            className="w-full h-auto mr-auto ml-auto object-contain"
+            priority
+          />
+          <span
+            className={`${openSans.className} text-base text-[#525252] text-center mb-6 lg:text-left lg:pl-3 block bg-[#DAFFC0] mt-8 lg:mt-0 lg:mb-0`}
+          >
+            Faith Boone- Our driving force behind Great Vibe Events
+          </span>
+        </div>
+      </div>
+      <span
+        className={`text-[#49740B] text-lg ${openSans.className} mt-10 mb-8 ml-3 xl:ml-0`}
+      >
         WHO WE ARE
       </span>
       <Image
@@ -50,8 +112,10 @@ export default function About() {
           or circumstances.
         </p>
       </div>
-      <div className="flex flex-col xl:flex-row xl:gap-2">
-        <div className={`bg-[#DAFFC0] ${openSans.className} w-full xl:w-1/2`}>
+      <div className="flex flex-col md:flex-row md:gap-2">
+        <div
+          className={`bg-[#DAFFC0] ${openSans.className} w-full mt-14 xl:mt-0 lg:w-1/2`}
+        >
           <Image
             src={"/img/company_values.png"}
             alt="company_values"
@@ -100,7 +164,9 @@ export default function About() {
             </ul>
           </div>
         </div>
-        <div className={`bg-[#DAFFC0] ${openSans.className} w-full xl:w-1/2`}>
+        <div
+          className={`bg-[#DAFFC0] ${openSans.className} w-full mt-14 xl:mt-0 lg:w-1/2`}
+        >
           <Image
             src={"/img/company_team.png"}
             alt="company_team"
@@ -149,55 +215,6 @@ export default function About() {
         if you cannot find an answer to your question.
       </p>
       <Faq />
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
-        <span>content ad space</span>
-      </div>
-      <span
-        className={`text-[#49740B] text-lg ${openSans.className} mb-8 ml-3 xl:ml-0`}
-      >
-        GREAT VIBE EVENTS-THE DRIVING FORCE
-      </span>
-      <span
-        className={`text-2xl text-[#575757] ${openSans.className} ml-3 xl:ml-0`}
-      >
-        Meet the Boone's : A story of love, loss, and service
-      </span>
-      <p
-        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
-      >
-        Jimmy, Andy and Mark Boone are brothers who have dedicated their lives
-        to helping people with disabilities.
-      </p>
-      <p
-        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
-      >
-        Their desire to be involved with the intellectually and physically
-        disabled community transpired from the love of their sister, Faith
-        Boone, who was born with Down Syndrome and passed away at a very young
-        age from heart disease. Faith's impact on her brothers' lives was
-        immediate and profound.
-      </p>
-      <p
-        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
-      >
-        The Boone’s started volunteering with Best Buddies. They enjoyed
-        mentoring and received great pleasure when their buddies would achieve
-        their goals. The Boone's also learned valuable lessons in compassion,
-        empathy, and determination. After high school, Jimmy began working at
-        Jills House, a nonprofit that provides short term overnight respite care
-        for families raising children with intellectual disabilities. Jimmy then
-        teamed up with Andy & Mark, as instructors for an evening Adaptive
-        fitness course offered at Fairfax County, where they still enjoy
-        teaching today.
-      </p>
-      <p
-        className={`text-lg text-[#575757] ${openSans.className} block mt-6 ml-3 xl:ml-0`}
-      >
-        The Boone’s realized social events for adults with intellectual
-        disabilities are lacking and Great Vibes Events was created. Great Vibes
-        offers a safe place for adults aged 18 and older to gather, learn,
-        exchange ideas, acquire new skills and participate in fun activities.
-      </p>
       <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
         <span>content ad space</span>
       </div>
