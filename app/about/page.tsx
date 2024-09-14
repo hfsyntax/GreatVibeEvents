@@ -63,7 +63,7 @@ export default function About() {
             src={"/img/faith.png"}
             height={0}
             width={0}
-            sizes="100%"
+            sizes="(min-width: 1024) 100%, 100vw "
             alt="logo_welcome"
             className="w-full h-auto mr-auto ml-auto object-contain"
             priority
@@ -85,7 +85,7 @@ export default function About() {
         alt="about_image"
         width={0}
         height={0}
-        sizes="100%"
+        sizes="100vw"
         className="w-full h-auto mr-auto ml-auto object-contain"
         priority
       />
@@ -121,7 +121,7 @@ export default function About() {
             alt="company_values"
             width={0}
             height={0}
-            sizes="100%"
+            sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
             className="w-full h-auto mr-auto ml-auto object-contain"
           />
           <div className="p-10">
@@ -172,7 +172,7 @@ export default function About() {
             alt="company_team"
             width={0}
             height={0}
-            sizes="100%"
+            sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
             className="w-full h-auto mr-auto ml-auto object-contain"
             priority
           />

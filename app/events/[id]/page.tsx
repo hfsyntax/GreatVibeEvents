@@ -33,7 +33,7 @@ export default async function EventId({ params }: { params: { id: string } }) {
               src={"/img/halloween-event.png"}
               height={0}
               width={0}
-              sizes="50%, 100%"
+              sizes="(max-width: 1023) 100vw, 50vw"
               alt="logo_welcome"
               className="w-full lg:w-1/2 h-auto"
               priority

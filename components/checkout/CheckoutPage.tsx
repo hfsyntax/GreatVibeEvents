@@ -21,7 +21,6 @@ export default function CheckoutPage({
   const [clientSecret, setClientSecret] = useState("")
   const [loading, setLoading] = useState(false)
   const { data } = useCheckoutDataContext()
-  console.log(data)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

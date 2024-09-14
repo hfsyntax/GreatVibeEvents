@@ -16,7 +16,7 @@ export default async function Home() {
           src={"/img/logo_welcome.png"}
           height={0}
           width={0}
-          sizes="50%"
+          sizes="(max-width: 768px) 100vw, 50vw"
           alt="logo_welcome"
           className="w-1/2 h-auto mr-auto ml-auto object-contain"
           priority
@@ -49,7 +49,7 @@ export default async function Home() {
         src={"/img/halloween-event.png"}
         height={0}
         width={0}
-        sizes="100%"
+        sizes="100vw"
         alt="logo_welcome"
         className="w-full h-auto"
         priority
@@ -201,7 +201,7 @@ export default async function Home() {
             src={imageUrl.url}
             height={0}
             width={0}
-            sizes="100%"
+            sizes="(max-width: 768px) 50vw, 50vw"
             alt="logo_welcome"
             className="w-full h-auto object-contain"
             priority

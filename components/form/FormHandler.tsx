@@ -610,13 +610,11 @@ export default function FormHandler({
         formErrors[key] =
           `${elementRefs["participant-gender"].current?.ariaDescription} must be male, female or other.`
       } else if (key === "participant-name-confirm") {
-        console.log(value.trim() !== formValues["participant-name"])
         if (value.trim() !== formValues["participant-name"]) {
           formErrors[key] =
             `${elementRefs["participant-name-confirm"].current?.ariaDescription} must match Particpant First/Last Name.`
         }
       } else if (key === "guardian-name-confirm") {
-        console.log(value.trim() !== formValues["guardian-name"])
         if (value.trim() !== formValues["guardian-name"]) {
           formErrors[key] =
             `${elementRefs["guardian-name-confirm"].current?.ariaDescription} must match Guardian First/Last Name.`
