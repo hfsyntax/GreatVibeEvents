@@ -1,7 +1,5 @@
 import type { Metadata } from "next"
-import { validLoginCheckoutToken } from "@/actions/server"
 import StripeLoader from "@/components/checkout/StripeLoader"
-import { validateRecaptcha } from "@/actions/user"
 import { getProduct, getProductPrice } from "@/lib/stripe"
 
 export const metadata: Metadata = {
@@ -12,27 +10,19 @@ export const metadata: Metadata = {
 export default async function Checkout({
   searchParams,
 }: {
-  searchParams: { event_id?: string; token?: string; price?: string }
+  searchParams: {
+    product_id?: string
+  }
 }) {
   try {
-    if (!searchParams.event_id || !searchParams.price) {
+    if (!searchParams.product_id) {
       return <span className="text-red-500">Invalid event data.</span>
     }
 
-    const event = await getProduct(searchParams.event_id)
+    const event = await getProduct(searchParams.product_id)
 
     if (!event) {
       return <span className="text-red-500">Event not found.</span>
-    }
-
-    const price = await getProductPrice(searchParams.price)
-
-    if (!price.unit_amount) {
-      return <span className="text-red-500">Event price not found.</span>
-    }
-
-    if (!price.nickname) {
-      return <span className="text-red-500">Price name not found.</span>
     }
 
     const now = Date.now()
@@ -53,8 +43,7 @@ export default async function Checkout({
         starts={eventDate}
         ends={eventEnds}
         address={eventAddress}
-        packageName={price.nickname}
-        amount={price.unit_amount}
+        eventId={event.id}
       />
     )
   } catch (error: any) {

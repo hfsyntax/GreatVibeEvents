@@ -2,23 +2,26 @@
 import type { FormEvent } from "react"
 import { useEffect, useState } from "react"
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js"
-import { convertToSubcurrency } from "@/lib/utils"
-import { useSearchParams } from "next/navigation"
+import { useCheckoutDataContext } from "@/context/checkoutDataProvider"
 
 export default function CheckoutPage({
   amount,
   eventName,
+  eventId,
+  productType,
 }: {
   amount: number
   eventName: string
+  eventId: string
+  productType: string
 }) {
-  const searchParams = useSearchParams()
-  const eventId = searchParams.get("event_id")
   const stripe = useStripe()
   const elements = useElements()
   const [errorMessage, setErrorMessage] = useState<string>()
   const [clientSecret, setClientSecret] = useState("")
   const [loading, setLoading] = useState(false)
+  const { data } = useCheckoutDataContext()
+  console.log(data)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -54,8 +57,9 @@ export default function CheckoutPage({
       },
       body: JSON.stringify({
         amount: amount,
-        eventId: eventId,
-        eventName: eventName,
+        productId: eventId,
+        productName: eventName,
+        productType: productType,
       }),
     })
       .then((res) => res.json())
@@ -86,7 +90,9 @@ export default function CheckoutPage({
         disabled={!stripe || loading}
         className="text-white w-full p-5 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
       >
-        {!loading ? `Pay $${amount / 100}` : "Processing..."}
+        {!loading
+          ? `Pay $${parseFloat(String(amount / 100)).toFixed(2)}`
+          : "Processing..."}
       </button>
     </form>
   )

@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "401 Unauthorized" }, { status: 401 })
     }
-    const { amount, eventId, eventName } = await request.json()
-    if (!amount || !eventId || !eventName) {
+    const { amount, productId, productName, productType } = await request.json()
+    if (!amount || !productId || !productName || !productType) {
       return NextResponse.json({ error: "400 Bad Request" }, { status: 400 })
     }
     const existingCustomerId = await getStripeCustomerId()
@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
       automatic_payment_methods: { enabled: true },
       description: "EventTicket",
       metadata: {
-        eventId: eventId,
+        productId: productId,
+        productType: productType,
         userId: session.user.id,
-        eventName: eventName,
         formCompleted: "false",
       },
     })

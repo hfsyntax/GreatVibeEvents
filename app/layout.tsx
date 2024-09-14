@@ -5,6 +5,7 @@ import { Inter } from "next/font/google"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { getSession } from "@/lib/session"
+import { CheckoutDataProvider } from "@/context/checkoutDataProvider"
 
 export const metadata: Metadata = {
   title:
@@ -33,8 +34,10 @@ export default async function RootLayout({
             <div className="bg-black w-full hidden 2xl:inline-block h-[90px]">
               <span className="text-white">[ad container middle]</span>
             </div>
-            <Navbar session={session} />
-            {children}
+            <CheckoutDataProvider>
+              <Navbar session={session} />
+              {children}
+            </CheckoutDataProvider>
             <Footer />
           </div>
           <div

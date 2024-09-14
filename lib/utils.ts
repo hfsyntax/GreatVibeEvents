@@ -1,3 +1,7 @@
+export function getPercentageOfPrice(price: number, percentage: number) {
+  return price * (percentage / 100)
+}
+
 export function normalizeDate(date: Date) {
   return new Date(date.toISOString().split("T")[0])
 }

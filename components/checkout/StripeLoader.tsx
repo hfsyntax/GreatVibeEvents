@@ -1,25 +1,43 @@
 "use client"
 import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
-import { convertToSubcurrency, militaryToTime } from "@/lib/utils"
+import { useCheckoutDataContext } from "@/context/checkoutDataProvider"
+import { useEffect, useState, useRef } from "react"
 import CheckoutPage from "@/components/checkout/CheckoutPage"
+import { getProductPrice } from "@/lib/stripe"
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!)
 
 export default function StripeLoader({
   name,
+  eventId,
   starts,
   ends,
   address,
-  packageName,
-  amount,
 }: {
   name: string
+  eventId: string
   starts: number
   ends: number
   address: string
-  packageName: string
-  amount: number
 }) {
-  return (
+  const { data } = useCheckoutDataContext()
+  const [productType, setProductType] = useState<string>("No name for product")
+  const checkedName = useRef<boolean>(false)
+  useEffect(() => {
+    if (data.priceId) {
+      getProductPrice(data.priceId).then((response) => {
+        if (response.nickname) {
+          setProductType(response.nickname)
+        }
+        checkedName.current = true
+      })
+    }
+  }, [])
+
+  if (data.priceId && !checkedName.current) return
+
+  return data.amount > 0 && data.priceId && data.productId ? (
     <main className="w-full xl:w-6xl mx-auto p-10 text-white text-center border m-10 rounded-md bg-black">
       <div className="mb-10">
         <h1 className="text-4xl font-extrabold mb-2">{name}</h1>
@@ -38,18 +56,25 @@ export default function StripeLoader({
           })}
           &nbsp;@{address}
         </h2>
-        <h2 className="text-2xl mt-2 font-bold">{packageName}</h2>
+        <h2 className="text-2xl mt-2 font-bold">{productType}</h2>
       </div>
       <Elements
-        stripe={loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!)}
+        stripe={stripePromise}
         options={{
           mode: "payment",
-          amount: amount,
+          amount: data.amount,
           currency: "usd",
         }}
       >
-        <CheckoutPage amount={amount} eventName={name} />
+        <CheckoutPage
+          amount={data.amount}
+          eventName={name}
+          eventId={eventId}
+          productType={productType}
+        />
       </Elements>
     </main>
+  ) : (
+    <span className="text-red-500">Invalid payment data.</span>
   )
 }

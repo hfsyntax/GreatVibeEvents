@@ -1,5 +1,6 @@
-import Link from "next/link"
+import Image from "next/image"
 import { getProduct, listPrices } from "@/lib/stripe"
+import EventTicket from "@/components/events/EventTicket"
 export default async function EventId({ params }: { params: { id: string } }) {
   try {
     const product = await getProduct(params.id)
@@ -16,20 +17,40 @@ export default async function EventId({ params }: { params: { id: string } }) {
         </span>
       )
     }
+
     const priceList = await listPrices({
       product: params.id,
     })
+
+    const sortedPrices = priceList.data.sort(
+      (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
+    )
     return (
-      <div className=" text-white flex flex-col gap-2 w-fit items-center mr-auto ml-auto p-3">
-        {priceList.data.map((price, index) => (
-          <Link
-            key={`${params.id}_price_${index}`}
-            className="p-3 bg-black text-xs sm:text-sm lg:text-lg"
-            href={`/checkout?event_id=${params.id}&price=${price.id}`}
-          >
-            {price.nickname} ${price.unit_amount && price.unit_amount / 100}
-          </Link>
-        ))}
+      <div className="flex flex-col items-center justify-center">
+        {product.name.includes("Halloween") && (
+          <>
+            <Image
+              src={"/img/halloween-event.png"}
+              height={0}
+              width={0}
+              sizes="50%, 100%"
+              alt="logo_welcome"
+              className="w-full lg:w-1/2 h-auto"
+              priority
+            />
+            <span className="text-2xl mt-10 text-center">
+              Great Vibe Events 2024 Spooktacular
+            </span>
+            <p className="pl-3 pr-3 text-lg text-[#5e5e5e] w-full lg:w-[800px] mt-4">
+              The Halloween Costume Party of the Year! Show off your best
+              costume and get ready for a night of spooky fun, fantastic
+              festivities and an evening to meet new friends! When: Saturday
+              October 12th Time: 4:00pm to 7:00pm Where: Unity of Fairfax, 2854
+              Hunter Mill Road, Oakton, VA 22124.
+            </p>
+          </>
+        )}
+        <EventTicket priceList={sortedPrices} productId={params.id} />
       </div>
     )
   } catch (error: any) {

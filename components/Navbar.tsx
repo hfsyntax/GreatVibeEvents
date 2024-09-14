@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState, useRef } from "react"
 import { usePathname } from "next/navigation"
+import { useCheckoutDataContext } from "@/context/checkoutDataProvider"
 import Image from "next/image"
 import Link from "next/link"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -17,6 +18,7 @@ import { logout } from "@/lib/session"
 
 export default function Navbar({ session }: { session: any }) {
   const pathname = usePathname()
+  const { data, setData } = useCheckoutDataContext()
   const [navbar, showNavbar] = useState(false)
   const [search, showSearch] = useState(false)
   const [userDropdown, showUserDropdown] = useState(false)
@@ -57,6 +59,14 @@ export default function Navbar({ session }: { session: any }) {
       searchBar.current?.focus()
     }
   }, [search])
+  useEffect(() => {
+    // clear checkout context on route change
+    if (pathname !== "/checkout") {
+      if (data.amount || data.priceId || data.productId) {
+        setData({ amount: 0, priceId: "", productId: "" })
+      }
+    }
+  }, [pathname])
   return (
     <nav
       className={`z-10 select-none flex items-center mt-8 w-full ${navbar ? "mobile-navbar" : "bg-transparent flex-row top-auto"}  xl:h-fit xl:top-auto xl:!mt-8 xl:relative xl:flex xl:flex-row xl:bg-transparent xl:w-[1232px] ml-auto mr-auto`}

@@ -1,12 +1,11 @@
 "use client"
 import type { Stripe } from "stripe"
 import { getEvents } from "@/actions/server"
-import { useRouter } from "next/navigation"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons"
-import { useState, Fragment, FormEvent, useRef } from "react"
+import { useState, Fragment } from "react"
 import { Playfair_Display, Open_Sans } from "next/font/google"
-import ReCAPTCHA from "react-google-recaptcha"
+import Link from "next/link"
 
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 const openSans = Open_Sans({ subsets: ["latin"] })
@@ -19,9 +18,6 @@ export default function Calendar({
     canRequestMore: boolean
   }
 }) {
-  const router = useRouter()
-  const recaptcha = useRef<(ReCAPTCHA | null)[]>([])
-  const [error, setError] = useState<string>()
   const [events, setEvents] = useState<{
     events: Stripe.Product[]
     canRequestMore: boolean
@@ -34,18 +30,6 @@ export default function Calendar({
       i === index ? !dropdown : dropdown
     )
     setDropdownsOpen(singleDropDownChanged)
-  }
-
-  const submitRecaptcha = async (index: number) => {
-    try {
-      const token = await recaptcha.current[index]?.executeAsync()
-      const eventId = events.events?.[index]?.id
-      if (!token) return setError("Error: could not set recaptcha token.")
-      if (!eventId) return setError("Error: invalid event id.")
-      return router.push(`/events/${eventId}`)
-    } catch (error) {
-      return setError("Error: internal server error.")
-    }
   }
 
   const showMore = () => {
@@ -287,23 +271,12 @@ export default function Calendar({
                     </span>
                   </div>
                 )}
-                <button
-                  type="button"
+                <Link
                   className="bg-[#49740B] text-white text-base text-center block w-full p-4  font-bold hover:bg-lime-600 mt-3"
-                  onClick={() => submitRecaptcha(index)}
+                  href={`/events/${event.id}`}
                 >
                   Purchase Ticket
-                </button>
-                {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
-                  <ReCAPTCHA
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
-                    size="invisible"
-                    ref={(element) => {
-                      recaptcha.current[index] = element
-                    }}
-                  />
-                )}
-                {error && <span className="text-red-500">{error}</span>}
+                </Link>
               </div>
             </div>
             <div className="grow basis-0 ml-auto mr-auto order-2 xl:order-3">
