@@ -49,10 +49,9 @@ input:-webkit-autofill:focus {
   overflow: hidden;
   user-select: none;
   display: flex;
-  background-color: #6b7280;
 }
 
-body:has(.single-gallery-image-container) {
+body:has(.hide-scroll) {
   overflow: hidden;
 }
 
@@ -61,7 +60,7 @@ body:has(.mobile-navbar) {
 }
 
 @media (min-width: 1280px) {
-  body:not(:has(.single-gallery-image-container)) {
+  body:not(:has(.hide-scroll)) {
     overflow: auto !important;
   }
 }

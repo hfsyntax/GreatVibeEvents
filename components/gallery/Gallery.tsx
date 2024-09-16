@@ -3,8 +3,8 @@ import type { GalleryImage } from "@/actions/server"
 import Image from "next/image"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faArrowLeft,
-  faArrowRight,
+  faCaretLeft,
+  faCaretRight,
   faPlus,
   faX,
 } from "@fortawesome/free-solid-svg-icons"
@@ -58,7 +58,7 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
         <div className="flex flex-wrap w-full mt-10">
           {imageUrls.map((imageUrl, index) => (
             <div
-              className={`relative overflow-hidden w-1/2 h-[100px] md:h-[200px] xl:h-[300px] xl:w-1/4 ${showImage && showImage === imageUrl.url && "single-gallery-image-container"}`}
+              className={`relative overflow-hidden w-1/2 h-[100px] md:h-[200px] xl:h-[300px] xl:w-1/4 ${showImage && showImage === imageUrl.url && "single-gallery-image-container hide-scroll backdrop-blur-lg"}`}
               key={`img_container_${index + 1}`}
             >
               {showImage && showImage === imageUrl.url && (
@@ -70,8 +70,8 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 showImage === imageUrl.url &&
                 imageUrls[index - 1] && (
                   <FontAwesomeIcon
-                    icon={faArrowLeft}
-                    className="z-10 mt-auto mb-auto ml-1 md:ml-3 xl:ml-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
+                    icon={faCaretLeft}
+                    className="z-10 rounded-full p-2 text-white bg-black pl-3 pr-3 md:pl-[14px] md:pr-[14px] mt-auto mb-auto ml-1 md:ml-3 xl:ml-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
                     onClick={() => showSingleImage(index - 1)}
                   />
                 )}
@@ -79,7 +79,7 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 <FontAwesomeIcon
                   icon={faX}
                   size={`xl`}
-                  className="ml-auto mr-3 mt-3 cursor-pointer z-10"
+                  className="ml-auto mr-3 mt-3 cursor-pointer z-10 text-white"
                   onClick={closeSingleImage}
                 />
               )}
@@ -87,8 +87,8 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 showImage === imageUrl.url &&
                 imageUrls[index + 1] && (
                   <FontAwesomeIcon
-                    icon={faArrowRight}
-                    className="z-10 mt-auto mb-auto mr-1 md:mr-5 xl:mr-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
+                    icon={faCaretRight}
+                    className="text-white bg-black rounded-full pl-3 pr-3 md:pl-[14px] md:pr-[14px] p-2 z-10 mt-auto mb-auto mr-1 md:mr-5 xl:mr-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
                     onClick={() => showSingleImage(index + 1)}
                   />
                 )}

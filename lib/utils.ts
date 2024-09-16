@@ -1,5 +1,11 @@
-export function getPercentageOfPrice(price: number, percentage: number) {
+export function getPriceOfPercentage(price: number, percentage: number) {
   return price * (percentage / 100)
+}
+
+export function getPriceDifference(originalPrice: number, newPrice: number) {
+  const difference = originalPrice - newPrice
+  const percentSaved = Math.round((difference / originalPrice) * 100)
+  return { dollarAmount: difference.toFixed(2), percent: percentSaved }
 }
 
 export function normalizeDate(date: Date) {

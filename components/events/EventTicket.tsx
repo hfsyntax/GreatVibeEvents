@@ -1,7 +1,7 @@
 "use client"
 import type { Stripe } from "stripe"
 import type { ChangeEvent } from "react"
-import { convertToSubcurrency, getPercentageOfPrice } from "@/lib/utils"
+import { convertToSubcurrency, getPriceOfPercentage } from "@/lib/utils"
 import { useCheckoutDataContext } from "@/context/checkoutDataProvider"
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -39,7 +39,7 @@ export default function EventTicket({
     if (customTip !== "$0.00") setCustomTip("$0.00")
     setLabel({
       name: tipName,
-      amount: getPercentageOfPrice(formattedAmount, tipPercentage),
+      amount: getPriceOfPercentage(formattedAmount, tipPercentage),
     })
   }
 
@@ -107,7 +107,7 @@ export default function EventTicket({
           <span className="text-xs">
             $
             {parseFloat(
-              String(getPercentageOfPrice(formattedAmount, 15))
+              String(getPriceOfPercentage(formattedAmount, 15))
             ).toFixed(2)}
           </span>
         </button>
@@ -120,7 +120,7 @@ export default function EventTicket({
           <span className="text-xs">
             $
             {parseFloat(
-              String(getPercentageOfPrice(formattedAmount, 18))
+              String(getPriceOfPercentage(formattedAmount, 18))
             ).toFixed(2)}
           </span>
         </button>
@@ -133,7 +133,7 @@ export default function EventTicket({
           <span className="text-xs">
             $
             {parseFloat(
-              String(getPercentageOfPrice(formattedAmount, 20))
+              String(getPriceOfPercentage(formattedAmount, 20))
             ).toFixed(2)}
           </span>
         </button>

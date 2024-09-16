@@ -51,6 +51,54 @@ export async function getGalleryImageUrls(
   }
 }
 
+export async function getShopProducts(
+  type: string = "all",
+  search: string = ""
+) {
+  let products: Stripe.Product[] = []
+  let more = true
+  let startingAfter: string | undefined = undefined
+
+  while (more) {
+    const response: Stripe.Response<Stripe.ApiList<Stripe.Product>> =
+      await getProducts({
+        limit: 100,
+        starting_after: startingAfter,
+      })
+
+    const filteredProducts = response.data.filter((product) => {
+      const typeMatch =
+        type === "all"
+          ? product.metadata?.type !== "Event Ticket"
+          : type === "backpacks"
+            ? product.metadata.type === "backpacks"
+            : type === "lunch"
+              ? product.metadata.type === "lunch"
+              : type === "tshirts"
+                ? product.metadata.type === "tshirts"
+                : product.metadata.type === "bottles"
+                  ? product.metadata.type === "bottles"
+                  : !product.metadata.type
+
+      const searchMatch = search
+        ? product.name.toLowerCase().includes(search.toLowerCase())
+        : true
+
+      return typeMatch && searchMatch
+    })
+
+    products = products.concat(filteredProducts)
+
+    more = response.has_more
+    startingAfter =
+      response.data.length > 0
+        ? response.data[response.data.length - 1].id
+        : undefined
+  }
+
+  return products
+}
+
 export async function getEvents(amount: number) {
   let events: Stripe.Product[] = []
   let more = true

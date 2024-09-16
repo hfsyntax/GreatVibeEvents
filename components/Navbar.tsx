@@ -1,6 +1,7 @@
 "use client"
+import type { KeyboardEvent } from "react"
 import { useEffect, useState, useRef } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useCheckoutDataContext } from "@/context/checkoutDataProvider"
 import Image from "next/image"
 import Link from "next/link"
@@ -18,13 +19,17 @@ import { logout } from "@/lib/session"
 
 export default function Navbar({ session }: { session: any }) {
   const pathname = usePathname()
+  const router = useRouter()
   const { data, setData } = useCheckoutDataContext()
   const [navbar, showNavbar] = useState(false)
   const [search, showSearch] = useState(false)
   const [userDropdown, showUserDropdown] = useState(false)
   const userDropdownVisible = useRef(userDropdown)
   const searchBar = useRef<HTMLInputElement>(null)
+  const mobileSearchBar = useRef<HTMLInputElement>(null)
+
   const toggleSearch = () => showSearch(!search)
+
   const handleUserDropDown = (event: MouseEvent) => {
     const target = event.target as HTMLElement
     if (target.id === "loginLink" || target.id === "logoffLink") return
@@ -34,17 +39,40 @@ export default function Navbar({ session }: { session: any }) {
       showUserDropdown(false)
     }
   }
+
   const openNavbar = () => {
     showNavbar(true)
   }
+
   const closeNavbar = () => {
     if (navbar) showNavbar(false)
   }
+
   const handleLogout = async () => {
     await logout()
     closeNavbar()
     showUserDropdown(false)
   }
+
+  const handleSearchEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      router.push(`/shop?search=${searchBar.current?.value}`)
+      toggleSearch()
+    }
+  }
+
+  const handleMobileSearchClick = () => {
+    closeNavbar()
+    router.push(`/shop?search=${mobileSearchBar.current?.value}`)
+  }
+
+  const handleMobileSearchEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      closeNavbar()
+      router.push(`/shop?search=${mobileSearchBar.current?.value}`)
+    }
+  }
+
   useEffect(() => {
     document.addEventListener("mousedown", handleUserDropDown)
     return () => {
@@ -90,6 +118,7 @@ export default function Navbar({ session }: { session: any }) {
           className={`grow pl-3 ${navbar ? "hidden" : "inline-block"} xl:inline-block`}
           ref={searchBar}
           spellCheck={false}
+          onKeyDown={handleSearchEnter}
         />
       )}
       <ul
@@ -211,13 +240,16 @@ export default function Navbar({ session }: { session: any }) {
             <FontAwesomeIcon
               icon={faMagnifyingGlass}
               size="lg"
-              className={`absolute top-5 ml-3 ${navbar ? "!block" : "!hidden"} xl:!hidden`}
+              className={`absolute top-5 ml-3 ${navbar ? "!block cursor-pointer z-10" : "!hidden"} xl:!hidden`}
+              onClick={handleMobileSearchClick}
             />
             <input
               type="text"
               placeholder="Search Products"
               className="xl:hidden relative mb-6 pt-4 pb-4 pl-10 pr-10 bg-[#FFFFFF26] outline-none border-[1px] border-transparent focus:border-black"
               spellCheck={false}
+              onKeyDown={handleMobileSearchEnter}
+              ref={mobileSearchBar}
             ></input>
           </div>
         )}

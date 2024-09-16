@@ -14,6 +14,11 @@ const nextConfig = {
         hostname: "files.edgestore.dev",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "files.stripe.com",
+        pathname: "/links/**",
+      },
     ],
   },
 }
