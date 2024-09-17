@@ -5,6 +5,7 @@ import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faX, faRightLong } from "@fortawesome/free-solid-svg-icons"
+import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -24,6 +25,9 @@ type ProductProps = {
 }
 
 export default function Products({ items, prices }: ProductProps) {
+  const params = useSearchParams()
+  const search = params.get("search")
+  const productType = params.get("type")
   const [productView, setProductView] = useState<boolean>(false)
   const [product, setProduct] = useState<Product | null>(null)
   const showQuickView = (
@@ -43,9 +47,9 @@ export default function Products({ items, prices }: ProductProps) {
   return (
     <div className="flex flex-col">
       <div
-        className={`backdrop-blur fixed top-0 left-0 w-full h-full z-10 hidden ${productView ? "lg:block hide-scroll" : "hidden"}`}
+        className={`backdrop-blur fixed top-0 left-0 w-full h-full z-10 hidden ${productView && "lg:block hide-scroll"}`}
       >
-        <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] w-[1000px] xl:h-[500px] bg-white z-10 shadow flex">
+        <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] w-[900px] h-[500px] xl:w-[1000px] xl:h-[500px] bg-white z-10 shadow flex">
           {product && product.images.length > 0 && (
             <Image
               src={String(product.images[0])}
@@ -65,7 +69,7 @@ export default function Products({ items, prices }: ProductProps) {
               onClick={closeQuickView}
             />
             <span className="text-black text-4xl pl-6">{product?.name}</span>
-            {product && prices[product.id].length >= 1 && (
+            {product && prices[product.id]?.length >= 1 && (
               <>
                 <div>
                   {product?.metadata.original_price && (
@@ -154,7 +158,11 @@ export default function Products({ items, prices }: ProductProps) {
       <span
         className={` text-2xl ${openSans.className} mt-10 ml-3 xl:ml-0 text-center sm:text-left`}
       >
-        All products
+        {items.length >= 1
+          ? productType
+            ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
+            : "All Products"
+          : `0 results found for "${search}"`}
       </span>
       <div className="flex flex-wrap justify-center md:justify-normal gap-2 mt-8">
         {items.map((product, index) => {
@@ -174,7 +182,7 @@ export default function Products({ items, prices }: ProductProps) {
                     </span>
                   )}
                   <button
-                    className={`absolute hidden bottom-0 left-0 bg-white text-black z-10 shadow-md w-full h-[30px] xl:h-[50px] lg:group-hover:${!productView && "block"}`}
+                    className={`absolute hidden bottom-0 left-0 bg-white text-black z-10 shadow-md w-full h-[30px] xl:h-[50px] ${!productView && "group-hover:lg:block"}`}
                     onClick={(e) => showQuickView(e, product)}
                   >
                     Quick view
@@ -215,7 +223,9 @@ export default function Products({ items, prices }: ProductProps) {
                         ${product.metadata.original_price}
                       </span>
                     )}
-                    <span className="text-base ml-3">
+                    <span
+                      className={`text-base ${product.metadata.original_price && "ml-3"}`}
+                    >
                       $
                       {parseFloat(
                         String(Number(itemPrices[0].unit_amount) / 100)

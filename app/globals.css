@@ -39,6 +39,10 @@ input:-webkit-autofill:focus {
   background-color: #daffc0;
 }
 
+.mobile-search-container {
+  width: calc(100% - 64px);
+}
+
 .single-gallery-image-container {
   position: fixed !important;
   top: 0px;

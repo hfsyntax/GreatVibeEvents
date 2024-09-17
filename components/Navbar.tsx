@@ -115,7 +115,7 @@ export default function Navbar({ session }: { session: any }) {
         <input
           type="text"
           placeholder="Search Products"
-          className={`grow pl-3 ${navbar ? "hidden" : "inline-block"} xl:inline-block`}
+          className={`grow pl-3 hidden xl:inline-block`}
           ref={searchBar}
           spellCheck={false}
           onKeyDown={handleSearchEnter}
@@ -221,7 +221,7 @@ export default function Navbar({ session }: { session: any }) {
         </li>
       </ul>
       <div
-        className={`relative flex ${navbar ? "flex-col mr-auto ml-16 xl:ml-auto xl:mr-0" : "flex-row ml-auto"} items-center xl:flex-row`}
+        className={`relative flex ${navbar ? "mobile-search-container flex-col mr-auto ml-16 xl:ml-auto xl:mr-0" : "flex-row ml-auto"} items-center xl:flex-row xl:w-fit`}
       >
         <FontAwesomeIcon
           icon={faBars}
@@ -236,7 +236,7 @@ export default function Navbar({ session }: { session: any }) {
           onClick={toggleSearch}
         />
         {navbar && (
-          <div className="relative">
+          <div className="relative w-full">
             <FontAwesomeIcon
               icon={faMagnifyingGlass}
               size="lg"
@@ -246,7 +246,7 @@ export default function Navbar({ session }: { session: any }) {
             <input
               type="text"
               placeholder="Search Products"
-              className="xl:hidden relative mb-6 pt-4 pb-4 pl-10 pr-10 bg-[#FFFFFF26] outline-none border-[1px] border-transparent focus:border-black"
+              className="xl:hidden relative w-full mb-6 pt-4 pb-4 pl-10 pr-10 bg-[#FFFFFF26] outline-none border-[1px] box-border border-transparent focus:border-black"
               spellCheck={false}
               onKeyDown={handleMobileSearchEnter}
               ref={mobileSearchBar}
