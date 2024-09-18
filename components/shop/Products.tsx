@@ -149,11 +149,11 @@ export default function Products({ items, prices }: ProductProps) {
                     ? product.images[0]
                     : product.metadata?.second_image_url
                 )}
-                alt="company_team"
+                alt={`quickview_${product.name}`}
                 width={0}
                 height={0}
                 sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
-                className="w-full h-auto mr-auto ml-auto object-contain"
+                className="w-full h-full mr-auto ml-auto object-contain"
                 priority
               />
               {product.metadata.second_image_url && (
