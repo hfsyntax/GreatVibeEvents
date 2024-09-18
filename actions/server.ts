@@ -3,7 +3,7 @@ import type { Stripe } from "stripe"
 import { backendClient } from "@/lib/edgestore-server"
 import { sql } from "@vercel/postgres"
 import { getSession } from "@/lib/session"
-import { getProducts, listPrices } from "@/lib/stripe"
+import { getProducts } from "@/lib/stripe"
 
 export type GalleryImage = {
   url: string
@@ -51,10 +51,7 @@ export async function getGalleryImageUrls(
   }
 }
 
-export async function getShopProducts(
-  type: string = "all",
-  search: string = ""
-) {
+export async function getShopProducts() {
   let products: Stripe.Product[] = []
   let more = true
   let startingAfter: string | undefined = undefined
@@ -66,26 +63,10 @@ export async function getShopProducts(
         starting_after: startingAfter,
       })
 
-    const filteredProducts = response.data.filter((product) => {
-      const typeMatch =
-        type === "all"
-          ? product.metadata?.type !== "Event Ticket"
-          : type === "backpacks"
-            ? product.metadata.type === "backpacks"
-            : type === "lunch"
-              ? product.metadata.type === "lunch"
-              : type === "tshirts"
-                ? product.metadata.type === "tshirts"
-                : product.metadata.type === "bottles"
-                  ? product.metadata.type === "bottles"
-                  : !product.metadata.type
-
-      const searchMatch = search
-        ? product.name.toLowerCase().includes(search.toLowerCase())
-        : true
-
-      return typeMatch && searchMatch
-    })
+    const filteredProducts = response.data.filter(
+      (product) =>
+        !product.metadata.type || product.metadata.type !== "Event Ticket"
+    )
 
     products = products.concat(filteredProducts)
 

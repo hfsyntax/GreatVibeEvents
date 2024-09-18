@@ -177,7 +177,7 @@ export default async function Home() {
         </div>
         <div className="w-full lg:w-[30%] pr-6 pl-6 h-fit bg-[#DAFFC0] flex flex-col justify-center">
           <span
-            className={`pl-8 pr-8 mt-8 block text-4xl text-[#49740B] mb-6 ${playfairDisplay.className}`}
+            className={`pl-8 pr-8 mt-8 block text-4xl lg:text-3xl xl:text-4xl text-[#49740B] mb-6 ${playfairDisplay.className}`}
           >
             GVE 2024 SPOOKTACULAR COSTOME PARTY
           </span>

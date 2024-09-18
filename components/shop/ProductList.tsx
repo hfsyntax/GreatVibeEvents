@@ -9,7 +9,7 @@ export default function ProductList() {
   const search = params.get("search")
   return (
     <div
-      className={`flex flex-col w-[35%] mt-10 text-sm mr-3  lg:text-lg ${openSans.className} ml-2`}
+      className={`flex flex-col mt-10 text-sm mr-3  lg:text-lg ${openSans.className} ml-2`}
     >
       <Link
         href={"/shop"}

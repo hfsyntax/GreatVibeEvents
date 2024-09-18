@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import StripeLoader from "@/components/checkout/StripeLoader"
-import { getProduct, getProductPrice } from "@/lib/stripe"
+import { getProduct } from "@/lib/stripe"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Checkout",

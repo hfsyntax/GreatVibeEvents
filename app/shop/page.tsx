@@ -18,15 +18,17 @@ export default async function Shop({
   searchParams: {
     type?: string
     search?: string
+    sort?: string
   }
 }) {
-  const items = await getShopProducts(searchParams.type, searchParams.search)
+  const items = await getShopProducts()
   // convert stripe object to generic object for prop pass to client component
   const plainItems = items.map((item) => ({
     id: item.id,
     name: item.name,
     metadata: item.metadata,
     images: item.images,
+    created: item.created,
   }))
 
   const prices = await Promise.all(

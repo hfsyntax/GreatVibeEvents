@@ -4,9 +4,14 @@ import type { MouseEvent } from "react"
 import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faX, faRightLong } from "@fortawesome/free-solid-svg-icons"
-import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import {
+  faX,
+  faRightLong,
+  faCaretDown,
+  faCaretUp,
+} from "@fortawesome/free-solid-svg-icons"
+import { useSearchParams, usePathname, useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 const openSans = Open_Sans({ subsets: ["latin"] })
@@ -17,6 +22,7 @@ type Product = {
   name: string
   metadata: { [key: string]: string }
   images: string[]
+  created: number
 }
 
 type ProductProps = {
@@ -25,11 +31,17 @@ type ProductProps = {
 }
 
 export default function Products({ items, prices }: ProductProps) {
+  const router = useRouter()
+  const pathname = usePathname()
   const params = useSearchParams()
   const search = params.get("search")
   const productType = params.get("type")
+  const sort = params.get("sort")
+  const [products, setProducts] = useState(items)
+  const [loading, setLoading] = useState(true)
   const [productView, setProductView] = useState<boolean>(false)
   const [product, setProduct] = useState<Product | null>(null)
+  const [showSorts, setShowSorts] = useState(false)
   const showQuickView = (
     event: MouseEvent<HTMLButtonElement>,
     product: Product
@@ -42,6 +54,69 @@ export default function Products({ items, prices }: ProductProps) {
 
   const closeQuickView = () => {
     if (productView) setProductView(false)
+  }
+
+  const toggleSorts = () => setShowSorts(!showSorts)
+
+  const sortDescriptions = {
+    newest: "Newest",
+    az: "Name (A-Z)",
+    za: "Name (Z-A)",
+    lh: "Price (low-high)",
+    hl: "Price (high-low)",
+  }
+
+  const setSortParams = (key: string) => {
+    const urlParams = new URLSearchParams(params)
+    if (urlParams.get("sort") !== key) {
+      urlParams.set("sort", key)
+      toggleSorts()
+      router.push(`${pathname}?${urlParams.toString()}`)
+    }
+  }
+
+  useEffect(() => {
+    let updatedItems = [...items]
+    updatedItems = updatedItems.filter((product) =>
+      productType
+        ? product.metadata.type === productType
+        : !product.metadata.type || product.metadata.type !== "Event Ticket"
+    )
+    updatedItems = updatedItems.sort((a, b) => {
+      switch (sort) {
+        case "az":
+          return a.name.localeCompare(b.name)
+        case "za":
+          return b.name.localeCompare(a.name)
+        case "lh":
+          return (
+            (prices[a.id][0].unit_amount || 0) -
+            (prices[b.id][0].unit_amount || 0)
+          )
+        case "hl":
+          return (
+            (prices[b.id][0].unit_amount || 0) -
+            (prices[a.id][0].unit_amount || 0)
+          )
+        default:
+          return (
+            new Date(b.created || 0).getTime() -
+            new Date(a.created || 0).getTime()
+          )
+      }
+    })
+    if (search) {
+      updatedItems = updatedItems.filter((product) =>
+        product.name.toLowerCase().includes(search.toLowerCase())
+      )
+    }
+    if (showSorts) toggleSorts()
+    setProducts(updatedItems)
+    setLoading(false)
+  }, [params])
+
+  if (loading) {
+    return <span>Loading...</span>
   }
 
   return (
@@ -155,17 +230,68 @@ export default function Products({ items, prices }: ProductProps) {
         </div>
       </div>
 
-      <span
-        className={` text-2xl ${openSans.className} mt-10 ml-3 xl:ml-0 text-center sm:text-left`}
-      >
-        {items.length >= 1
-          ? productType
-            ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
-            : "All Products"
-          : `0 results found for "${search}"`}
-      </span>
-      <div className="flex flex-wrap justify-center md:justify-normal gap-2 mt-8">
-        {items.map((product, index) => {
+      <div className="flex ${openSans.className} mt-10 ml-3 xl:ml-0 text-center sm:text-left">
+        <span className={` text-2xl `}>
+          {products.length >= 1
+            ? productType
+              ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
+              : "All Products"
+            : `0 results found for "${search}"`}
+        </span>
+      </div>
+      <div className="flex flex-wrap justify-center md:justify-normal gap-2 mt-8 relative">
+        {products.length > 0 && (
+          <div
+            className={`flex justify-end items-center absolute top-[-30px] left-0 ml-3 sm:ml-0 sm:mr-3 sm:top-[-64px] sm:right-0  ${products.length === 1 && "lg:top-[-30px] lg:left-0 lg:ml-3 xl:ml-0 lg:right-auto xl:left-auto xl:right-0 xl:top-[-64px]"} cursor-pointer select-none text-[#5e5e5e] hover:text-gray-800`}
+            onClick={toggleSorts}
+          >
+            <span className={`${openSans.className} text-lg`}>
+              {sortDescriptions[sort as keyof typeof sortDescriptions]
+                ? sortDescriptions[sort as keyof typeof sortDescriptions]
+                : "Newest"}
+            </span>
+            <FontAwesomeIcon
+              icon={showSorts ? faCaretUp : faCaretDown}
+              size="1x"
+              className="ml-1"
+            />
+          </div>
+        )}
+        <div
+          className={`${openSans.className} text-lg absolute top-0 left-0 sm:mr-3 sm:top-[-35px] sm:left-auto sm:right-0 flex-col ${products.length === 1 && "lg:top-0"} pl-8 pr-8 pt-7 pb-7 border border-gray-200 w-[250px] h-fit ${showSorts ? "flex" : "hidden"} select-none z-10 bg-white`}
+        >
+          <span
+            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${(sort === "newest" || !sort) && "text-[#49740B]"}`}
+            onClick={() => setSortParams("newest")}
+          >
+            Newest
+          </span>
+          <span
+            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${sort === "az" && "text-[#49740B]"}`}
+            onClick={() => setSortParams("az")}
+          >
+            Name (A-Z)
+          </span>
+          <span
+            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${sort === "za" && "text-[#49740B]"}`}
+            onClick={() => setSortParams("za")}
+          >
+            Name (Z-A)
+          </span>
+          <span
+            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${sort === "lh" && "text-[#49740B]"}`}
+            onClick={() => setSortParams("lh")}
+          >
+            Price (low-high)
+          </span>
+          <span
+            className={`cursor-pointer w-fit hover:text-[#49740B] ${sort === "hl" && "text-[#49740B]"}`}
+            onClick={() => setSortParams("hl")}
+          >
+            Price (high-low)
+          </span>
+        </div>
+        {products.map((product, index) => {
           const itemPrices = prices[product.id] || []
           return (
             <Link
