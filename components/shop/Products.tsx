@@ -9,6 +9,8 @@ import {
   faRightLong,
   faCaretDown,
   faCaretUp,
+  faCaretRight,
+  faCaretLeft,
 } from "@fortawesome/free-solid-svg-icons"
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -40,6 +42,7 @@ export default function Products({ items, prices }: ProductProps) {
   const [products, setProducts] = useState(items)
   const [loading, setLoading] = useState(true)
   const [productView, setProductView] = useState<boolean>(false)
+  const [productViewImage, setProductViewImage] = useState("first")
   const [product, setProduct] = useState<Product | null>(null)
   const [showSorts, setShowSorts] = useState(false)
   const showQuickView = (
@@ -57,6 +60,11 @@ export default function Products({ items, prices }: ProductProps) {
   }
 
   const toggleSorts = () => setShowSorts(!showSorts)
+
+  const nextProductViewImage = () => {
+    const nextImage = productViewImage === "first" ? "second" : "first"
+    setProductViewImage(nextImage)
+  }
 
   const sortDescriptions = {
     newest: "Newest",
@@ -126,15 +134,37 @@ export default function Products({ items, prices }: ProductProps) {
       >
         <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] w-[900px] h-[500px] xl:w-[1000px] xl:h-[500px] bg-white z-10 shadow flex">
           {product && product.images.length > 0 && (
-            <Image
-              src={String(product.images[0])}
-              alt="company_team"
-              width={0}
-              height={0}
-              sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
-              className="w-1/2 h-auto mr-auto ml-auto object-contain"
-              priority
-            />
+            <div className="w-1/2 relative">
+              {product.metadata?.second_image_url && (
+                <FontAwesomeIcon
+                  icon={faCaretLeft}
+                  size="2xl"
+                  className="absolute top-1/2 left-0 ml-3 translate-y-[-50%] !text-5xl cursor-pointer select-none"
+                  onClick={nextProductViewImage}
+                />
+              )}
+              <Image
+                src={String(
+                  productViewImage === "first"
+                    ? product.images[0]
+                    : product.metadata?.second_image_url
+                )}
+                alt="company_team"
+                width={0}
+                height={0}
+                sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
+                className="w-full h-auto mr-auto ml-auto object-contain"
+                priority
+              />
+              {product.metadata.second_image_url && (
+                <FontAwesomeIcon
+                  icon={faCaretRight}
+                  size="2xl"
+                  className="absolute top-1/2 right-0 mr-3 translate-y-[-50%] !text-5xl cursor-pointer select-none"
+                  onClick={nextProductViewImage}
+                />
+              )}
+            </div>
           )}
           <div className={`w-1/2 flex flex-col ${playfairDisplay.className}`}>
             <FontAwesomeIcon

@@ -19,6 +19,11 @@ const nextConfig = {
         hostname: "files.stripe.com",
         pathname: "/links/**",
       },
+      {
+        protocol: "https",
+        hostname: "exh3hjbxekjzz1bo.public.blob.vercel-storage.com",
+        pathname: "**",
+      },
     ],
   },
 }
