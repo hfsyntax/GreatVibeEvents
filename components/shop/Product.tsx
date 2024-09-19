@@ -1,16 +1,13 @@
 "use client"
-import type { Stripe } from "stripe"
 import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import {
-  faRightLong,
-  faCaretRight,
-  faCaretLeft,
-} from "@fortawesome/free-solid-svg-icons"
+import { faFacebook, faXTwitter } from "@fortawesome/free-brands-svg-icons"
+import { faCaretLeft } from "@fortawesome/free-solid-svg-icons"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 
@@ -29,6 +26,7 @@ type ProductProps = {
 }
 
 export default function Product({ item, prices }: ProductProps) {
+  const [url, setUrl] = useState<string | undefined>()
   const [productViewImage, setProductViewImage] = useState("first")
 
   const nextProductViewImage = () => {
@@ -36,56 +34,79 @@ export default function Product({ item, prices }: ProductProps) {
     setProductViewImage(nextImage)
   }
 
+  useEffect(() => {
+    if (typeof window !== undefined) {
+      setUrl(window.location.href)
+    }
+  }, [])
+
   return (
-    <div className="flex flex-col mt-10">
-      <Link href={"/shop"} className="text-[#49740B] w-fit">
+    <div className="mt-10 flex flex-col">
+      <Link href={"/shop"} className="ml-5 w-fit text-[#49740B] xl:ml-0">
         <FontAwesomeIcon icon={faCaretLeft} size="xl" className="mr-auto" />
-        <span className={`${openSans.className} text-lg ml-2`}>
+        <span className={`${openSans.className} ml-2 text-lg`}>
           All Products
         </span>
       </Link>
-      <div className="w-full h-[500px] flex">
+      <div className="mt-10 flex h-fit w-full flex-col md:flex-row">
         {item && item.images.length > 0 && (
-          <div className="w-1/2 relative">
-            {item.metadata?.second_image_url && (
-              <FontAwesomeIcon
-                icon={faCaretLeft}
-                size="2xl"
-                className="absolute top-1/2 left-0 ml-3 translate-y-[-50%] !text-5xl cursor-pointer select-none"
-                onClick={nextProductViewImage}
-              />
-            )}
+          <div className="relative w-full flex-col md:w-1/2">
             <Image
               src={String(
                 productViewImage === "first"
                   ? item.images[0]
-                  : item.metadata?.second_image_url
+                  : item.metadata?.second_image_url,
               )}
-              alt={`quickview_${item.name}`}
+              alt={`product_${item.name}`}
               width={0}
               height={0}
               sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
-              className="w-full h-full mr-auto ml-auto object-contain"
+              className="ml-auto mr-auto h-[400px] w-full object-contain md:h-[500px]"
               priority
             />
-            {item.metadata.second_image_url && (
-              <FontAwesomeIcon
-                icon={faCaretRight}
-                size="2xl"
-                className="absolute top-1/2 right-0 mr-3 translate-y-[-50%] !text-5xl cursor-pointer select-none"
-                onClick={nextProductViewImage}
-              />
+
+            {item.metadata?.second_image_url && (
+              <div className="mt-3 flex items-center justify-center gap-2">
+                <div
+                  className={`h-[50px] w-[50px] border ${productViewImage === "first" && "border-black"} cursor-pointer bg-transparent`}
+                  onClick={() => setProductViewImage("first")}
+                >
+                  <Image
+                    src={String(item.images[0])}
+                    alt={`product_${item.name}`}
+                    width={50}
+                    height={50}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <div
+                  className={`h-[50px] w-[50px] border ${productViewImage === "second" && "border-black"} cursor-pointer bg-transparent`}
+                  onClick={() => setProductViewImage("second")}
+                >
+                  <Image
+                    src={String(item.metadata?.second_image_url)}
+                    alt={`product_${item.name}`}
+                    width={50}
+                    height={50}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              </div>
             )}
           </div>
         )}
-        <div className={`w-1/2 flex flex-col ${playfairDisplay.className}`}>
-          <span className="text-black text-4xl pl-6">{item?.name}</span>
+        <div
+          className={`flex w-full flex-col md:w-1/2 ${playfairDisplay.className} md:h-[500px]`}
+        >
+          <span className="mt-5 text-center text-4xl text-black md:mt-0 md:pl-6 md:text-left">
+            {item?.name}
+          </span>
           {item && prices.length >= 1 && (
             <>
-              <div>
+              <div className="text-center md:text-left">
                 {item?.metadata.original_price && (
                   <span
-                    className={`text-2xl ${openSans.className} line-through text-[#474747B3] pl-6`}
+                    className={`text-2xl ${openSans.className} pl-6 text-[#474747B3] line-through`}
                   >
                     ${item.metadata.original_price}
                   </span>
@@ -96,20 +117,20 @@ export default function Product({ item, prices }: ProductProps) {
               </div>
               {item.metadata.original_price && prices[0] && (
                 <span
-                  className={`pl-6 text-red-500 text-lg ${openSans.className}`}
+                  className={`pl-6 text-lg text-red-500 ${openSans.className}`}
                 >
                   You save&nbsp;$
                   {
                     getPriceDifference(
                       parseFloat(item.metadata.original_price),
-                      prices[0] / 100
+                      prices[0] / 100,
                     ).dollarAmount
                   }
                   &nbsp;(
                   {
                     getPriceDifference(
                       parseFloat(item.metadata.original_price),
-                      prices[0] / 100
+                      prices[0] / 100,
                     ).percent
                   }
                   %)
@@ -117,34 +138,53 @@ export default function Product({ item, prices }: ProductProps) {
               )}
               {item.metadata.shipping && (
                 <span
-                  className={`text-sm mt-4 pl-6 text-[#575757] ${openSans.className}`}
+                  className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
                 >
                   FREE SHIPPING
                 </span>
               )}
-              <label className={`${openSans.className} text-lg pl-6 mt-10`}>
+              <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
                 Quantity
               </label>
               <input
                 type="number"
                 defaultValue={1}
-                className={`w-fit pl-2 pr-2 pt-4 pb-4 ${openSans.className} ml-6 border w-[130px] h-[60px] border-b-gray-200 border-t-transparent border-l-transparent border-r-transparent`}
+                className={`w-fit pb-4 pl-2 pr-2 pt-4 ${openSans.className} ml-6 h-[60px] w-[130px] border border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent`}
               />
-              <div className="w-full flex gap-7 pl-6">
+              <div className="mt-5 flex w-full flex-col md:flex-row md:gap-7 md:pl-6">
                 <Link
                   href={"#"}
-                  className={`bg-[#49740B] text-white w-[170px] h-[60px] text-center leading-[60px] ${openSans.className} text-base font-bold mt-3`}
+                  className={`ml-6 mr-6 h-[60px] bg-[#49740B] text-center leading-[60px] text-white md:ml-0 md:mr-0 md:w-[170px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
                 >
                   B U Y &nbsp;N O W
                 </Link>
                 <Link
                   href={"#"}
-                  className={`bg-[#49740B] text-white w-[200px] h-[60px] text-center leading-[60px] ${openSans.className} text-base font-bold mt-3`}
+                  className={`ml-6 mr-6 h-[60px] bg-[#49740B] text-center leading-[60px] text-white md:ml-0 md:mr-0 md:w-[200px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
                 >
                   A D D &nbsp;T O &nbsp;C A R T
                 </Link>
               </div>
-              <span className={`${openSans.className} text-lg mt-3`}>
+              <div
+                className={`flex ${openSans.className} mt-5 items-center gap-2 pl-6`}
+              >
+                <span className="text-lg">Share</span>
+                <Link
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${url}`}
+                  target="_blank"
+                >
+                  <FontAwesomeIcon icon={faFacebook} size="lg" />
+                </Link>
+                <Link
+                  href={`https://x.com/intent/post?text=${url}`}
+                  target="_blank"
+                >
+                  <FontAwesomeIcon icon={faXTwitter} size="lg" />
+                </Link>
+              </div>
+              <span
+                className={`${openSans.className} mt-3 pl-6 pr-6 text-base text-[#5e5e5e] md:pr-0`}
+              >
                 {item.description}
               </span>
             </>

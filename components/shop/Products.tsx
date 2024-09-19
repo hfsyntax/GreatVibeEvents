@@ -47,7 +47,7 @@ export default function Products({ items, prices }: ProductProps) {
   const [showSorts, setShowSorts] = useState(false)
   const showQuickView = (
     event: MouseEvent<HTMLButtonElement>,
-    product: Product
+    product: Product,
   ) => {
     event.stopPropagation()
     event.preventDefault()
@@ -88,7 +88,7 @@ export default function Products({ items, prices }: ProductProps) {
     updatedItems = updatedItems.filter((product) =>
       productType
         ? product.metadata.type === productType
-        : !product.metadata.type || product.metadata.type !== "Event Ticket"
+        : !product.metadata.type || product.metadata.type !== "Event Ticket",
     )
     updatedItems = updatedItems.sort((a, b) => {
       switch (sort) {
@@ -115,7 +115,7 @@ export default function Products({ items, prices }: ProductProps) {
     })
     if (search) {
       updatedItems = updatedItems.filter((product) =>
-        product.name.toLowerCase().includes(search.toLowerCase())
+        product.name.toLowerCase().includes(search.toLowerCase()),
       )
     }
     if (showSorts) toggleSorts()
@@ -130,16 +130,16 @@ export default function Products({ items, prices }: ProductProps) {
   return (
     <div className="flex flex-col">
       <div
-        className={`backdrop-blur fixed top-0 left-0 w-full h-full z-10 hidden ${productView && "lg:block hide-scroll"}`}
+        className={`fixed left-0 top-0 z-10 hidden h-full w-full backdrop-blur ${productView && "hide-scroll lg:block"}`}
       >
-        <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] w-[900px] h-[500px] xl:w-[1000px] xl:h-[500px] bg-white z-10 shadow flex">
+        <div className="absolute left-1/2 top-1/2 z-10 flex h-[500px] w-[900px] translate-x-[-50%] translate-y-[-50%] bg-white shadow xl:h-[500px] xl:w-[1000px]">
           {product && product.images.length > 0 && (
-            <div className="w-1/2 relative">
+            <div className="relative w-1/2">
               {product.metadata?.second_image_url && (
                 <FontAwesomeIcon
                   icon={faCaretLeft}
                   size="2xl"
-                  className="absolute top-1/2 left-0 ml-3 translate-y-[-50%] !text-5xl cursor-pointer select-none"
+                  className="absolute left-0 top-1/2 ml-3 translate-y-[-50%] cursor-pointer select-none !text-5xl"
                   onClick={nextProductViewImage}
                 />
               )}
@@ -147,39 +147,39 @@ export default function Products({ items, prices }: ProductProps) {
                 src={String(
                   productViewImage === "first"
                     ? product.images[0]
-                    : product.metadata?.second_image_url
+                    : product.metadata?.second_image_url,
                 )}
                 alt={`quickview_${product.name}`}
                 width={0}
                 height={0}
                 sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
-                className="w-full h-full mr-auto ml-auto object-contain"
+                className="ml-auto mr-auto h-full w-full object-contain"
                 priority
               />
               {product.metadata.second_image_url && (
                 <FontAwesomeIcon
                   icon={faCaretRight}
                   size="2xl"
-                  className="absolute top-1/2 right-0 mr-3 translate-y-[-50%] !text-5xl cursor-pointer select-none"
+                  className="absolute right-0 top-1/2 mr-3 translate-y-[-50%] cursor-pointer select-none !text-5xl"
                   onClick={nextProductViewImage}
                 />
               )}
             </div>
           )}
-          <div className={`w-1/2 flex flex-col ${playfairDisplay.className}`}>
+          <div className={`flex w-1/2 flex-col ${playfairDisplay.className}`}>
             <FontAwesomeIcon
               icon={faX}
               size={`xl`}
-              className="ml-auto mr-3 mt-3 cursor-pointer z-10"
+              className="z-10 ml-auto mr-3 mt-3 cursor-pointer"
               onClick={closeQuickView}
             />
-            <span className="text-black text-4xl pl-6">{product?.name}</span>
+            <span className="pl-6 text-4xl text-black">{product?.name}</span>
             {product && prices[product.id]?.length >= 1 && (
               <>
                 <div>
                   {product?.metadata.original_price && (
                     <span
-                      className={`text-2xl ${openSans.className} line-through text-[#474747B3] pl-6`}
+                      className={`text-2xl ${openSans.className} pl-6 text-[#474747B3] line-through`}
                     >
                       ${product.metadata.original_price}
                     </span>
@@ -187,27 +187,29 @@ export default function Products({ items, prices }: ProductProps) {
                   <span className={`text-2xl ${openSans.className} pl-6`}>
                     $
                     {parseFloat(
-                      String(Number(prices[product?.id]?.[0].unit_amount) / 100)
+                      String(
+                        Number(prices[product?.id]?.[0].unit_amount) / 100,
+                      ),
                     ).toFixed(2)}
                   </span>
                 </div>
                 {product.metadata.original_price &&
                   prices[product.id][0].unit_amount && (
                     <span
-                      className={`pl-6 text-red-500 text-lg ${openSans.className}`}
+                      className={`pl-6 text-lg text-red-500 ${openSans.className}`}
                     >
                       You save&nbsp;$
                       {
                         getPriceDifference(
                           parseFloat(product.metadata.original_price),
-                          prices[product.id][0].unit_amount! / 100
+                          prices[product.id][0].unit_amount! / 100,
                         ).dollarAmount
                       }
                       &nbsp;(
                       {
                         getPriceDifference(
                           parseFloat(product.metadata.original_price),
-                          prices[product.id][0].unit_amount! / 100
+                          prices[product.id][0].unit_amount! / 100,
                         ).percent
                       }
                       %)
@@ -215,29 +217,29 @@ export default function Products({ items, prices }: ProductProps) {
                   )}
                 {product.metadata.shipping && (
                   <span
-                    className={`text-sm mt-4 pl-6 text-[#575757] ${openSans.className}`}
+                    className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
                   >
                     FREE SHIPPING
                   </span>
                 )}
-                <label className={`${openSans.className} text-lg pl-6 mt-10`}>
+                <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
                   Quantity
                 </label>
                 <input
                   type="number"
                   defaultValue={1}
-                  className={`w-fit pl-2 pr-2 pt-4 pb-4 ${openSans.className} ml-6 border w-[130px] h-[60px] border-b-gray-200 border-t-transparent border-l-transparent border-r-transparent`}
+                  className={`w-fit pb-4 pl-2 pr-2 pt-4 ${openSans.className} ml-6 h-[60px] w-[130px] border border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent`}
                 />
-                <div className="w-full flex gap-7 pl-6">
+                <div className="mt-5 flex w-full gap-7 pl-6">
                   <Link
                     href={"#"}
-                    className={`bg-[#49740B] text-white w-[170px] h-[60px] text-center leading-[60px] ${openSans.className} text-base font-bold mt-3`}
+                    className={`h-[60px] w-[170px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
                   >
                     B U Y &nbsp;N O W
                   </Link>
                   <Link
                     href={"#"}
-                    className={`bg-[#49740B] text-white w-[200px] h-[60px] text-center leading-[60px] ${openSans.className} text-base font-bold mt-3`}
+                    className={`h-[60px] w-[200px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
                   >
                     A D D &nbsp;T O &nbsp;C A R T
                   </Link>
@@ -251,7 +253,7 @@ export default function Products({ items, prices }: ProductProps) {
                   <FontAwesomeIcon
                     icon={faRightLong}
                     size="1x"
-                    className="text-[#49740B] ml-1"
+                    className="ml-1 text-[#49740B]"
                   />
                 </div>
               </>
@@ -260,8 +262,8 @@ export default function Products({ items, prices }: ProductProps) {
         </div>
       </div>
 
-      <div className="flex ${openSans.className} mt-10 ml-3 xl:ml-0 text-center sm:text-left">
-        <span className={` text-2xl `}>
+      <div className="${openSans.className} ml-3 mt-10 flex text-center sm:text-left xl:ml-0">
+        <span className={`text-2xl`}>
           {products.length >= 1
             ? productType
               ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
@@ -269,10 +271,10 @@ export default function Products({ items, prices }: ProductProps) {
             : `0 results found for "${search}"`}
         </span>
       </div>
-      <div className="flex flex-wrap justify-center md:justify-normal gap-2 mt-8 relative">
+      <div className="relative mt-8 flex flex-wrap justify-center gap-2 md:justify-normal">
         {products.length > 0 && (
           <div
-            className={`flex justify-end items-center absolute top-[-30px] left-0 ml-3 sm:ml-0 sm:mr-3 sm:top-[-64px] sm:right-0  ${products.length === 1 && "lg:top-[-30px] lg:left-0 lg:ml-3 xl:ml-0 lg:right-auto xl:left-auto xl:right-0 xl:top-[-64px]"} cursor-pointer select-none text-[#5e5e5e] hover:text-gray-800`}
+            className={`absolute left-0 top-[-30px] ml-3 flex items-center justify-end sm:right-0 sm:top-[-64px] sm:ml-0 sm:mr-3 ${products.length === 1 && "lg:left-0 lg:right-auto lg:top-[-30px] lg:ml-3 xl:left-auto xl:right-0 xl:top-[-64px] xl:ml-0"} cursor-pointer select-none text-[#5e5e5e] hover:text-gray-800`}
             onClick={toggleSorts}
           >
             <span className={`${openSans.className} text-lg`}>
@@ -288,34 +290,34 @@ export default function Products({ items, prices }: ProductProps) {
           </div>
         )}
         <div
-          className={`${openSans.className} text-lg absolute top-0 left-0 sm:mr-3 sm:top-[-35px] sm:left-auto sm:right-0 flex-col ${products.length === 1 && "lg:top-0"} pl-8 pr-8 pt-7 pb-7 border border-gray-200 w-[250px] h-fit ${showSorts ? "flex" : "hidden"} select-none z-10 bg-white`}
+          className={`${openSans.className} absolute left-0 top-0 flex-col text-lg sm:left-auto sm:right-0 sm:top-[-35px] sm:mr-3 ${products.length === 1 && "lg:top-0"} h-fit w-[250px] border border-gray-200 pb-7 pl-8 pr-8 pt-7 ${showSorts ? "flex" : "hidden"} z-10 select-none bg-white`}
         >
           <span
-            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${(sort === "newest" || !sort) && "text-[#49740B]"}`}
+            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${(sort === "newest" || !sort) && "text-[#49740B]"}`}
             onClick={() => setSortParams("newest")}
           >
             Newest
           </span>
           <span
-            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${sort === "az" && "text-[#49740B]"}`}
+            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "az" && "text-[#49740B]"}`}
             onClick={() => setSortParams("az")}
           >
             Name (A-Z)
           </span>
           <span
-            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${sort === "za" && "text-[#49740B]"}`}
+            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "za" && "text-[#49740B]"}`}
             onClick={() => setSortParams("za")}
           >
             Name (Z-A)
           </span>
           <span
-            className={`pb-2 cursor-pointer w-fit hover:text-[#49740B] ${sort === "lh" && "text-[#49740B]"}`}
+            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "lh" && "text-[#49740B]"}`}
             onClick={() => setSortParams("lh")}
           >
             Price (low-high)
           </span>
           <span
-            className={`cursor-pointer w-fit hover:text-[#49740B] ${sort === "hl" && "text-[#49740B]"}`}
+            className={`w-fit cursor-pointer hover:text-[#49740B] ${sort === "hl" && "text-[#49740B]"}`}
             onClick={() => setSortParams("hl")}
           >
             Price (high-low)
@@ -329,16 +331,16 @@ export default function Products({ items, prices }: ProductProps) {
               key={`shop_item_${index}`}
             >
               <div
-                className={` flex flex-col w-full ${openSans.className} lg:w-[200px] xl:w-[300px]`}
+                className={`flex w-full flex-col ${openSans.className} lg:w-[200px] xl:w-[300px]`}
               >
-                <div className="flex flex-col relative group">
+                <div className="group relative flex flex-col">
                   {product.metadata.original_price && (
-                    <span className="ml-auto absolute top-0 right-0 text-xs lg:text-sm  pt-1 pb-1 pl-4 pr-4 lg:pt-2 lg:pb-2 lg:pl-6 lg:pr-6 bg-[#49740B] text-white">
+                    <span className="absolute right-0 top-0 ml-auto bg-[#49740B] pb-1 pl-4 pr-4 pt-1 text-xs text-white lg:pb-2 lg:pl-6 lg:pr-6 lg:pt-2 lg:text-sm">
                       sale
                     </span>
                   )}
                   <button
-                    className={`absolute hidden bottom-0 left-0 bg-white text-black z-10 shadow-md w-full h-[30px] xl:h-[50px] ${!productView && "group-hover:lg:block"}`}
+                    className={`absolute bottom-0 left-0 z-10 hidden h-[30px] w-full bg-white text-black shadow-md xl:h-[50px] ${!productView && "group-hover:lg:block"}`}
                     onClick={(e) => showQuickView(e, product)}
                   >
                     + Quick view
@@ -349,7 +351,7 @@ export default function Products({ items, prices }: ProductProps) {
                     width={0}
                     height={0}
                     sizes="(max-width: 1023px) 100%, (min-width: 1024px) 200px, (min-width: 1280px) 300px"
-                    className="w-[100px] h-[100px] lg:w-[200px] lg:h-[200px] xl:w-[300px] xl:h-[300px] mr-auto ml-auto object-contain"
+                    className="ml-auto mr-auto h-[100px] w-[100px] object-contain lg:h-[200px] lg:w-[200px] xl:h-[300px] xl:w-[300px]"
                     priority
                   />
                 </div>
@@ -362,20 +364,20 @@ export default function Products({ items, prices }: ProductProps) {
                     <span>
                       From $
                       {parseFloat(
-                        String(Number(itemPrices[0].unit_amount) / 100)
+                        String(Number(itemPrices[0].unit_amount) / 100),
                       ).toFixed(2)}
                     </span>
                     {product.metadata.original_price && (
                       <span>{product.metadata.original_price}</span>
                     )}
-                    <span className="text-[#595959] text-sm mt-4">
+                    <span className="mt-4 text-sm text-[#595959]">
                       More options
                     </span>
                   </>
                 ) : (
                   <div>
                     {product.metadata.original_price && (
-                      <span className="line-through text-[#474747B3]">
+                      <span className="text-[#474747B3] line-through">
                         ${product.metadata.original_price}
                       </span>
                     )}
@@ -384,7 +386,7 @@ export default function Products({ items, prices }: ProductProps) {
                     >
                       $
                       {parseFloat(
-                        String(Number(itemPrices[0].unit_amount) / 100)
+                        String(Number(itemPrices[0].unit_amount) / 100),
                       ).toFixed(2)}
                     </span>
                   </div>
