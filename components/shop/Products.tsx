@@ -341,7 +341,7 @@ export default function Products({ items, prices }: ProductProps) {
                     className={`absolute hidden bottom-0 left-0 bg-white text-black z-10 shadow-md w-full h-[30px] xl:h-[50px] ${!productView && "group-hover:lg:block"}`}
                     onClick={(e) => showQuickView(e, product)}
                   >
-                    Quick view
+                    + Quick view
                   </button>
                   <Image
                     src={`${product.images[0]}`}
