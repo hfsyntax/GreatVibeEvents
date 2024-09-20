@@ -1,10 +1,11 @@
 "use client"
+import type { MouseEvent, TouchEvent } from "react"
 import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFacebook, faXTwitter } from "@fortawesome/free-brands-svg-icons"
 import { faCaretLeft } from "@fortawesome/free-solid-svg-icons"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -28,11 +29,44 @@ type ProductProps = {
 export default function Product({ item, prices }: ProductProps) {
   const [url, setUrl] = useState<string | undefined>()
   const [productViewImage, setProductViewImage] = useState("first")
+  const [imageTransform, setImageTransform] = useState("none")
 
-  const nextProductViewImage = () => {
-    const nextImage = productViewImage === "first" ? "second" : "first"
-    setProductViewImage(nextImage)
+  const calculateTransform = (
+    clientX: number,
+    clientY: number,
+    imageContainer: HTMLDivElement,
+  ) => {
+    const { left, top } = imageContainer.getBoundingClientRect()
+    const containerWidth = imageContainer.clientWidth
+    const containerHeight = imageContainer.clientHeight
+    const x = clientX - left
+    const y = clientY - top
+    const scale = 2
+    const scaledWidth = containerWidth * scale
+    const scaledHeight = containerHeight * scale
+    const offsetX = Math.max(
+      0,
+      Math.min(x * scale - containerWidth / 2, scaledWidth - containerWidth),
+    )
+    const offsetY = Math.max(
+      0,
+      Math.min(y * scale - containerHeight / 2, scaledHeight - containerHeight),
+    )
+    setImageTransform(`translate(-${offsetX}px, -${offsetY}px) scale(${scale})`)
   }
+
+  const mouseOverImage = useCallback((event: MouseEvent<HTMLDivElement>) => {
+    calculateTransform(event.clientX, event.clientY, event.currentTarget)
+  }, [])
+
+  const touchOverImage = useCallback((event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0]
+    calculateTransform(touch.clientX, touch.clientY, event.currentTarget)
+  }, [])
+
+  const imageLeave = useCallback(() => {
+    setImageTransform("none")
+  }, [])
 
   useEffect(() => {
     if (typeof window !== undefined) {
@@ -50,20 +84,31 @@ export default function Product({ item, prices }: ProductProps) {
       </Link>
       <div className="mt-10 flex h-fit w-full flex-col md:flex-row">
         {item && item.images.length > 0 && (
-          <div className="relative w-full flex-col md:w-1/2">
-            <Image
-              src={String(
-                productViewImage === "first"
-                  ? item.images[0]
-                  : item.metadata?.second_image_url,
-              )}
-              alt={`product_${item.name}`}
-              width={0}
-              height={0}
-              sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
-              className="ml-auto mr-auto h-[400px] w-full object-contain md:h-[500px]"
-              priority
-            />
+          <div className="relative w-full flex-col overflow-hidden md:w-1/2">
+            <div
+              className={`relative ml-auto mr-auto h-[400px] w-full overflow-hidden hover:cursor-crosshair md:h-[500px] ${imageTransform !== "none" && "hide-scroll"}`}
+              onMouseMove={mouseOverImage}
+              onMouseLeave={imageLeave}
+              onTouchMove={touchOverImage}
+              onTouchEnd={imageLeave}
+            >
+              <Image
+                src={String(
+                  productViewImage === "first"
+                    ? item.images[0]
+                    : item.metadata?.second_image_url,
+                )}
+                alt={`product_${item.name}`}
+                width={0}
+                height={0}
+                sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
+                className={`h-full w-full object-contain ${imageTransform !== "none" && "origin-top-left"}`}
+                style={{
+                  transform: imageTransform,
+                }}
+                priority
+              />
+            </div>
 
             {item.metadata?.second_image_url && (
               <div className="mt-3 flex items-center justify-center gap-2">

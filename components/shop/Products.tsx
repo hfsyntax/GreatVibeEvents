@@ -274,7 +274,7 @@ export default function Products({ items, prices }: ProductProps) {
       <div className="relative mt-8 flex flex-wrap justify-center gap-2 md:justify-normal">
         {products.length > 0 && (
           <div
-            className={`absolute left-0 top-[-30px] ml-3 flex items-center justify-end sm:right-0 sm:top-[-64px] sm:ml-0 sm:mr-3 ${products.length === 1 && "lg:left-0 lg:right-auto lg:top-[-30px] lg:ml-3 xl:left-auto xl:right-0 xl:top-[-64px] xl:ml-0"} cursor-pointer select-none text-[#5e5e5e] hover:text-gray-800`}
+            className={`absolute left-0 top-[-30px] ml-3 flex items-center justify-end sm:left-auto sm:right-0 sm:top-[-64px] sm:ml-0 sm:mr-3 ${products.length === 1 && "lg:left-0 lg:right-auto lg:top-[-30px] lg:ml-3 xl:left-auto xl:right-0 xl:top-[-64px] xl:ml-0"} w-fit cursor-pointer select-none text-[#5e5e5e] hover:text-gray-800`}
             onClick={toggleSorts}
           >
             <span className={`${openSans.className} text-lg`}>
