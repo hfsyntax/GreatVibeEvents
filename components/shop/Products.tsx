@@ -16,6 +16,7 @@ import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import ProductList from "@/components/shop/ProductList"
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 
@@ -128,7 +129,7 @@ export default function Products({ items, prices }: ProductProps) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex w-full flex-col">
       <div
         className={`fixed left-0 top-0 z-10 hidden h-full w-full backdrop-blur ${productView && "hide-scroll lg:block"}`}
       >
@@ -244,7 +245,10 @@ export default function Products({ items, prices }: ProductProps) {
                     A D D &nbsp;T O &nbsp;C A R T
                   </Link>
                 </div>
-                <div className="mt-8 pl-6">
+                <Link
+                  href={`/shop/products/${product.id}`}
+                  className="mt-8 w-fit pl-6"
+                >
                   <span
                     className={`${openSans.className} text-lg text-[#49740B]`}
                   >
@@ -255,146 +259,162 @@ export default function Products({ items, prices }: ProductProps) {
                     size="1x"
                     className="ml-1 text-[#49740B]"
                   />
-                </div>
+                </Link>
               </>
             )}
           </div>
         </div>
       </div>
 
-      <div className="${openSans.className} ml-3 mt-10 flex text-center sm:text-left xl:ml-0">
-        <span className={`text-2xl`}>
+      <div className="flex flex-col md:flex-row">
+        <span
+          className={`mb-6 text-center text-2xl md:hidden ${openSans.className}`}
+        >
           {products.length >= 1
             ? productType
               ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
               : "All Products"
             : `0 results found for "${search}"`}
         </span>
-      </div>
-      <div className="relative mt-8 flex flex-wrap justify-center gap-2 md:justify-normal">
-        {products.length > 0 && (
-          <div
-            className={`absolute left-0 top-[-30px] ml-3 flex items-center justify-end sm:left-auto sm:right-0 sm:top-[-64px] sm:ml-0 sm:mr-3 ${products.length === 1 && "lg:left-0 lg:right-auto lg:top-[-30px] lg:ml-3 xl:left-auto xl:right-0 xl:top-[-64px] xl:ml-0"} w-fit cursor-pointer select-none text-[#5e5e5e] hover:text-gray-800`}
-            onClick={toggleSorts}
-          >
-            <span className={`${openSans.className} text-lg`}>
-              {sortDescriptions[sort as keyof typeof sortDescriptions]
-                ? sortDescriptions[sort as keyof typeof sortDescriptions]
-                : "Newest"}
-            </span>
-            <FontAwesomeIcon
-              icon={showSorts ? faCaretUp : faCaretDown}
-              size="1x"
-              className="ml-1"
-            />
-          </div>
-        )}
-        <div
-          className={`${openSans.className} absolute left-0 top-0 flex-col text-lg sm:left-auto sm:right-0 sm:top-[-35px] sm:mr-3 ${products.length === 1 && "lg:top-0"} h-fit w-[250px] border border-gray-200 pb-7 pl-8 pr-8 pt-7 ${showSorts ? "flex" : "hidden"} z-10 select-none bg-white`}
-        >
-          <span
-            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${(sort === "newest" || !sort) && "text-[#49740B]"}`}
-            onClick={() => setSortParams("newest")}
-          >
-            Newest
+        <ProductList itemCount={products.length} />
+        <div className="flex w-full flex-col">
+          <span className={`hidden text-2xl md:inline-flex`}>
+            {products.length >= 1
+              ? productType
+                ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
+                : "All Products"
+              : `0 results found for "${search}"`}
           </span>
-          <span
-            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "az" && "text-[#49740B]"}`}
-            onClick={() => setSortParams("az")}
-          >
-            Name (A-Z)
-          </span>
-          <span
-            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "za" && "text-[#49740B]"}`}
-            onClick={() => setSortParams("za")}
-          >
-            Name (Z-A)
-          </span>
-          <span
-            className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "lh" && "text-[#49740B]"}`}
-            onClick={() => setSortParams("lh")}
-          >
-            Price (low-high)
-          </span>
-          <span
-            className={`w-fit cursor-pointer hover:text-[#49740B] ${sort === "hl" && "text-[#49740B]"}`}
-            onClick={() => setSortParams("hl")}
-          >
-            Price (high-low)
-          </span>
-        </div>
-        {products.map((product, index) => {
-          const itemPrices = prices[product.id] || []
-          return (
-            <Link
-              href={`/shop/products/${product.id}`}
-              key={`shop_item_${index}`}
-            >
+          <div className="relative mt-8 flex w-full flex-col justify-center gap-2 lg:flex-row lg:flex-wrap lg:justify-normal">
+            {products.length > 1 && (
               <div
-                className={`flex w-full flex-col ${openSans.className} lg:w-[200px] xl:w-[300px]`}
+                className={`absolute right-0 top-[-70px] mr-3 flex w-[48%] cursor-pointer select-none items-center justify-end border text-[#5e5e5e] hover:text-gray-800 md:left-auto md:right-0 md:top-[-64px] md:ml-0 md:mr-3 md:w-fit md:border-none`}
+                onClick={toggleSorts}
               >
-                <div className="group relative flex flex-col">
-                  {product.metadata.original_price && (
-                    <span className="absolute right-0 top-0 ml-auto bg-[#49740B] pb-1 pl-4 pr-4 pt-1 text-xs text-white lg:pb-2 lg:pl-6 lg:pr-6 lg:pt-2 lg:text-sm">
-                      sale
-                    </span>
-                  )}
-                  <button
-                    className={`absolute bottom-0 left-0 z-10 hidden h-[30px] w-full bg-white text-black shadow-md xl:h-[50px] ${!productView && "group-hover:lg:block"}`}
-                    onClick={(e) => showQuickView(e, product)}
+                <span
+                  className={`${openSans.className} w-full text-center text-3xl text-[#5e5e5e] md:w-fit md:text-left md:text-lg`}
+                >
+                  {sortDescriptions[sort as keyof typeof sortDescriptions]
+                    ? sortDescriptions[sort as keyof typeof sortDescriptions]
+                    : "Newest"}
+                </span>
+                <FontAwesomeIcon
+                  icon={showSorts ? faCaretUp : faCaretDown}
+                  size="1x"
+                  className="ml-1 mr-1 md:mr-0"
+                />
+              </div>
+            )}
+            <div
+              className={`${openSans.className} md: mobile-sortby-container absolute left-0 top-[-25px] ml-3 mr-3 h-fit w-full flex-col border border-gray-200 pb-7 pl-8 pr-8 pt-7 text-lg md:left-auto md:right-0 md:top-[-35px] md:mr-3 md:w-[250px] ${showSorts ? "flex" : "hidden"} z-10 select-none bg-white`}
+            >
+              <span
+                className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${(sort === "newest" || !sort) && "text-[#49740B]"}`}
+                onClick={() => setSortParams("newest")}
+              >
+                Newest
+              </span>
+              <span
+                className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "az" && "text-[#49740B]"}`}
+                onClick={() => setSortParams("az")}
+              >
+                Name (A-Z)
+              </span>
+              <span
+                className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "za" && "text-[#49740B]"}`}
+                onClick={() => setSortParams("za")}
+              >
+                Name (Z-A)
+              </span>
+              <span
+                className={`w-fit cursor-pointer pb-2 hover:text-[#49740B] ${sort === "lh" && "text-[#49740B]"}`}
+                onClick={() => setSortParams("lh")}
+              >
+                Price (low-high)
+              </span>
+              <span
+                className={`w-fit cursor-pointer hover:text-[#49740B] ${sort === "hl" && "text-[#49740B]"}`}
+                onClick={() => setSortParams("hl")}
+              >
+                Price (high-low)
+              </span>
+            </div>
+            {products.map((product, index) => {
+              const itemPrices = prices[product.id] || []
+              return (
+                <Link
+                  href={`/shop/products/${product.id}`}
+                  key={`shop_item_${index}`}
+                >
+                  <div
+                    className={`flex w-full flex-col ${openSans.className} lg:w-[200px] xl:w-[300px]`}
                   >
-                    + Quick view
-                  </button>
-                  <Image
-                    src={`${product.images[0]}`}
-                    alt={`${product.name}`}
-                    width={0}
-                    height={0}
-                    sizes="(max-width: 1023px) 100%, (min-width: 1024px) 200px, (min-width: 1280px) 300px"
-                    className="ml-auto mr-auto h-[100px] w-[100px] object-contain lg:h-[200px] lg:w-[200px] xl:h-[300px] xl:w-[300px]"
-                    priority
-                  />
-                </div>
-                {product.metadata.shipping && (
-                  <span className="text-sm text-[#575757]">FREE SHIPPING</span>
-                )}
-                <span className="text-lg">{product.name}</span>
-                {itemPrices.length > 1 ? (
-                  <>
-                    <span>
-                      From $
-                      {parseFloat(
-                        String(Number(itemPrices[0].unit_amount) / 100),
-                      ).toFixed(2)}
-                    </span>
-                    {product.metadata.original_price && (
-                      <span>{product.metadata.original_price}</span>
-                    )}
-                    <span className="mt-4 text-sm text-[#595959]">
-                      More options
-                    </span>
-                  </>
-                ) : (
-                  <div>
-                    {product.metadata.original_price && (
-                      <span className="text-[#474747B3] line-through">
-                        ${product.metadata.original_price}
+                    <div className="group relative flex flex-col">
+                      {product.metadata.original_price && (
+                        <span className="absolute right-0 top-0 ml-auto bg-[#49740B] pb-1 pl-4 pr-4 pt-1 text-xs text-white lg:pb-2 lg:pl-6 lg:pr-6 lg:pt-2 lg:text-sm">
+                          sale
+                        </span>
+                      )}
+                      <button
+                        className={`absolute bottom-0 left-0 z-10 hidden h-[30px] w-full bg-white text-black shadow-md xl:h-[50px] ${!productView && "group-hover:lg:block"}`}
+                        onClick={(e) => showQuickView(e, product)}
+                      >
+                        + Quick view
+                      </button>
+                      <Image
+                        src={`${product.images[0]}`}
+                        alt={`${product.name}`}
+                        width={0}
+                        height={0}
+                        sizes="(max-width: 1023px) 100%, (min-width: 1024px) 200px, (min-width: 1280px) 300px"
+                        className="ml-auto mr-auto h-[300px] w-full object-contain lg:h-[200px] lg:w-[200px] xl:h-[300px] xl:w-[300px]"
+                        priority
+                      />
+                    </div>
+                    {product.metadata.shipping && (
+                      <span className="text-sm text-[#575757]">
+                        FREE SHIPPING
                       </span>
                     )}
-                    <span
-                      className={`text-base ${product.metadata.original_price && "ml-3"}`}
-                    >
-                      $
-                      {parseFloat(
-                        String(Number(itemPrices[0].unit_amount) / 100),
-                      ).toFixed(2)}
-                    </span>
+                    <span className="text-lg">{product.name}</span>
+                    {itemPrices.length > 1 ? (
+                      <>
+                        <span>
+                          From $
+                          {parseFloat(
+                            String(Number(itemPrices[0].unit_amount) / 100),
+                          ).toFixed(2)}
+                        </span>
+                        {product.metadata.original_price && (
+                          <span>{product.metadata.original_price}</span>
+                        )}
+                        <span className="mt-4 text-sm text-[#595959]">
+                          More options
+                        </span>
+                      </>
+                    ) : (
+                      <div>
+                        {product.metadata.original_price && (
+                          <span className="text-[#474747B3] line-through">
+                            ${product.metadata.original_price}
+                          </span>
+                        )}
+                        <span
+                          className={`text-base ${product.metadata.original_price && "ml-3"}`}
+                        >
+                          $
+                          {parseFloat(
+                            String(Number(itemPrices[0].unit_amount) / 100),
+                          ).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </Link>
-          )
-        })}
+                </Link>
+              )
+            })}
+          </div>
+        </div>
       </div>
     </div>
   )

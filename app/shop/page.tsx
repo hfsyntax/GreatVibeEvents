@@ -27,7 +27,7 @@ export default async function Shop() {
     plainItems.map(async (product) => {
       const response = await listPrices({ product: product.id, limit: 100 })
       return { id: product.id, prices: response.data }
-    })
+    }),
   )
 
   const pricesMap: { [key: string]: Stripe.Price[] } = prices.reduce(
@@ -35,11 +35,10 @@ export default async function Shop() {
       acc[curr.id] = curr.prices
       return acc
     },
-    {} as { [key: string]: Stripe.Price[] }
+    {} as { [key: string]: Stripe.Price[] },
   )
   return (
-    <div className="flex w-full mt-10">
-      <ProductList />
+    <div className="mt-10 flex w-full">
       <Products items={plainItems} prices={pricesMap} />
     </div>
   )
