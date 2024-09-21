@@ -16,36 +16,46 @@ export default async function Checkout({
 }) {
   try {
     if (!searchParams.product_id) {
-      return <span className="text-red-500">Invalid event data.</span>
+      return <span className="text-red-500">Invalid product data.</span>
     }
 
-    const event = await getProduct(searchParams.product_id)
+    const product = await getProduct(searchParams.product_id)
 
-    if (!event) {
-      return <span className="text-red-500">Event not found.</span>
+    if (!product) {
+      return <span className="text-red-500">Product not found.</span>
     }
 
-    const now = Date.now()
-    const eventDate = Number(event.metadata.starts)
-    const eventEnds = Number(event.metadata.ends)
-    const eventAddress = event.metadata.address
+    if (product.metadata.type === "Event Ticket") {
+      const eventDate = parseInt(product.metadata.starts)
+      const eventEnds = product.metadata.ends
+      const eventAddress = product.metadata.address
+      if (!eventDate || !eventEnds || !eventAddress) {
+        return (
+          <span className="text-red-500">
+            Event ticket is not available for purchase.
+          </span>
+        )
+      }
 
-    if (now > eventDate) {
-      return (
-        <span className="text-red-500">
-          Event ticket is not available for purchase.
-        </span>
-      )
+      const now = Date.now()
+      if (now > eventDate) {
+        return (
+          <span className="text-red-500">
+            Event ticket is not available for purchase.
+          </span>
+        )
+      }
     }
-    return (
-      <StripeLoader
-        name={event.name}
-        starts={eventDate}
-        ends={eventEnds}
-        address={eventAddress}
-        eventId={event.id}
-      />
-    )
+
+    const plainProduct = {
+      id: product.name,
+      name: product.name,
+      metadata: product.metadata,
+      images: [],
+      created: product.created,
+    }
+
+    return <StripeLoader product={plainProduct} />
   } catch (error: any) {
     console.error(error)
     if (error.type === "StripeInvalidRequestError") {

@@ -10,7 +10,7 @@ import { getPaymentIntent, updatePaymentIntent } from "@/lib/stripe"
 export async function validateRecaptcha(token: string): Promise<boolean> {
   try {
     const recaptchaResponse = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`,
     )
     const responseBody = await recaptchaResponse.json()
     return responseBody?.success && responseBody?.score >= 0.3
@@ -275,7 +275,7 @@ export async function signUpVolunteer(formData: FormData) {
 
 export async function handleEventForm(
   formData: FormData,
-  paymentIntent: string
+  paymentIntent: string,
 ): Promise<FormEntry> {
   try {
     const session = await getSession()
@@ -405,7 +405,7 @@ export async function handleEventForm(
         errors[key] = `${formValues[key]} must be 500 characters or less.`
       } else if (
         ["guardian-number", "emergency-number", "participant-number"].includes(
-          key
+          key,
         ) &&
         (value.trim().length > 20 || isNaN(parseInt(value)))
       ) {
@@ -491,7 +491,7 @@ export async function handleEventForm(
     const participantEmail = String(formData.get("participant-email"))
     const participantAddress = String(formData.get("participant-address"))
     const participantOtherDisorders = String(
-      formData.get("participant-other-disorders")
+      formData.get("participant-other-disorders"),
     )
     const participantEaosh = String(formData.get("participant-eaosh"))
     const participantDols = String(formData.get("participant-dols"))
@@ -501,23 +501,23 @@ export async function handleEventForm(
     const participantUafd = String(formData.get("participant-uafd"))
     const participantAllergies = String(formData.get("participant-allergies"))
     const participantMedications = String(
-      formData.get("participant-medications")
+      formData.get("participant-medications"),
     )
     const participantBitesOrStrings = String(
-      formData.get("participant-bites-or-stings")
+      formData.get("participant-bites-or-stings"),
     )
     const participantFoodAllergies = String(
-      formData.get("participant-food-allergies")
+      formData.get("participant-food-allergies"),
     )
     const participantDietary = String(
-      formData.get("participant-special-dietary-needs")
+      formData.get("participant-special-dietary-needs"),
     )
     const participantCtctmt = String(formData.get("participant-ctctmt"))
     const participantInterests = String(
-      formData.get("participant-activity-interests")
+      formData.get("participant-activity-interests"),
     )
     const participantEnjoyment = String(
-      formData.get("participant-additional-enjoyment")
+      formData.get("participant-additional-enjoyment"),
     )
     const guardianName = String(formData.get("guardian-name"))
     const guardianRelationship = String(formData.get("guardian-relationship"))
@@ -529,10 +529,10 @@ export async function handleEventForm(
     const emergencyCell = String(formData.get("emergency-number"))
     const emergencyEmail = String(formData.get("emergency-email"))
     const participantNameConfirm = String(
-      formData.get("participant-name-confirm")
+      formData.get("participant-name-confirm"),
     )
     const participantDateSigned = String(
-      formData.get("participant-date-signed")
+      formData.get("participant-date-signed"),
     )
     const guardianNameConfirm = String(formData.get("guardian-name-confirm"))
     const guardianDateSigned = String(formData.get("guardian-date-signed"))

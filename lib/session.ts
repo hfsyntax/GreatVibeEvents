@@ -12,15 +12,15 @@ import { validateRecaptcha } from "@/actions/user"
 const secretKey = process.env.JWT_SECRET_KEY
 const key = new TextEncoder().encode(secretKey)
 
-export async function encrypt(payload: any) {
+async function encrypt(payload: any, time: string = "60d") {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("60d")
+    .setExpirationTime(time)
     .sign(key)
 }
 
-export async function decrypt(input: string): Promise<any> {
+async function decrypt(input: string): Promise<any> {
   try {
     const { payload } = await jwtVerify(input, key, {
       algorithms: ["HS256"],
@@ -91,10 +91,9 @@ export async function login(formData: FormData) {
         if (referer) {
           const refererUrl = new URL(referer)
           const refererParams = refererUrl.searchParams
-          const eventId = refererParams.get("event_id")
-          const price = refererParams.get("price")
-          if (eventId && price) {
-            return redirect(`/checkout?event_id=${eventId}&price=${price}`)
+          const productId = refererParams.get("product_id")
+          if (productId) {
+            return redirect(`/checkout?product_id=${productId}`)
           }
         }
         return redirect("/")
@@ -116,7 +115,6 @@ export async function logout() {
   // Destroy the session
   cookies().delete("session")
   revalidatePath("/")
-  return redirect("/")
 }
 
 export async function getSession() {
@@ -147,5 +145,28 @@ export async function updateSession(request: NextRequest) {
     } else {
       throw error
     }
+  }
+}
+
+export type CheckoutData = {
+  amount: number
+  priceId: string
+  productId: string
+}
+
+export async function storeCheckoutData(data: CheckoutData) {
+  const encryptedShopData = await encrypt(data, "24h")
+  const expires = new Date(Date.now() + 60 * 60 * 24 * 1000)
+  cookies().set("shopData", encryptedShopData, { expires, httpOnly: true })
+}
+
+export async function getCheckoutData() {
+  try {
+    const encryptedShopData = cookies().get("shopData")?.value
+    cookies().delete("shopData")
+    return encryptedShopData ? await decrypt(encryptedShopData) : null
+  } catch (error) {
+    console.error(error)
+    return null
   }
 }

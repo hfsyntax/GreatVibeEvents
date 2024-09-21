@@ -1,26 +1,24 @@
 "use client"
 import type { FormEvent } from "react"
+import type { Product } from "@/components/shop/Products"
 import { useEffect, useState } from "react"
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js"
-import { useCheckoutDataContext } from "@/context/checkoutDataProvider"
 
 export default function CheckoutPage({
+  product,
   amount,
-  eventName,
-  eventId,
-  productType,
 }: {
+  product: Product
   amount: number
-  eventName: string
-  eventId: string
-  productType: string
 }) {
   const stripe = useStripe()
   const elements = useElements()
+  const productType = product.metadata.type
+    ? product.metadata.type
+    : "no product type"
   const [errorMessage, setErrorMessage] = useState<string>()
   const [clientSecret, setClientSecret] = useState("")
   const [loading, setLoading] = useState(false)
-  const { data } = useCheckoutDataContext()
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -56,8 +54,8 @@ export default function CheckoutPage({
       },
       body: JSON.stringify({
         amount: amount,
-        productId: eventId,
-        productName: eventName,
+        productId: product.id,
+        productName: product.name,
         productType: productType,
       }),
     })
@@ -82,12 +80,12 @@ export default function CheckoutPage({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-2 rounded-md">
+    <form onSubmit={handleSubmit} className="rounded-md bg-white p-2">
       {clientSecret && <PaymentElement />}
       {errorMessage && <p>{errorMessage}</p>}
       <button
         disabled={!stripe || loading}
-        className="text-white w-full p-5 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
+        className="mt-2 w-full rounded-md bg-black p-5 font-bold text-white disabled:animate-pulse disabled:opacity-50"
       >
         {!loading
           ? `Pay $${parseFloat(String(amount / 100)).toFixed(2)}`

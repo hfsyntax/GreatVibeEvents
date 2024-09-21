@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { updateSession, getSession } from "@/lib/session"
+import { getProduct } from "@/lib/stripe"
 
 export const config = {
   matcher:
@@ -14,15 +15,25 @@ export async function middleware(request: NextRequest) {
   if (session && pathname === "/login") {
     return NextResponse.redirect(new URL("/", request.url))
   } else if (!session && pathname === "/checkout") {
-    const eventId = searchParams.get("event_id")
-    const price = searchParams.get("price")
-    if (eventId && price) {
-      return NextResponse.redirect(
-        new URL(
-          `/login?redirect=checkout&event_id=${eventId}&price=${price}`,
-          request.url
-        )
-      )
+    const productId = searchParams.get("product_id")
+    if (productId) {
+      try {
+        const product = await getProduct(productId)
+        if (product.metadata.type === "Event Ticket") {
+          return NextResponse.redirect(
+            new URL(
+              `/login?redirect=checkout&product_id=${productId}`,
+              request.url,
+            ),
+          )
+        }
+        return response
+      } catch (error: any) {
+        if (error.type === "StripeInvalidRequestError") {
+          return response
+        }
+        throw error
+      }
     }
   } else {
     return response

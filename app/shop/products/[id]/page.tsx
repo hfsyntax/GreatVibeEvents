@@ -8,16 +8,25 @@ export const metadata: Metadata = {
 }
 
 export default async function ShopId({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id)
-  const plainProduct = {
-    images: product.images,
-    metadata: product.metadata,
-    name: product.name,
-    description: product.description,
-    created: product.created,
-    id: product.id,
+  try {
+    const product = await getProduct(params.id)
+    const plainProduct = {
+      images: product.images,
+      metadata: product.metadata,
+      name: product.name,
+      description: product.description,
+      created: product.created,
+      id: product.id,
+    }
+    const productPrices = await listPrices({ product: product.id, limit: 100 })
+    const plainPrices = productPrices.data.map((price) => price.unit_amount)
+    return <Product item={plainProduct} prices={plainPrices} />
+  } catch (error: any) {
+    console.error(error)
+    if (error.type === "StripeInvalidRequestError") {
+      return <span className="text-red-500">{error.raw.message}</span>
+    } else {
+      return <span className="text-red-500">Internal server error</span>
+    }
   }
-  const productPrices = await listPrices({ product: product.id, limit: 100 })
-  const plainPrices = productPrices.data.map((price) => price.unit_amount)
-  return <Product item={plainProduct} prices={plainPrices} />
 }

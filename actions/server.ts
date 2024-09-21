@@ -3,7 +3,7 @@ import type { Stripe } from "stripe"
 import { backendClient } from "@/lib/edgestore-server"
 import { sql } from "@vercel/postgres"
 import { getSession } from "@/lib/session"
-import { getProducts } from "@/lib/stripe"
+import { getProductPrice, getProducts } from "@/lib/stripe"
 
 export type GalleryImage = {
   url: string
@@ -15,7 +15,7 @@ export type GalleryImage = {
 }
 
 export async function getGalleryImageUrls(
-  amount: number
+  amount: number,
 ): Promise<{ items: Array<GalleryImage>; more: boolean }> {
   try {
     const imageUrls: Array<GalleryImage> = []
@@ -65,7 +65,7 @@ export async function getShopProducts() {
 
     const filteredProducts = response.data.filter(
       (product) =>
-        !product.metadata.type || product.metadata.type !== "Event Ticket"
+        !product.metadata.type || product.metadata.type !== "Event Ticket",
     )
 
     products = products.concat(filteredProducts)
@@ -78,6 +78,16 @@ export async function getShopProducts() {
   }
 
   return products
+}
+
+export async function getProductPriceName(priceId: string) {
+  try {
+    const response = await getProductPrice(priceId)
+    return response.nickname
+  } catch (error) {
+    console.error(error)
+    return ""
+  }
 }
 
 export async function getEvents(amount: number) {
@@ -94,7 +104,7 @@ export async function getEvents(amount: number) {
       })
 
     const filteredProducts = response.data.filter(
-      (product) => product.metadata.type === "Event Ticket"
+      (product) => product.metadata.type === "Event Ticket",
     )
 
     events = events.concat(filteredProducts)

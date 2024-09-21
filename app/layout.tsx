@@ -5,7 +5,6 @@ import { Inter } from "next/font/google"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { getSession } from "@/lib/session"
-import { CheckoutDataProvider } from "@/context/checkoutDataProvider"
 
 export const metadata: Metadata = {
   title:
@@ -26,22 +25,20 @@ export default async function RootLayout({
       <body className={`${inter.className}`}>
         <div className={`flex flex-col 2xl:flex-row`}>
           <div
-            className={`bg-black border-yellow-500 border-2 box-border w-full h-[90px] 2xl:w-[160px] 2xl:h-auto`}
+            className={`box-border h-[90px] w-full border-2 border-yellow-500 bg-black 2xl:h-auto 2xl:w-[160px]`}
           >
             <span className="text-white">[ad container left]</span>
           </div>
-          <div className="flex flex-col xl:w-[1232px] ml-auto mr-auto w-full">
-            <div className="bg-black w-full hidden 2xl:inline-block h-[90px]">
+          <div className="ml-auto mr-auto flex w-full flex-col xl:w-[1232px]">
+            <div className="hidden h-[90px] w-full bg-black 2xl:inline-block">
               <span className="text-white">[ad container middle]</span>
             </div>
-            <CheckoutDataProvider>
-              <Navbar session={session} />
-              {children}
-            </CheckoutDataProvider>
+            <Navbar session={session} />
+            {children}
             <Footer />
           </div>
           <div
-            className={`bg-black box-border border-yellow-500 border-2 w-full h-[90px] 2xl:w-[160px] 2xl:h-auto`}
+            className={`box-border h-[90px] w-full border-2 border-yellow-500 bg-black 2xl:h-auto 2xl:w-[160px]`}
           >
             <span className="text-white">[ad container right]</span>
           </div>

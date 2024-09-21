@@ -20,7 +20,7 @@ import ProductList from "@/components/shop/ProductList"
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 
-type Product = {
+export type Product = {
   id: string
   name: string
   metadata: { [key: string]: string }
