@@ -21,7 +21,7 @@ export default async function Form({
 
     const paymentIntent = await getPaymentIntent(payment_intent)
     const userId = Number(paymentIntent.metadata.userId)
-    const eventId = paymentIntent.metadata.eventId
+    const eventId = paymentIntent.metadata.productId
     const event = await getProduct(eventId)
     const eventDate = Number(event.metadata.starts)
     const formCompleted = paymentIntent.metadata.formCompleted
@@ -54,7 +54,7 @@ export default async function Form({
     return (
       <>
         <b className="text-center">PARTICIPATION AND RELEASE FORM</b>
-        <p className="w-full lg:w-[500px] ml-auto mr-auto">
+        <p className="ml-auto mr-auto w-full lg:w-[500px]">
           FORM MUST BE COMPLETED AND SIGNED BY ALL PARTIES PRIOR TO
           PARTICIPATING IN GREAT VIBE EVENTS ORGANIZED FUNCTIONS
         </p>

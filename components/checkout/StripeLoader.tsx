@@ -73,7 +73,11 @@ export default function StripeLoader({ product }: { product: Product }) {
           currency: "usd",
         }}
       >
-        <CheckoutPage amount={priceData.amount} product={product} />
+        <CheckoutPage
+          amount={priceData.amount}
+          product={product}
+          productVariant={productType ? productType : "default"}
+        />
       </Elements>
     </main>
   ) : (

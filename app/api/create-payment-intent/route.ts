@@ -9,8 +9,15 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "401 Unauthorized" }, { status: 401 })
     }
-    const { amount, productId, productName, productType } = await request.json()
-    if (!amount || !productId || !productName || !productType) {
+    const { amount, productId, productName, productType, productVariant } =
+      await request.json()
+    if (
+      !amount ||
+      !productId ||
+      !productName ||
+      !productType ||
+      !productVariant
+    ) {
       return NextResponse.json({ error: "400 Bad Request" }, { status: 400 })
     }
     const existingCustomerId = await getStripeCustomerId()
@@ -46,7 +53,9 @@ export async function POST(request: NextRequest) {
       description: "EventTicket",
       metadata: {
         productId: productId,
+        productName: productName,
         productType: productType,
+        productVariant: productVariant,
         userId: session.user.id,
         formCompleted: "false",
       },
@@ -56,7 +65,7 @@ export async function POST(request: NextRequest) {
     console.error(error)
     return NextResponse.json(
       { error: `Error: Internal server error: ${error}` },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

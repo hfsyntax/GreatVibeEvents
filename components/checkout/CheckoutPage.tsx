@@ -6,9 +6,11 @@ import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js"
 
 export default function CheckoutPage({
   product,
+  productVariant,
   amount,
 }: {
   product: Product
+  productVariant: string
   amount: number
 }) {
   const stripe = useStripe()
@@ -57,6 +59,7 @@ export default function CheckoutPage({
         productId: product.id,
         productName: product.name,
         productType: productType,
+        productVariant: productVariant,
       }),
     })
       .then((res) => res.json())

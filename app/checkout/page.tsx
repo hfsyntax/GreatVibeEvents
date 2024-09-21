@@ -48,7 +48,7 @@ export default async function Checkout({
     }
 
     const plainProduct = {
-      id: product.name,
+      id: product.id,
       name: product.name,
       metadata: product.metadata,
       images: [],
