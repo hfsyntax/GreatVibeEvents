@@ -1,13 +1,17 @@
 "use client"
 import type { MouseEvent, TouchEvent } from "react"
+import type { ProductVariant } from "@/actions/server"
 import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFacebook, faXTwitter } from "@fortawesome/free-brands-svg-icons"
 import { faCaretLeft } from "@fortawesome/free-solid-svg-icons"
 import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
 import Link from "next/link"
 import Image from "next/image"
+import { CheckoutData, storeCheckoutData } from "@/lib/session"
 
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
@@ -24,11 +28,19 @@ type Product = {
 type ProductProps = {
   item: Product
   prices: Array<number | null>
+  variants: Array<ProductVariant>
 }
 
-export default function Product({ item, prices }: ProductProps) {
+export default function Product({ item, prices, variants }: ProductProps) {
   const [url, setUrl] = useState<string | undefined>()
-  const [productViewImage, setProductViewImage] = useState("first")
+  const router = useRouter()
+  const { data, setData } = useCheckoutDataContext()
+  const [productVariant, setProductVariant] = useState<ProductVariant>({
+    name: item.name,
+    image_url: data.variant?.image_url
+      ? data.variant.image_url
+      : item.images[0],
+  })
   const [imageTransform, setImageTransform] = useState("none")
 
   const calculateTransform = (
@@ -93,12 +105,8 @@ export default function Product({ item, prices }: ProductProps) {
               onTouchEnd={imageLeave}
             >
               <Image
-                src={String(
-                  productViewImage === "first"
-                    ? item.images[0]
-                    : item.metadata?.second_image_url,
-                )}
-                alt={`product_${item.name}`}
+                src={productVariant.image_url}
+                alt={`product_${productVariant.name}`}
                 width={0}
                 height={0}
                 sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
@@ -110,32 +118,28 @@ export default function Product({ item, prices }: ProductProps) {
               />
             </div>
 
-            {item.metadata?.second_image_url && (
+            {item.metadata?.variants && (
               <div className="mt-3 flex items-center justify-center gap-2">
-                <div
-                  className={`h-[50px] w-[50px] border ${productViewImage === "first" && "border-black"} cursor-pointer bg-transparent`}
-                  onClick={() => setProductViewImage("first")}
-                >
-                  <Image
-                    src={String(item.images[0])}
-                    alt={`product_${item.name}`}
-                    width={50}
-                    height={50}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-                <div
-                  className={`h-[50px] w-[50px] border ${productViewImage === "second" && "border-black"} cursor-pointer bg-transparent`}
-                  onClick={() => setProductViewImage("second")}
-                >
-                  <Image
-                    src={String(item.metadata?.second_image_url)}
-                    alt={`product_${item.name}`}
-                    width={50}
-                    height={50}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
+                {variants.map((variant, index) => (
+                  <div
+                    className={`h-[50px] w-[50px] border ${productVariant.image_url === variant.image_url && "border-black"} cursor-pointer bg-transparent`}
+                    onClick={() =>
+                      setProductVariant({
+                        name: variant.name,
+                        image_url: variant.image_url,
+                      })
+                    }
+                    key={`${item.name}_variant_${index}`}
+                  >
+                    <Image
+                      src={String(variant.image_url)}
+                      alt={`variant_${variant.name}`}
+                      width={50}
+                      height={50}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -197,12 +201,11 @@ export default function Product({ item, prices }: ProductProps) {
                 className={`w-fit pb-4 pl-2 pr-2 pt-4 ${openSans.className} ml-6 h-[60px] w-[130px] border border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent`}
               />
               <div className="mt-5 flex w-full flex-col md:flex-row md:gap-7 md:pl-6">
-                <Link
-                  href={"#"}
+                <button
                   className={`ml-6 mr-6 h-[60px] bg-[#49740B] text-center leading-[60px] text-white md:ml-0 md:mr-0 md:w-[170px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
                 >
                   B U Y &nbsp;N O W
-                </Link>
+                </button>
                 <Link
                   href={"#"}
                   className={`ml-6 mr-6 h-[60px] bg-[#49740B] text-center leading-[60px] text-white md:ml-0 md:mr-0 md:w-[200px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}

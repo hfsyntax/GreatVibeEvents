@@ -1,6 +1,7 @@
 import { getProduct, listPrices } from "@/lib/stripe"
 import Product from "@/components/shop/Product"
 import type { Metadata } from "next"
+import { getProductVariants } from "@/actions/server"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Product View",
@@ -20,7 +21,20 @@ export default async function ShopId({ params }: { params: { id: string } }) {
     }
     const productPrices = await listPrices({ product: product.id, limit: 100 })
     const plainPrices = productPrices.data.map((price) => price.unit_amount)
-    return <Product item={plainProduct} prices={plainPrices} />
+    let productImages = []
+    if (product.images.length > 0)
+      productImages.push({ name: product.name, image_url: product.images[0] })
+    if (plainProduct.metadata.variants) {
+      const allImages = await getProductVariants(product.id)
+      if (allImages.length > 0) productImages = productImages.concat(allImages)
+    }
+    return (
+      <Product
+        item={plainProduct}
+        prices={plainPrices}
+        variants={productImages}
+      />
+    )
   } catch (error: any) {
     console.error(error)
     if (error.type === "StripeInvalidRequestError") {

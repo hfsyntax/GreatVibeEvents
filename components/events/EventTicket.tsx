@@ -64,6 +64,7 @@ export default function EventTicket({
       amount: amount,
       priceId: String(selectedPrice?.id),
       productId: productId,
+      variantName: null,
     }
     await storeCheckoutData(data)
     router.push(`/checkout?product_id=${productId}`)

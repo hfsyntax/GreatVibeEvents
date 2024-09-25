@@ -1,11 +1,8 @@
 import type { Stripe } from "stripe"
 import type { Metadata } from "next"
 import { getShopProducts } from "@/actions/server"
-import { Open_Sans } from "next/font/google"
-import ProductList from "@/components/shop/ProductList"
 import Products from "@/components/shop/Products"
 import { listPrices } from "@/lib/stripe"
-const openSans = Open_Sans({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Shop",

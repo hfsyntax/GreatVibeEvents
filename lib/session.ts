@@ -152,6 +152,7 @@ export type CheckoutData = {
   amount: number
   priceId: string
   productId: string
+  variantName: string | null
 }
 
 export async function storeCheckoutData(data: CheckoutData) {

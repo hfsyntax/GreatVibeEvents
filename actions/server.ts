@@ -80,6 +80,29 @@ export async function getShopProducts() {
   return products
 }
 
+export type ProductVariant = {
+  name: string
+  image_url: string
+}
+
+export async function getProductVariants(
+  stripeProductId: string,
+): Promise<Array<ProductVariant>> {
+  try {
+    const query = await sql`SELECT pv.name, pv.picture_url
+    FROM product_variants pv
+    INNER JOIN products p ON pv.product_id = p.id
+    WHERE p.stripe_product_id = ${stripeProductId}`
+    return query.rows.map((row) => ({
+      name: row.name,
+      image_url: row.picture_url,
+    }))
+  } catch (error) {
+    console.error(error)
+    return []
+  }
+}
+
 export async function getProductPriceName(priceId: string) {
   try {
     const response = await getProductPrice(priceId)
