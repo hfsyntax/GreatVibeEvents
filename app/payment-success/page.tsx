@@ -32,24 +32,34 @@ export default async function PaymentSuccess({
       return <span className="text-red-500">Invalid payment data.</span>
     }
 
-    const productVariant = paymentIntent.metadata.productVariant
+    const productName = paymentIntent.metadata.productName
+    const productQuantity = paymentIntent.metadata.quantity
+    const productVariant =
+      paymentIntent.metadata.productVariant !== "default"
+        ? paymentIntent.metadata.productVariant
+        : null
     const isEventProduct = paymentIntent.metadata.productType === "Event Ticket"
 
     return (
       <main className="m-10 mx-auto max-w-6xl rounded-md border bg-black p-10 text-center text-white">
         <div className="mb-10">
           <h1 className="mb-2 text-4xl font-extrabold">
-            Payment completed for {productVariant}
+            Payment completed for {productName} {productVariant} x
+            {productQuantity}
           </h1>
           <h2 className="text-2xl">You successfully sent</h2>
           <div className="mt-5 rounded-md bg-white p-2 text-4xl font-bold text-black">
             ${amount / 100}
           </div>
-          <span className="mt-5 block text-2xl">
-            do not close this window, redirecting to Participation and Release
-            Form...
-          </span>
-          {isEventProduct && <RedirectToForm payment_intent={payment_intent} />}
+          {isEventProduct && (
+            <>
+              <span className="mt-5 block text-2xl">
+                do not close this window, redirecting to Participation and
+                Release Form...
+              </span>
+              <RedirectToForm payment_intent={payment_intent} />
+            </>
+          )}
         </div>
       </main>
     )

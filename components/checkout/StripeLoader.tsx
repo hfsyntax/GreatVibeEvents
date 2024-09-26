@@ -11,7 +11,7 @@ import { getCheckoutData } from "@/lib/session"
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!)
 
 export default function StripeLoader({ product }: { product: Product }) {
-  const [productType, setProductType] = useState<string>("No name for product")
+  const [productType, setProductType] = useState<string>("")
   const [priceData, setPriceData] = useState<CheckoutData>()
   const checkedName = useRef<boolean>(false)
   useEffect(() => {
@@ -36,7 +36,9 @@ export default function StripeLoader({ product }: { product: Product }) {
     priceData.productId ? (
     <main className="xl:w-6xl m-10 mx-auto w-full rounded-md border bg-black p-10 text-center text-white">
       <div className="mb-10">
-        <h1 className="mb-2 text-4xl font-extrabold">{product.name}</h1>
+        <h1 className="mb-2 text-4xl font-extrabold">
+          {product.name} x{priceData.quantity}
+        </h1>
         {product.metadata.starts &&
           product.metadata.ends &&
           product.metadata.address && (
@@ -63,7 +65,15 @@ export default function StripeLoader({ product }: { product: Product }) {
               &nbsp;@{product.metadata.address}
             </h2>
           )}
-        <h2 className="mt-2 text-2xl font-bold">{productType}</h2>
+        <h2 className="mt-2 text-2xl font-bold">
+          {product.metadata.type === "Event Ticket"
+            ? productType
+            : product.metadata?.defaultVariant
+              ? productType
+                ? `${priceData.variantName} (${productType})`
+                : priceData.variantName
+              : null}
+        </h2>
       </div>
       <Elements
         stripe={stripePromise}
@@ -75,8 +85,17 @@ export default function StripeLoader({ product }: { product: Product }) {
       >
         <CheckoutPage
           amount={priceData.amount}
+          quantity={priceData.quantity}
           product={product}
-          productVariant={productType ? productType : "default"}
+          productVariant={
+            product.metadata.type === "Event Ticket"
+              ? productType
+              : product.metadata?.defaultVariant
+                ? productType
+                  ? `${priceData.variantName} (${productType})`
+                  : `${priceData.variantName}`
+                : null
+          }
         />
       </Elements>
     </main>

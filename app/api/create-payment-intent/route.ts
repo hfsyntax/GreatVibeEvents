@@ -9,14 +9,21 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "401 Unauthorized" }, { status: 401 })
     }
-    const { amount, productId, productName, productType, productVariant } =
-      await request.json()
+    const {
+      amount,
+      productId,
+      productName,
+      productType,
+      productVariant,
+      quantity,
+    } = await request.json()
     if (
-      !amount ||
+      !Number.isInteger(amount) ||
+      Number(amount) < 50 ||
       !productId ||
       !productName ||
       !productType ||
-      !productVariant
+      !Number.isInteger(quantity)
     ) {
       return NextResponse.json({ error: "400 Bad Request" }, { status: 400 })
     }
@@ -45,20 +52,35 @@ export async function POST(request: NextRequest) {
 
     if (!existingCustomerId) storeStripeCustomer(customer.id)
 
+    const productMetadata = {
+      productId: productId,
+      productName: productName,
+      productType: productType,
+      productVariant: productVariant ? productVariant : "default",
+      userId: session.user.id,
+      quantity: quantity,
+    }
+
+    const eventMetadata = {
+      productId: productId,
+      productName: productName,
+      productType: productType,
+      productVariant: productVariant ? productVariant : "default",
+      userId: session.user.id,
+      quantity: quantity,
+      formCompleted: "false",
+    }
+
     const paymentIntent = await createPaymentIntent({
       amount: amount,
       currency: "usd",
       customer: customer.id,
       automatic_payment_methods: { enabled: true },
-      description: "EventTicket",
-      metadata: {
-        productId: productId,
-        productName: productName,
-        productType: productType,
-        productVariant: productVariant,
-        userId: session.user.id,
-        formCompleted: "false",
-      },
+      description: productVariant
+        ? `${productName} ${productVariant}`
+        : productName,
+      metadata:
+        productType === "Event Ticket" ? eventMetadata : productMetadata,
     })
     return NextResponse.json({ clientSecret: paymentIntent.client_secret })
   } catch (error) {

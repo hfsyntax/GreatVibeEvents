@@ -1,7 +1,9 @@
 "use client"
-import type { MouseEvent, TouchEvent } from "react"
+import type { ChangeEvent, MouseEvent, TouchEvent } from "react"
 import type { ProductVariant } from "@/actions/server"
+import type { ProductPrice } from "@/app/shop/products/[id]/page"
 import { getPriceDifference } from "@/lib/utils"
+import { storeCheckoutData } from "@/lib/session"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFacebook, faXTwitter } from "@fortawesome/free-brands-svg-icons"
@@ -11,7 +13,6 @@ import { useRouter } from "next/navigation"
 import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
 import Link from "next/link"
 import Image from "next/image"
-import { CheckoutData, storeCheckoutData } from "@/lib/session"
 
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
@@ -27,20 +28,28 @@ type Product = {
 
 type ProductProps = {
   item: Product
-  prices: Array<number | null>
+  prices: Array<ProductPrice>
   variants: Array<ProductVariant>
 }
 
 export default function Product({ item, prices, variants }: ProductProps) {
   const [url, setUrl] = useState<string | undefined>()
   const router = useRouter()
-  const { data, setData } = useCheckoutDataContext()
+  const { data } = useCheckoutDataContext()
+  const [currentPrice, setCurrentPrice] = useState<ProductPrice>({
+    id: prices[0].id,
+    name: prices[0].name,
+    amount: prices[0].amount,
+  })
   const [productVariant, setProductVariant] = useState<ProductVariant>({
-    name: item.name,
+    name: data.variant?.name ? data.variant.name : variants[0].name,
     image_url: data.variant?.image_url
       ? data.variant.image_url
       : item.images[0],
   })
+  const [productQuantity, setProductQuantity] = useState<number>(
+    data.quantity ? data.quantity : 1,
+  )
   const [imageTransform, setImageTransform] = useState("none")
 
   const calculateTransform = (
@@ -81,6 +90,39 @@ export default function Product({ item, prices, variants }: ProductProps) {
   }, [])
 
   useEffect(() => {
+    console.log(variants)
+    console.log(data)
+  }, [])
+
+  const setPriceLabel = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedName = event.target.value
+    const price = prices.find((price) => price.name === selectedName)
+    if (price && currentPrice.id !== price.id)
+      setCurrentPrice({ id: price.id, name: price.name, amount: price.amount })
+  }
+
+  const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+    if (Number.isInteger(parseFloat(value))) {
+      setProductQuantity(Number(value))
+    }
+  }
+
+  const goToCheckout = async () => {
+    if (currentPrice.amount) {
+      const shopData = {
+        amount: currentPrice.amount * productQuantity,
+        priceId: currentPrice.id,
+        productId: item.id,
+        variantName: productVariant.name,
+        quantity: productQuantity,
+      }
+      await storeCheckoutData(shopData)
+      router.push(`/checkout?product_id=${item.id}`)
+    }
+  }
+
+  useEffect(() => {
     if (typeof window !== undefined) {
       setUrl(window.location.href)
     }
@@ -118,7 +160,7 @@ export default function Product({ item, prices, variants }: ProductProps) {
               />
             </div>
 
-            {item.metadata?.variants && (
+            {item.metadata?.defaultVariant && (
               <div className="mt-3 flex items-center justify-center gap-2">
                 {variants.map((variant, index) => (
                   <div
@@ -145,7 +187,7 @@ export default function Product({ item, prices, variants }: ProductProps) {
           </div>
         )}
         <div
-          className={`flex w-full flex-col md:w-1/2 ${playfairDisplay.className} md:h-[500px]`}
+          className={`flex w-full flex-col md:w-1/2 ${playfairDisplay.className}`}
         >
           <span className="mt-5 text-center text-4xl text-black md:mt-0 md:pl-6 md:text-left">
             {item?.name}
@@ -161,30 +203,35 @@ export default function Product({ item, prices, variants }: ProductProps) {
                   </span>
                 )}
                 <span className={`text-2xl ${openSans.className} pl-6`}>
-                  ${parseFloat(String(Number(prices?.[0]) / 100)).toFixed(2)}
+                  $
+                  {parseFloat(
+                    String(Number(currentPrice.amount) / 100),
+                  ).toFixed(2)}
                 </span>
               </div>
-              {item.metadata.original_price && prices[0] && (
-                <span
-                  className={`pl-6 text-lg text-red-500 ${openSans.className}`}
-                >
-                  You save&nbsp;$
-                  {
-                    getPriceDifference(
-                      parseFloat(item.metadata.original_price),
-                      prices[0] / 100,
-                    ).dollarAmount
-                  }
-                  &nbsp;(
-                  {
-                    getPriceDifference(
-                      parseFloat(item.metadata.original_price),
-                      prices[0] / 100,
-                    ).percent
-                  }
-                  %)
-                </span>
-              )}
+              {item.metadata.original_price &&
+                prices[0] &&
+                prices[0].amount && (
+                  <span
+                    className={`pl-6 text-lg text-red-500 ${openSans.className}`}
+                  >
+                    You save&nbsp;$
+                    {
+                      getPriceDifference(
+                        parseFloat(item.metadata.original_price),
+                        prices[0].amount / 100,
+                      ).dollarAmount
+                    }
+                    &nbsp;(
+                    {
+                      getPriceDifference(
+                        parseFloat(item.metadata.original_price),
+                        prices[0].amount / 100,
+                      ).percent
+                    }
+                    %)
+                  </span>
+                )}
               {item.metadata.shipping && (
                 <span
                   className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
@@ -192,17 +239,34 @@ export default function Product({ item, prices, variants }: ProductProps) {
                   FREE SHIPPING
                 </span>
               )}
+              {prices.length > 1 && (
+                <>
+                  <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
+                    Size
+                  </label>
+                  <select
+                    className={`ml-6 mt-2 h-[56px] border border-gray-200 outline-none ${openSans.className}`}
+                    onChange={setPriceLabel}
+                  >
+                    {prices.map((price) => (
+                      <option key={`${price.name}`}>{price.name}</option>
+                    ))}
+                  </select>
+                </>
+              )}
               <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
                 Quantity
               </label>
               <input
                 type="number"
-                defaultValue={1}
+                value={productQuantity}
+                onChange={handleQuantityChange}
                 className={`w-fit pb-4 pl-2 pr-2 pt-4 ${openSans.className} ml-6 h-[60px] w-[130px] border border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent`}
               />
               <div className="mt-5 flex w-full flex-col md:flex-row md:gap-7 md:pl-6">
                 <button
                   className={`ml-6 mr-6 h-[60px] bg-[#49740B] text-center leading-[60px] text-white md:ml-0 md:mr-0 md:w-[170px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+                  onClick={goToCheckout}
                 >
                   B U Y &nbsp;N O W
                 </button>

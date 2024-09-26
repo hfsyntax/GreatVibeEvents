@@ -153,6 +153,7 @@ export type CheckoutData = {
   priceId: string
   productId: string
   variantName: string | null
+  quantity: number
 }
 
 export async function storeCheckoutData(data: CheckoutData) {
@@ -164,8 +165,12 @@ export async function storeCheckoutData(data: CheckoutData) {
 export async function getCheckoutData() {
   try {
     const encryptedShopData = cookies().get("shopData")?.value
+    const decryptedData = encryptedShopData
+      ? await decrypt(encryptedShopData)
+      : null
+    console.log(decryptedData)
     cookies().delete("shopData")
-    return encryptedShopData ? await decrypt(encryptedShopData) : null
+    return decryptedData
   } catch (error) {
     console.error(error)
     return null

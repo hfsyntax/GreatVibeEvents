@@ -8,10 +8,12 @@ export default function CheckoutPage({
   product,
   productVariant,
   amount,
+  quantity,
 }: {
   product: Product
-  productVariant: string
+  productVariant: string | null
   amount: number
+  quantity: number
 }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -49,6 +51,7 @@ export default function CheckoutPage({
   }
 
   useEffect(() => {
+    console.log(amount)
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: {
@@ -60,6 +63,7 @@ export default function CheckoutPage({
         productName: product.name,
         productType: productType,
         productVariant: productVariant,
+        quantity: quantity,
       }),
     })
       .then((res) => res.json())

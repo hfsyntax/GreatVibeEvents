@@ -5,6 +5,7 @@ import { createContext, useContext, useState } from "react"
 interface CheckoutData {
   productName: string | null
   variant: ProductVariant | null
+  quantity: number | null
 }
 
 interface CheckoutDataContextType {
@@ -24,6 +25,7 @@ export const CheckoutDataProvider = ({
   let [data, setData] = useState<CheckoutData>({
     productName: "",
     variant: null,
+    quantity: null,
   })
 
   return (

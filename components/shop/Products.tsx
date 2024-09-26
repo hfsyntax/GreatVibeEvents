@@ -1,6 +1,6 @@
 "use client"
 import type { Stripe } from "stripe"
-import type { MouseEvent } from "react"
+import type { ChangeEvent, MouseEvent } from "react"
 import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -19,6 +19,7 @@ import Image from "next/image"
 import ProductList from "@/components/shop/ProductList"
 import { getProductVariants, ProductVariant } from "@/actions/server"
 import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
+import { storeCheckoutData } from "@/lib/session"
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 
@@ -48,11 +49,18 @@ export default function Products({ items, prices }: ProductProps) {
   const { data, setData } = useCheckoutDataContext()
   const [product, setProduct] = useState<{
     product: Product
+    currentPrice: {
+      id: string
+      name: string
+      amount: number | null
+    }
     variants: Array<ProductVariant>
     currentVariant: null | ProductVariant
     currentVariantIndex: number
+    quantity: number
   } | null>(null)
   const [showSorts, setShowSorts] = useState(false)
+
   const showQuickView = async (
     event: MouseEvent<HTMLButtonElement>,
     newProduct: Product,
@@ -63,10 +71,12 @@ export default function Products({ items, prices }: ProductProps) {
       let variants: Array<ProductVariant> = []
       if (newProduct.images[0])
         variants.push({
-          name: newProduct.name,
+          name: newProduct.metadata.defaultVariant
+            ? newProduct.metadata.defaultVariant
+            : "default",
           image_url: newProduct.images[0],
         })
-      if (newProduct.metadata.variants) {
+      if (newProduct.metadata.defaultVariant) {
         const otherVariants = await getProductVariants(newProduct.id)
         variants = variants.concat(otherVariants)
       }
@@ -75,14 +85,57 @@ export default function Products({ items, prices }: ProductProps) {
         variants: variants,
         currentVariant: variants[0],
         currentVariantIndex: 0,
+        quantity: 1,
+        currentPrice: {
+          id: prices[newProduct.id][0].id,
+          name: prices[newProduct.id][0].nickname ?? "default",
+          amount: prices[newProduct.id][0].unit_amount,
+        },
       })
-      setData({ productName: newProduct.name, variant: variants[0] })
+      setData({
+        productName: newProduct.name,
+        variant: variants[0],
+        quantity: 1,
+      })
     }
   }
 
   const closeQuickView = () => {
     if (productView) setProductView(false)
     if (product) setProduct(null)
+  }
+
+  const setPriceLabel = (event: ChangeEvent<HTMLSelectElement>) => {
+    if (product) {
+      const selectedName = event.target.value
+      const price = prices[product.product.id].find(
+        (price) => price.nickname === selectedName,
+      )
+      if (price && product.currentPrice.id !== price.id) {
+        setProduct({
+          ...product,
+          currentPrice: {
+            id: price.id,
+            name: price.nickname ? price.nickname : "default",
+            amount: price.unit_amount,
+          },
+        })
+      }
+    }
+  }
+
+  const goToCheckout = async () => {
+    if (product && product.currentPrice.amount && product.quantity) {
+      const shopData = {
+        amount: product.currentPrice.amount * product.quantity,
+        priceId: product.currentPrice.id,
+        productId: product.product.id,
+        variantName: product.currentVariant?.name ?? null,
+        quantity: product.quantity,
+      }
+      await storeCheckoutData(shopData)
+      router.push(`/checkout?product_id=${product.product.id}`)
+    }
   }
 
   const toggleSorts = () => setShowSorts(!showSorts)
@@ -100,10 +153,17 @@ export default function Products({ items, prices }: ProductProps) {
         setData({
           productName: product.product.name,
           variant: product.variants[nextImageIndex],
+          quantity: 1,
         })
       }
     }
   }
+
+  useEffect(() => {
+    if (product) {
+      console.log(product)
+    }
+  }, [product])
 
   const previousProductViewImage = () => {
     if (product && product.variants.length > 0) {
@@ -117,10 +177,19 @@ export default function Products({ items, prices }: ProductProps) {
           currentVariant: product.variants[previousProductIndex],
         })
         setData({
+          ...data,
           productName: product.product.name,
           variant: product.variants[previousProductIndex],
         })
       }
+    }
+  }
+
+  const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+    if (product && Number.isInteger(parseFloat(value))) {
+      setProduct({ ...product, quantity: Number(value) })
+      setData({ ...data, quantity: Number(value) })
     }
   }
 
@@ -190,7 +259,7 @@ export default function Products({ items, prices }: ProductProps) {
   // clear previously set checkout context
   useEffect(() => {
     if (data) {
-      setData({ productName: null, variant: null })
+      setData({ productName: null, variant: null, quantity: null })
     }
   }, [])
 
@@ -203,10 +272,10 @@ export default function Products({ items, prices }: ProductProps) {
       <div
         className={`fixed left-0 top-0 z-10 hidden h-full w-full backdrop-blur ${productView && "hide-scroll lg:block"}`}
       >
-        <div className="absolute left-1/2 top-1/2 z-10 flex h-[500px] w-[900px] translate-x-[-50%] translate-y-[-50%] bg-white shadow xl:h-[500px] xl:w-[1000px]">
+        <div className="absolute left-1/2 top-1/2 z-10 flex w-[900px] translate-x-[-50%] translate-y-[-50%] bg-white shadow xl:w-[1000px]">
           {product && product.product.images.length > 0 && (
             <div className="relative w-1/2">
-              {product.product.metadata?.variants && (
+              {product.product.metadata?.defaultVariant && (
                 <FontAwesomeIcon
                   icon={faCaretLeft}
                   size="2xl"
@@ -220,10 +289,10 @@ export default function Products({ items, prices }: ProductProps) {
                 width={0}
                 height={0}
                 sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
-                className="ml-auto mr-auto h-full w-full object-contain"
+                className="ml-auto mr-auto h-[500px] w-full object-contain"
                 priority
               />
-              {product.product.metadata.variants && (
+              {product.product.metadata.defaultVariant && (
                 <FontAwesomeIcon
                   icon={faCaretRight}
                   size="2xl"
@@ -292,21 +361,41 @@ export default function Products({ items, prices }: ProductProps) {
                     FREE SHIPPING
                   </span>
                 )}
+                {prices[product.product.id].length > 1 && (
+                  <>
+                    <label
+                      className={`${openSans.className} mt-10 pl-6 text-lg`}
+                    >
+                      Size
+                    </label>
+                    <select
+                      className={`ml-6 mt-2 h-[56px] border border-gray-200 outline-none ${openSans.className}`}
+                      onChange={setPriceLabel}
+                    >
+                      {prices[product.product.id].map((price) => (
+                        <option key={`${price.nickname}`}>
+                          {price.nickname}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
                 <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
                   Quantity
                 </label>
                 <input
                   type="number"
-                  defaultValue={1}
+                  value={product.quantity}
                   className={`w-fit pb-4 pl-2 pr-2 pt-4 ${openSans.className} ml-6 h-[60px] w-[130px] border border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent`}
+                  onChange={handleQuantityChange}
                 />
                 <div className="mt-5 flex w-full gap-7 pl-6">
-                  <Link
-                    href={`/shop/products/${product.product.id}`}
+                  <button
                     className={`h-[60px] w-[170px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+                    onClick={goToCheckout}
                   >
                     B U Y &nbsp;N O W
-                  </Link>
+                  </button>
                   <Link
                     href={"#"}
                     className={`h-[60px] w-[200px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}

@@ -32,7 +32,7 @@ export default function ProductList({ itemCount }: { itemCount: number }) {
         <FontAwesomeIcon
           icon={faX}
           size="xl"
-          className="ml-auto mr-3 mt-3 md:!hidden"
+          className="ml-auto mr-3 mt-3 cursor-pointer md:!hidden"
           onClick={closeCategoriesMobile}
         />
         <Link
