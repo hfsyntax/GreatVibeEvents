@@ -33,7 +33,10 @@ export default async function PaymentSuccess({
     }
 
     const productName = paymentIntent.metadata.productName
-    const productQuantity = paymentIntent.metadata.quantity
+    const productQuantity =
+      paymentIntent.metadata?.productType !== "Event Ticket"
+        ? `x ${paymentIntent.metadata.quantity}`
+        : null
     const productVariant =
       paymentIntent.metadata.productVariant !== "default"
         ? paymentIntent.metadata.productVariant
@@ -44,7 +47,7 @@ export default async function PaymentSuccess({
       <main className="m-10 mx-auto max-w-6xl rounded-md border bg-black p-10 text-center text-white">
         <div className="mb-10">
           <h1 className="mb-2 text-4xl font-extrabold">
-            Payment completed for {productName} {productVariant} x
+            Payment completed for {productName} {productVariant}&nbsp;
             {productQuantity}
           </h1>
           <h2 className="text-2xl">You successfully sent</h2>
