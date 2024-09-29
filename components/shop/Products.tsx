@@ -277,7 +277,7 @@ export default function Products({ items, prices }: ProductProps) {
   return (
     <div className="flex w-full flex-col">
       <div
-        className={`fixed left-0 top-0 z-10 hidden h-full w-full backdrop-blur ${productView && "hide-scroll lg:block"}`}
+        className={`fixed left-0 top-0 z-10 hidden h-full w-full backdrop-blur ${productView && "product-view-container lg:block"}`}
       >
         <div className="absolute left-1/2 top-1/2 z-10 flex w-[900px] translate-x-[-50%] translate-y-[-50%] bg-white shadow xl:w-[1000px]">
           {product &&
