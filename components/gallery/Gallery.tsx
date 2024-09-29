@@ -1,5 +1,5 @@
 "use client"
-import type { GalleryImage } from "@/actions/server"
+import type { GalleryImage } from "@/types"
 import Image from "next/image"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
@@ -55,14 +55,14 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
   return (
     <>
       {imageUrls.length > 0 && (
-        <div className="flex flex-wrap w-full mt-10">
+        <div className="mt-10 flex w-full flex-wrap">
           {imageUrls.map((imageUrl, index) => (
             <div
-              className={`relative overflow-hidden w-1/2 h-[100px] md:h-[200px] xl:h-[300px] xl:w-1/4 ${showImage && showImage === imageUrl.url && "single-gallery-image-container hide-scroll backdrop-blur-lg"}`}
+              className={`relative h-[100px] w-1/2 overflow-hidden md:h-[200px] xl:h-[300px] xl:w-1/4 ${showImage && showImage === imageUrl.url && "single-gallery-image-container hide-scroll backdrop-blur-lg"}`}
               key={`img_container_${index + 1}`}
             >
               {showImage && showImage === imageUrl.url && (
-                <span className="absolute text-white bg-black h-fit ml-1 md:ml-5 xl:ml-10 mt-3 p-2">
+                <span className="absolute ml-1 mt-3 h-fit bg-black p-2 text-white md:ml-5 xl:ml-10">
                   {index + 1}/{imageUrls.length}
                 </span>
               )}
@@ -71,7 +71,7 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 imageUrls[index - 1] && (
                   <FontAwesomeIcon
                     icon={faCaretLeft}
-                    className="z-10 rounded-full p-2 text-white bg-black pl-3 pr-3 md:pl-[14px] md:pr-[14px] mt-auto mb-auto ml-1 md:ml-3 xl:ml-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
+                    className="z-10 mb-auto ml-1 mt-auto cursor-pointer rounded-full bg-black p-2 pl-3 pr-3 text-sm text-white md:ml-3 md:pl-[14px] md:pr-[14px] md:text-xl xl:ml-10 xl:text-2xl"
                     onClick={() => showSingleImage(index - 1)}
                   />
                 )}
@@ -79,7 +79,7 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 <FontAwesomeIcon
                   icon={faX}
                   size={`xl`}
-                  className="ml-auto mr-3 mt-3 cursor-pointer z-10 text-white"
+                  className="z-10 ml-auto mr-3 mt-3 cursor-pointer text-white"
                   onClick={closeSingleImage}
                 />
               )}
@@ -88,7 +88,7 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 imageUrls[index + 1] && (
                   <FontAwesomeIcon
                     icon={faCaretRight}
-                    className="text-white bg-black rounded-full pl-3 pr-3 md:pl-[14px] md:pr-[14px] p-2 z-10 mt-auto mb-auto mr-1 md:mr-5 xl:mr-10 cursor-pointer text-sm md:text-xl xl:text-2xl"
+                    className="z-10 mb-auto mr-1 mt-auto cursor-pointer rounded-full bg-black p-2 pl-3 pr-3 text-sm text-white md:mr-5 md:pl-[14px] md:pr-[14px] md:text-xl xl:mr-10 xl:text-2xl"
                     onClick={() => showSingleImage(index + 1)}
                   />
                 )}
@@ -99,7 +99,7 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
                 sizes="(max-width: 768px) 50%, 25%"
                 key={`img_${index + 1}`}
                 priority
-                className={`cursor-pointer ${showImage && showImage === imageUrl.url && "!w-[75%] !object-contain xl:!h-[500px] mt-auto mb-auto ml-auto mr-auto z-20"} object-cover transition-transform duration-300 ease-in-out transform hover:scale-110`}
+                className={`cursor-pointer ${showImage && showImage === imageUrl.url && "z-20 mb-auto ml-auto mr-auto mt-auto !w-[75%] !object-contain xl:!h-[500px]"} transform object-cover transition-transform duration-300 ease-in-out hover:scale-110`}
                 onClick={
                   showImage ? closeSingleImage : () => showSingleImage(index)
                 }
@@ -110,23 +110,23 @@ export default function Gallery({ images }: { images: Array<GalleryImage> }) {
       )}
       {canRequestMore.current && (
         <div
-          className="cursor-pointer select-none ml-auto mr-auto"
+          className="ml-auto mr-auto cursor-pointer select-none"
           onClick={showMore}
         >
           <FontAwesomeIcon
             icon={faPlus}
             size="1x"
-            className="text-[#49740B] ml-3 xl:ml-0"
+            className="ml-3 text-[#49740B] xl:ml-0"
           />
           <span
-            className={`mt-6 inline-block ml-3 ${openSans.className} text-[#49740B] text-lg`}
+            className={`ml-3 mt-6 inline-block ${openSans.className} text-lg text-[#49740B]`}
           >
             Show More
           </span>
         </div>
       )}
       {errorMessage.current && (
-        <span className="text-red-500 block mt-3">{errorMessage.current}</span>
+        <span className="mt-3 block text-red-500">{errorMessage.current}</span>
       )}
     </>
   )
