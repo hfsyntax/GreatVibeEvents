@@ -21,7 +21,7 @@ export default function ProductList({ itemCount }: { itemCount: number }) {
   return (
     <div className="flex flex-col">
       <button
-        className={`${itemCount > 1 ? "w-[48%]" : "mobile-sortby-container w-full"} border border-gray-200 text-3xl text-[#5e5e5e] ${openSans.className} ml-3 mr-3 md:hidden`}
+        className={`${itemCount > 1 ? "w-[48%]" : "mobile-sortby-container w-full"} h-[50px] border border-gray-200 text-[#5e5e5e] md:h-auto ${openSans.className} ml-3 mr-3 md:hidden`}
         onClick={toggleCategoriesMobile}
       >
         Categories

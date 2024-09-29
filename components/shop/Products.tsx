@@ -465,11 +465,16 @@ export default function Products({ items, prices }: ProductProps) {
           <div className="relative mt-8 flex w-full flex-col justify-center gap-2 lg:flex-row lg:flex-wrap lg:justify-normal">
             {products.length > 1 && (
               <div
-                className={`absolute right-0 top-[-70px] mr-3 flex w-[48%] cursor-pointer select-none items-center justify-end border text-[#5e5e5e] hover:text-gray-800 md:left-auto md:right-0 md:top-[-64px] md:ml-0 md:mr-3 md:w-fit md:border-none`}
+                className={`absolute right-0 top-[-82px] mr-3 flex h-[50px] w-[48%] cursor-pointer select-none items-center justify-end border text-[#5e5e5e] hover:text-gray-800 md:left-auto md:right-0 md:top-[-64px] md:ml-0 md:mr-3 md:h-auto md:w-fit md:border-none`}
                 onClick={toggleSorts}
               >
                 <span
-                  className={`${openSans.className} w-full text-center text-3xl text-[#5e5e5e] md:w-fit md:text-left md:text-lg`}
+                  className={`${openSans.className} w-full text-center text-[#5e5e5e] md:hidden`}
+                >
+                  Sort by
+                </span>
+                <span
+                  className={`${openSans.className} hidden w-full text-center text-[#5e5e5e] md:block md:w-fit md:text-left md:text-lg`}
                 >
                   {sortDescriptions[sort as keyof typeof sortDescriptions]
                     ? sortDescriptions[sort as keyof typeof sortDescriptions]
