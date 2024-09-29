@@ -98,3 +98,9 @@ body:has(.mobile-navbar) {
     overflow: hidden;
   }
 }
+
+@media (min-width: 1280px) {
+  body:not(:has(.product-view-container)) {
+    overflow: auto;
+  }
+}
