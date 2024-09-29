@@ -1,10 +1,10 @@
 "use client"
-import type { ProductVariant } from "@/actions/server"
+import type { Product } from "@/types"
 import { createContext, useContext, useState } from "react"
 
 interface CheckoutData {
-  productName: string | null
-  variant: ProductVariant | null
+  product: Product | null
+  variants: Array<Product> | null
   quantity: number | null
 }
 
@@ -23,8 +23,8 @@ export const CheckoutDataProvider = ({
   children: React.ReactNode
 }>) => {
   let [data, setData] = useState<CheckoutData>({
-    productName: "",
-    variant: null,
+    product: null,
+    variants: null,
     quantity: null,
   })
 

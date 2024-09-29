@@ -1,6 +1,7 @@
 "use client"
 import type { Stripe } from "stripe"
 import type { ChangeEvent, MouseEvent } from "react"
+import type { Product } from "@/types"
 import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -17,19 +18,11 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import ProductList from "@/components/shop/ProductList"
-import { getProductVariants, ProductVariant } from "@/actions/server"
+import { getProductVariants } from "@/actions/server"
 import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
 import { storeCheckoutData } from "@/lib/session"
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
-
-export type Product = {
-  id: string
-  name: string
-  metadata: { [key: string]: string }
-  images: string[]
-  created: number
-}
 
 type ProductProps = {
   items: Product[]
@@ -43,19 +36,21 @@ export default function Products({ items, prices }: ProductProps) {
   const search = params.get("search")
   const productType = params.get("type")
   const sort = params.get("sort")
-  const [products, setProducts] = useState(items)
+  const productsWithoutVariants = items.filter(
+    (item) => !item.metadata.productId,
+  )
+  const [products, setProducts] = useState(productsWithoutVariants)
   const [loading, setLoading] = useState(true)
   const [productView, setProductView] = useState<boolean>(false)
   const { data, setData } = useCheckoutDataContext()
   const [product, setProduct] = useState<{
-    product: Product
     currentPrice: {
       id: string
       name: string
       amount: number | null
     }
-    variants: Array<ProductVariant>
-    currentVariant: null | ProductVariant
+    variants: Array<Product>
+    currentVariant: null | Product
     currentVariantIndex: number
     quantity: number
   } | null>(null)
@@ -67,21 +62,14 @@ export default function Products({ items, prices }: ProductProps) {
   ) => {
     event.stopPropagation()
     event.preventDefault()
-    if (newProduct.name !== product?.product.name) {
-      let variants: Array<ProductVariant> = []
-      if (newProduct.images[0])
-        variants.push({
-          name: newProduct.metadata.defaultVariant
-            ? newProduct.metadata.defaultVariant
-            : "default",
-          image_url: newProduct.images[0],
-        })
-      if (newProduct.metadata.defaultVariant) {
+    if (!product) {
+      let variants: Array<Product> = []
+      variants.push(newProduct)
+      if (newProduct.metadata.variants) {
         const otherVariants = await getProductVariants(newProduct.id)
         variants = variants.concat(otherVariants)
       }
       setProduct({
-        product: newProduct,
         variants: variants,
         currentVariant: variants[0],
         currentVariantIndex: 0,
@@ -93,8 +81,8 @@ export default function Products({ items, prices }: ProductProps) {
         },
       })
       setData({
-        productName: newProduct.name,
-        variant: variants[0],
+        product: newProduct,
+        variants: variants,
         quantity: 1,
       })
     }
@@ -106,9 +94,9 @@ export default function Products({ items, prices }: ProductProps) {
   }
 
   const setPriceLabel = (event: ChangeEvent<HTMLSelectElement>) => {
-    if (product) {
+    if (product?.currentVariant) {
       const selectedName = event.target.value
-      const price = prices[product.product.id].find(
+      const price = prices[product.currentVariant.id].find(
         (price) => price.nickname === selectedName,
       )
       if (price && product.currentPrice.id !== price.id) {
@@ -125,61 +113,75 @@ export default function Products({ items, prices }: ProductProps) {
   }
 
   const goToCheckout = async () => {
-    if (product && product.currentPrice.amount && product.quantity) {
+    if (
+      product &&
+      product.currentPrice.amount &&
+      product.quantity &&
+      product.currentVariant
+    ) {
       const shopData = {
-        amount: product.currentPrice.amount * product.quantity,
         priceId: product.currentPrice.id,
-        productId: product.product.id,
-        variantName: product.currentVariant?.name ?? null,
         quantity: product.quantity,
       }
       await storeCheckoutData(shopData)
-      router.push(`/checkout?product_id=${product.product.id}`)
+      router.push(`/checkout?product_id=${product.currentVariant.id}`)
     }
   }
 
   const toggleSorts = () => setShowSorts(!showSorts)
 
-  const nextProductViewImage = () => {
+  const nextProductViewVariant = () => {
     if (product && product.variants.length > 0) {
-      const nextImageIndex =
+      const nextVariantIndex =
         (product.currentVariantIndex + 1) % product.variants.length
-      if (nextImageIndex < product.variants.length) {
+      if (nextVariantIndex < product.variants.length) {
         setProduct({
           ...product,
-          currentVariantIndex: nextImageIndex,
-          currentVariant: product.variants[nextImageIndex],
+          currentVariantIndex: nextVariantIndex,
+          currentVariant: product.variants[nextVariantIndex],
+          quantity: 1,
+          currentPrice: {
+            id: prices[product.variants[nextVariantIndex].id][0].id,
+            name:
+              prices[product.variants[nextVariantIndex].id][0].nickname ??
+              "default",
+            amount:
+              prices[product.variants[nextVariantIndex].id][0].unit_amount,
+          },
         })
         setData({
-          productName: product.product.name,
-          variant: product.variants[nextImageIndex],
+          ...data,
+          product: product.variants[nextVariantIndex],
           quantity: 1,
         })
       }
     }
   }
 
-  useEffect(() => {
-    if (product) {
-      console.log(product)
-    }
-  }, [product])
-
-  const previousProductViewImage = () => {
+  const previousProductViewVariant = () => {
     if (product && product.variants.length > 0) {
-      const previousProductIndex =
+      const previousVariantIndex =
         (product.currentVariantIndex - 1 + product.variants.length) %
         product.variants.length
-      if (previousProductIndex < product.variants.length) {
+      if (previousVariantIndex < product.variants.length) {
         setProduct({
           ...product,
-          currentVariantIndex: previousProductIndex,
-          currentVariant: product.variants[previousProductIndex],
+          currentVariantIndex: previousVariantIndex,
+          currentVariant: product.variants[previousVariantIndex],
+          quantity: 1,
+          currentPrice: {
+            id: prices[product.variants[previousVariantIndex].id][0].id,
+            name:
+              prices[product.variants[previousVariantIndex].id][0].nickname ??
+              "default",
+            amount:
+              prices[product.variants[previousVariantIndex].id][0].unit_amount,
+          },
         })
         setData({
           ...data,
-          productName: product.product.name,
-          variant: product.variants[previousProductIndex],
+          product: product.variants[previousVariantIndex],
+          quantity: 1,
         })
       }
     }
@@ -211,12 +213,14 @@ export default function Products({ items, prices }: ProductProps) {
   }
 
   useEffect(() => {
-    let updatedItems = [...items]
-    updatedItems = updatedItems.filter((product) =>
-      productType
-        ? product.metadata.type === productType
-        : !product.metadata.type || product.metadata.type !== "Event Ticket",
-    )
+    let updatedItems = [...productsWithoutVariants]
+
+    if (productType) {
+      updatedItems = updatedItems.filter(
+        (product) => product.metadata.type === productType,
+      )
+    }
+
     updatedItems = updatedItems.sort((a, b) => {
       switch (sort) {
         case "az":
@@ -240,12 +244,15 @@ export default function Products({ items, prices }: ProductProps) {
           )
       }
     })
+
     if (search) {
       updatedItems = updatedItems.filter((product) =>
         product.name.toLowerCase().includes(search.toLowerCase()),
       )
     }
+
     if (showSorts) toggleSorts()
+
     setProducts(updatedItems)
     setLoading(false)
   }, [params])
@@ -256,10 +263,10 @@ export default function Products({ items, prices }: ProductProps) {
     }
   }, [product])
 
-  // clear previously set checkout context
   useEffect(() => {
+    // clear previously set checkout context
     if (data) {
-      setData({ productName: null, variant: null, quantity: null })
+      setData({ product: null, variants: null, quantity: null })
     }
   }, [])
 
@@ -273,35 +280,37 @@ export default function Products({ items, prices }: ProductProps) {
         className={`fixed left-0 top-0 z-10 hidden h-full w-full backdrop-blur ${productView && "hide-scroll lg:block"}`}
       >
         <div className="absolute left-1/2 top-1/2 z-10 flex w-[900px] translate-x-[-50%] translate-y-[-50%] bg-white shadow xl:w-[1000px]">
-          {product && product.product.images.length > 0 && (
-            <div className="relative w-1/2">
-              {product.product.metadata?.defaultVariant && (
-                <FontAwesomeIcon
-                  icon={faCaretLeft}
-                  size="2xl"
-                  className="absolute left-0 top-1/2 ml-3 translate-y-[-50%] cursor-pointer select-none !text-5xl"
-                  onClick={previousProductViewImage}
+          {product &&
+            product.currentVariant &&
+            product.currentVariant.images.length > 0 && (
+              <div className="relative w-1/2">
+                {product.variants[0].metadata?.variants && (
+                  <FontAwesomeIcon
+                    icon={faCaretLeft}
+                    size="2xl"
+                    className="absolute left-0 top-1/2 ml-3 translate-y-[-50%] cursor-pointer select-none !text-5xl"
+                    onClick={previousProductViewVariant}
+                  />
+                )}
+                <Image
+                  src={String(product.currentVariant.images[0])}
+                  alt={`quickview_${product.currentVariant.name}`}
+                  width={0}
+                  height={0}
+                  sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
+                  className="ml-auto mr-auto h-[500px] w-full object-contain"
+                  priority
                 />
-              )}
-              <Image
-                src={String(product.currentVariant?.image_url)}
-                alt={`quickview_${product.product.name}`}
-                width={0}
-                height={0}
-                sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
-                className="ml-auto mr-auto h-[500px] w-full object-contain"
-                priority
-              />
-              {product.product.metadata.defaultVariant && (
-                <FontAwesomeIcon
-                  icon={faCaretRight}
-                  size="2xl"
-                  className="absolute right-0 top-1/2 mr-3 translate-y-[-50%] cursor-pointer select-none !text-5xl"
-                  onClick={nextProductViewImage}
-                />
-              )}
-            </div>
-          )}
+                {product.variants[0].metadata.variants && (
+                  <FontAwesomeIcon
+                    icon={faCaretRight}
+                    size="2xl"
+                    className="absolute right-0 top-1/2 mr-3 translate-y-[-50%] cursor-pointer select-none !text-5xl"
+                    onClick={nextProductViewVariant}
+                  />
+                )}
+              </div>
+            )}
           <div className={`flex w-1/2 flex-col ${playfairDisplay.className}`}>
             <FontAwesomeIcon
               icon={faX}
@@ -310,116 +319,126 @@ export default function Products({ items, prices }: ProductProps) {
               onClick={closeQuickView}
             />
             <span className="pl-6 text-4xl text-black">
-              {product?.product?.name}
+              {product?.currentVariant?.name}
             </span>
-            {product && prices[product.product.id]?.length >= 1 && (
-              <>
-                <div>
-                  {product?.product?.metadata.original_price && (
+            {product &&
+              product.currentVariant &&
+              prices[product.currentVariant.id].length >= 1 && (
+                <>
+                  <div>
+                    {product.currentVariant.metadata.original_price && (
+                      <span
+                        className={`text-2xl ${openSans.className} pl-6 text-[#474747B3] line-through`}
+                      >
+                        ${product.currentVariant.metadata.original_price}
+                      </span>
+                    )}
+                    <span className={`text-2xl ${openSans.className} pl-6`}>
+                      $
+                      {parseFloat(
+                        String(
+                          Number(
+                            prices[product.currentVariant.id]?.[0].unit_amount,
+                          ) / 100,
+                        ),
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                  {product.currentVariant.metadata.original_price &&
+                    prices[product.currentVariant.id][0].unit_amount && (
+                      <span
+                        className={`pl-6 text-lg text-red-500 ${openSans.className}`}
+                      >
+                        You save&nbsp;$
+                        {
+                          getPriceDifference(
+                            parseFloat(
+                              product.currentVariant.metadata.original_price,
+                            ),
+                            prices[product.currentVariant.id][0].unit_amount! /
+                              100,
+                          ).dollarAmount
+                        }
+                        &nbsp;(
+                        {
+                          getPriceDifference(
+                            parseFloat(
+                              product.currentVariant.metadata.original_price,
+                            ),
+                            prices[product.currentVariant.id][0].unit_amount! /
+                              100,
+                          ).percent
+                        }
+                        %)
+                      </span>
+                    )}
+                  {product.currentVariant.metadata.shipping && (
                     <span
-                      className={`text-2xl ${openSans.className} pl-6 text-[#474747B3] line-through`}
+                      className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
                     >
-                      ${product.product.metadata.original_price}
+                      FREE SHIPPING
                     </span>
                   )}
-                  <span className={`text-2xl ${openSans.className} pl-6`}>
-                    $
-                    {parseFloat(
-                      String(
-                        Number(prices[product?.product.id]?.[0].unit_amount) /
-                          100,
-                      ),
-                    ).toFixed(2)}
-                  </span>
-                </div>
-                {product.product.metadata.original_price &&
-                  prices[product.product.id][0].unit_amount && (
-                    <span
-                      className={`pl-6 text-lg text-red-500 ${openSans.className}`}
-                    >
-                      You save&nbsp;$
-                      {
-                        getPriceDifference(
-                          parseFloat(product.product.metadata.original_price),
-                          prices[product.product.id][0].unit_amount! / 100,
-                        ).dollarAmount
-                      }
-                      &nbsp;(
-                      {
-                        getPriceDifference(
-                          parseFloat(product.product.metadata.original_price),
-                          prices[product.product.id][0].unit_amount! / 100,
-                        ).percent
-                      }
-                      %)
-                    </span>
+                  {prices[product.currentVariant.id].length > 1 && (
+                    <>
+                      <label
+                        className={`${openSans.className} mt-10 pl-6 text-lg`}
+                      >
+                        Size
+                      </label>
+                      <select
+                        className={`ml-6 mt-2 h-[56px] border border-gray-200 outline-none ${openSans.className}`}
+                        onChange={setPriceLabel}
+                        value={product.currentPrice.name}
+                      >
+                        {prices[product.currentVariant.id].map((price) => (
+                          <option key={`${price.nickname}`}>
+                            {price.nickname}
+                          </option>
+                        ))}
+                      </select>
+                    </>
                   )}
-                {product.product.metadata.shipping && (
-                  <span
-                    className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
-                  >
-                    FREE SHIPPING
-                  </span>
-                )}
-                {prices[product.product.id].length > 1 && (
-                  <>
-                    <label
-                      className={`${openSans.className} mt-10 pl-6 text-lg`}
-                    >
-                      Size
-                    </label>
-                    <select
-                      className={`ml-6 mt-2 h-[56px] border border-gray-200 outline-none ${openSans.className}`}
-                      onChange={setPriceLabel}
-                    >
-                      {prices[product.product.id].map((price) => (
-                        <option key={`${price.nickname}`}>
-                          {price.nickname}
-                        </option>
-                      ))}
-                    </select>
-                  </>
-                )}
-                <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
-                  Quantity
-                </label>
-                <input
-                  type="number"
-                  value={product.quantity}
-                  className={`w-fit pb-4 pl-2 pr-2 pt-4 ${openSans.className} ml-6 h-[60px] w-[130px] border border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent`}
-                  onChange={handleQuantityChange}
-                />
-                <div className="mt-5 flex w-full gap-7 pl-6">
-                  <button
-                    className={`h-[60px] w-[170px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
-                    onClick={goToCheckout}
-                  >
-                    B U Y &nbsp;N O W
-                  </button>
-                  <Link
-                    href={"#"}
-                    className={`h-[60px] w-[200px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
-                  >
-                    A D D &nbsp;T O &nbsp;C A R T
-                  </Link>
-                </div>
-                <Link
-                  href={`/shop/products/${product.product.id}`}
-                  className="mt-8 w-fit pl-6"
-                >
-                  <span
-                    className={`${openSans.className} text-lg text-[#49740B]`}
-                  >
-                    View Full Details
-                  </span>
-                  <FontAwesomeIcon
-                    icon={faRightLong}
-                    size="1x"
-                    className="ml-1 text-[#49740B]"
+                  <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    value={product.quantity}
+                    className={`w-fit pb-4 pl-2 pr-2 pt-4 ${openSans.className} ml-6 h-[60px] w-[130px] border border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent`}
+                    onChange={handleQuantityChange}
                   />
-                </Link>
-              </>
-            )}
+                  <div className="mt-5 flex w-full gap-7 pl-6">
+                    <button
+                      className={`h-[60px] w-[170px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+                      onClick={goToCheckout}
+                    >
+                      B U Y &nbsp;N O W
+                    </button>
+                    <Link
+                      href={"#"}
+                      className={`h-[60px] w-[200px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+                    >
+                      A D D &nbsp;T O &nbsp;C A R T
+                    </Link>
+                  </div>
+                  <Link
+                    href={`/shop/products/${product.variants[0].id}`}
+                    className="mt-8 w-fit pl-6"
+                  >
+                    <span
+                      className={`${openSans.className} text-lg text-[#49740B]`}
+                    >
+                      View Full Details
+                    </span>
+                    <FontAwesomeIcon
+                      icon={faRightLong}
+                      size="1x"
+                      className="ml-1 text-[#49740B]"
+                    />
+                  </Link>
+                </>
+              )}
           </div>
         </div>
       </div>

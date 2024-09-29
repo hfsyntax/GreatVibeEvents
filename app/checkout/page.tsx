@@ -47,15 +47,7 @@ export default async function Checkout({
       }
     }
 
-    const plainProduct = {
-      id: product.id,
-      name: product.name,
-      metadata: product.metadata,
-      images: [],
-      created: product.created,
-    }
-
-    return <StripeLoader product={plainProduct} />
+    return <StripeLoader />
   } catch (error: any) {
     console.error(error)
     if (error.type === "StripeInvalidRequestError") {

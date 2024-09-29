@@ -1,4 +1,5 @@
 "use server"
+import type { CheckoutData } from "@/types"
 import { SignJWT, jwtVerify } from "jose"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
@@ -64,7 +65,7 @@ export async function login(formData: FormData) {
   }
 
   const dbUser =
-    await sql`SELECT id, password, disabled, type, first, last FROM users WHERE email = ${email}`
+    await sql`SELECT id, password, disabled, type, first, last, number, address FROM users WHERE email = ${email}`
 
   if (dbUser.rowCount === 1) {
     const hashedPassword = String(dbUser?.rows?.[0]?.["password"])
@@ -75,6 +76,10 @@ export async function login(formData: FormData) {
         const userId = Number(dbUser?.rows?.[0]?.["id"])
         const firstName = String(dbUser?.rows?.[0]?.["first"])
         const lastName = String(dbUser?.rows?.[0]?.["last"])
+        const address = String(dbUser?.rows?.[0]?.["address"])
+        const phoneNumber = dbUser?.rows?.[0]?.["number"]
+          ? String(dbUser?.rows?.[0]?.["number"])
+          : null
         const user = {
           email: email,
           firstName: firstName,
@@ -82,6 +87,8 @@ export async function login(formData: FormData) {
           password: hashedPassword,
           type: userType,
           id: userId,
+          number: phoneNumber,
+          address: address,
         }
         const expires = new Date(Date.now() + 60 * 60 * 24 * 60 * 1000)
         const session = await encrypt({ user, expires })
@@ -148,14 +155,6 @@ export async function updateSession(request: NextRequest) {
   }
 }
 
-export type CheckoutData = {
-  amount: number
-  priceId: string
-  productId: string
-  variantName: string | null
-  quantity: number
-}
-
 export async function storeCheckoutData(data: CheckoutData) {
   const encryptedShopData = await encrypt(data, "24h")
   const expires = new Date(Date.now() + 60 * 60 * 24 * 1000)
@@ -165,11 +164,8 @@ export async function storeCheckoutData(data: CheckoutData) {
 export async function getCheckoutData() {
   try {
     const encryptedShopData = cookies().get("shopData")?.value
-    const decryptedData = encryptedShopData
-      ? await decrypt(encryptedShopData)
-      : null
-    console.log(decryptedData)
-    cookies().delete("shopData")
+    if (!encryptedShopData) return null
+    const decryptedData = await decrypt(encryptedShopData)
     return decryptedData
   } catch (error) {
     console.error(error)

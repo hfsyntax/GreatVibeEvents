@@ -79,7 +79,14 @@ export default function LoginHandler() {
       const formElement = event.target as HTMLFormElement
       const formData = new FormData(formElement)
 
-      const fields = ["first", "last", "email", "password", "password-repeat"]
+      const fields = [
+        "first",
+        "last",
+        "email",
+        "address",
+        "password",
+        "password-repeat",
+      ]
       for (let field of fields) {
         if (!formData.get(field)) {
           return setFormResponse({
@@ -126,11 +133,22 @@ export default function LoginHandler() {
         })
       }
 
+      const address = String(formData.get("address"))
+      const validAddress =
+        /^[a-zA-Z0-9\s]{1,217},\s[a-zA-Z0-9\s]{1,28},\s[a-zA-Z]{2}\s\d{5}$/i
+
+      if (!address.match(validAddress)) {
+        return setFormResponse({
+          error: "Error: Address must be: STREET, CITY, STATE ABBREVIATION ZIP",
+          message: "",
+        })
+      }
+
       const number = String(formData.get("number"))
 
-      if (formData.get("number") && !number.match(/^\d{7,20}$/)) {
+      if (formData.get("number") && !number.match(/^\d{8,20}$/)) {
         return setFormResponse({
-          error: "Error: Phone number must be between 7-20 numbers.",
+          error: "Error: Phone number must be between 8-20 numbers.",
           message: "",
         })
       }
@@ -182,17 +200,17 @@ export default function LoginHandler() {
       {visible.login && (
         <>
           <span
-            className={`text-[#49740B] text-lg ${openSans.className} mb-8 ml-3 xl:ml-0`}
+            className={`text-lg text-[#49740B] ${openSans.className} mb-8 ml-3 xl:ml-0`}
           >
             ACCOUNT SIGN IN
           </span>
           <form
-            className="flex flex-col lg:w-[800px] ml-auto mr-auto"
+            className="ml-auto mr-auto flex flex-col lg:w-[800px]"
             onSubmit={handleLoginForm}
             ref={form}
           >
             <span
-              className={`text-gray-500 ${openSans.className} lg:text-lg text-center mb-6 block`}
+              className={`text-gray-500 ${openSans.className} mb-6 block text-center lg:text-lg`}
             >
               Sign in to your account to access your profile, history, and any
               private pages you've been granted access to.
@@ -201,7 +219,7 @@ export default function LoginHandler() {
               type="text"
               name="email"
               placeholder="Email"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="email"
               required
             />
@@ -209,26 +227,26 @@ export default function LoginHandler() {
               type="password"
               name="password"
               placeholder="Password"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="password"
               required
             />
             <input
               type="submit"
               value={formDisabled ? "LOADING..." : "SIGN IN"}
-              className={`${openSans.className} text-base ml-auto mr-auto h-[56px] w-[150px] font-bold bg-[#49740B] pt-2 pb-2 pl-8 pr-8 mt-3 mb-6 text-white cursor-pointer hover:bg-lime-600`}
+              className={`${openSans.className} mb-6 ml-auto mr-auto mt-3 h-[56px] w-[150px] cursor-pointer bg-[#49740B] pb-2 pl-8 pr-8 pt-2 text-base font-bold text-white hover:bg-lime-600`}
               disabled={formDisabled}
             />
             <span
-              className={`block text-[#49740B] text-lg ${openSans.className} ml-auto mr-auto w-fit cursor-pointer`}
+              className={`block text-lg text-[#49740B] ${openSans.className} ml-auto mr-auto w-fit cursor-pointer`}
               onClick={showForgot}
             >
               Reset password
             </span>
-            <p className="text-gray-500 ml-auto mr-auto text-lg mt-10">
+            <p className="ml-auto mr-auto mt-10 text-lg text-gray-500">
               Not a member?
               <span
-                className="text-[#49740B] cursor-pointer"
+                className="cursor-pointer text-[#49740B]"
                 onClick={showRegister}
               >
                 &nbsp;Create account
@@ -243,7 +261,7 @@ export default function LoginHandler() {
               />
             )}
             {formResponse?.error && (
-              <span className="text-red-500 block">{formResponse.error}</span>
+              <span className="block text-red-500">{formResponse.error}</span>
             )}
           </form>
         </>
@@ -251,17 +269,17 @@ export default function LoginHandler() {
       {visible.register && (
         <>
           <span
-            className={`text-[#49740B] text-lg ${openSans.className} mb-8 ml-3 xl:ml-0`}
+            className={`text-lg text-[#49740B] ${openSans.className} mb-8 ml-3 xl:ml-0`}
           >
             CREATE ACCOUNT
           </span>
           <form
-            className="flex flex-col lg:w-[800px] ml-auto mr-auto"
+            className="ml-auto mr-auto flex flex-col lg:w-[800px]"
             onSubmit={handleCreateForm}
             ref={form}
           >
             <span
-              className={`text-gray-500 ${openSans.className} lg:text-lg text-center mb-6 block`}
+              className={`text-gray-500 ${openSans.className} mb-6 block text-center lg:text-lg`}
             >
               By creating an account, you may receive newsletters or promotions.
             </span>
@@ -269,7 +287,7 @@ export default function LoginHandler() {
               type="text"
               name="first"
               placeholder="First Name"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="given-name"
               required
             />
@@ -277,7 +295,7 @@ export default function LoginHandler() {
               type="text"
               name="last"
               placeholder="Last Name"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="family-name"
               required
             />
@@ -285,22 +303,30 @@ export default function LoginHandler() {
               type="text"
               name="email"
               placeholder="Email"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="email"
+              required
+            />
+            <input
+              type="text"
+              name="address"
+              placeholder="Address"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
+              autoComplete="street-address"
               required
             />
             <input
               type="text"
               name="number"
               placeholder="Phone (optional)"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="tel"
             />
             <input
               type="password"
               name="password"
               placeholder="Password"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="new-password"
               required
             />
@@ -308,20 +334,20 @@ export default function LoginHandler() {
               type="password"
               name="password-repeat"
               placeholder="Password repeat"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="new-password"
               required
             />
             <input
               type="submit"
               value={formDisabled ? "LOADING..." : "CREATE ACCOUNT"}
-              className={`${openSans.className} text-base ml-auto mr-auto h-[56px] w-[250px] font-bold bg-[#49740B] pt-2 pb-2 pl-8 pr-8 mt-3 mb-6 text-white cursor-pointer hover:bg-lime-600`}
+              className={`${openSans.className} mb-6 ml-auto mr-auto mt-3 h-[56px] w-[250px] cursor-pointer bg-[#49740B] pb-2 pl-8 pr-8 pt-2 text-base font-bold text-white hover:bg-lime-600`}
               disabled={formDisabled}
             />
-            <p className="text-gray-500 ml-auto mr-auto text-lg">
+            <p className="ml-auto mr-auto text-lg text-gray-500">
               Don't need to reset your password?
               <span
-                className="text-[#49740B] cursor-pointer"
+                className="cursor-pointer text-[#49740B]"
                 onClick={showLogin}
               >
                 &nbsp;Sign in
@@ -336,10 +362,10 @@ export default function LoginHandler() {
               />
             )}
             {formResponse?.error && (
-              <span className="text-red-500 block">{formResponse.error}</span>
+              <span className="block text-red-500">{formResponse.error}</span>
             )}
             {formResponse?.message && (
-              <span className="text-green-500 block">
+              <span className="block text-green-500">
                 {formResponse.message}
               </span>
             )}
@@ -349,13 +375,13 @@ export default function LoginHandler() {
       {visible.forgot && (
         <>
           <span
-            className={`text-[#49740B] text-lg ${openSans.className} mb-8 ml-3 xl:ml-0`}
+            className={`text-lg text-[#49740B] ${openSans.className} mb-8 ml-3 xl:ml-0`}
           >
             RESET PASSWORD
           </span>
-          <form className="flex flex-col lg:w-[800px] ml-auto mr-auto">
+          <form className="ml-auto mr-auto flex flex-col lg:w-[800px]">
             <span
-              className={`text-gray-500 ${openSans.className} lg:text-lg text-center mb-6 block`}
+              className={`text-gray-500 ${openSans.className} mb-6 block text-center lg:text-lg`}
             >
               Enter your email address, and we’ll send you a password reset
               link.
@@ -364,20 +390,20 @@ export default function LoginHandler() {
               type="text"
               name="email"
               placeholder="Email"
-              className="w-full pl-3 h-[50px] outline-none border-[1px] border-t-transparent border-l-transparent border-r-transparent border-b-gray-200 box-border focus:border-black"
+              className="box-border h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black"
               autoComplete="email"
               required
             />
             <input
               type="submit"
               value={"SEND RESET LINK"}
-              className={`${openSans.className} text-base ml-auto mr-auto h-[56px] w-auto font-bold bg-[#49740B] pt-2 pb-2 pl-8 pr-8 mt-3 mb-6 text-white cursor-pointer hover:bg-lime-600`}
+              className={`${openSans.className} mb-6 ml-auto mr-auto mt-3 h-[56px] w-auto cursor-pointer bg-[#49740B] pb-2 pl-8 pr-8 pt-2 text-base font-bold text-white hover:bg-lime-600`}
               disabled
             />
-            <p className="text-gray-500 ml-auto mr-auto text-lg">
+            <p className="ml-auto mr-auto text-lg text-gray-500">
               Don't need to reset your password?
               <span
-                className="text-[#49740B] cursor-pointer"
+                className="cursor-pointer text-[#49740B]"
                 onClick={showLogin}
               >
                 &nbsp;Sign in

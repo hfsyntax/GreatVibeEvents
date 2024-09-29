@@ -1,66 +1,51 @@
-import { getSession } from "@/lib/session"
 import RedirectToForm from "@/components/payment-success/RedirectToForm"
-import { getPaymentIntent } from "@/lib/stripe"
+import { getCheckoutSession, listPurchasedProducts } from "@/lib/stripe"
 export default async function PaymentSuccess({
   searchParams,
 }: {
-  searchParams: { payment?: string; payment_intent?: string }
+  searchParams: { session_id?: string }
 }) {
   try {
-    const { payment, payment_intent } = searchParams
-    if (!payment || !payment_intent) {
+    if (!searchParams.session_id) {
       return <span className="text-red-500">Invalid payment data.</span>
     }
 
-    const paymentIntent = await getPaymentIntent(payment_intent)
-    const amount = Number(payment)
+    const checkoutSession = await getCheckoutSession(searchParams.session_id)
 
-    if (paymentIntent.amount !== amount) {
+    if (!checkoutSession || checkoutSession.status === "expired") {
       return <span className="text-red-500">Invalid payment data.</span>
     }
 
-    const userId = Number(paymentIntent.metadata.userId)
-    const session = await getSession()
+    const amount = checkoutSession.amount_total ?? 0
 
-    if (userId !== session?.user?.id) {
-      return <span className="text-red-500">Invalid payment data.</span>
-    }
+    const purchasedProducts = await listPurchasedProducts(
+      searchParams.session_id,
+    )
 
-    const paymentExists = paymentIntent.metadata.formCompleted === "true"
-
-    if (paymentExists) {
-      return <span className="text-red-500">Invalid payment data.</span>
-    }
-
-    const productName = paymentIntent.metadata.productName
-    const productQuantity =
-      paymentIntent.metadata?.productType !== "Event Ticket"
-        ? `x ${paymentIntent.metadata.quantity}`
-        : null
-    const productVariant =
-      paymentIntent.metadata.productVariant !== "default"
-        ? paymentIntent.metadata.productVariant
-        : null
-    const isEventProduct = paymentIntent.metadata.productType === "Event Ticket"
+    const eventTicket = purchasedProducts.find(
+      (product) => product.metadata.type === "Event Ticket",
+    )
 
     return (
       <main className="m-10 mx-auto max-w-6xl rounded-md border bg-black p-10 text-center text-white">
         <div className="mb-10">
-          <h1 className="mb-2 text-4xl font-extrabold">
-            Payment completed for {productName} {productVariant}&nbsp;
-            {productQuantity}
-          </h1>
+          <h1 className="mb-2 text-4xl font-extrabold">Payment completed</h1>
           <h2 className="text-2xl">You successfully sent</h2>
-          <div className="mt-5 rounded-md bg-white p-2 text-4xl font-bold text-black">
+          <div className="mb-2 mt-5 rounded-md bg-white p-2 text-4xl font-bold text-black">
             ${amount / 100}
           </div>
-          {isEventProduct && (
+          <span>
+            Payment Reference: {String(checkoutSession.payment_intent)}
+          </span>
+          {eventTicket && (
             <>
               <span className="mt-5 block text-2xl">
                 do not close this window, redirecting to Participation and
                 Release Form...
               </span>
-              <RedirectToForm payment_intent={payment_intent} />
+              <RedirectToForm
+                payment_intent={String(checkoutSession.payment_intent)}
+              />
             </>
           )}
         </div>

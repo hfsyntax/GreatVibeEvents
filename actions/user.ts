@@ -1,5 +1,5 @@
 "use server"
-import type { FormEntry } from "@/components/form/FormHandler"
+import type { FormEntry } from "@/types"
 import { getSession } from "@/lib/session"
 import { normalizeDate } from "@/lib/utils"
 import { sql } from "@vercel/postgres"
@@ -32,7 +32,14 @@ export async function createAccount(formData: FormData) {
     return { error: "Error: reCAPTCHA validation failed.", message: "" }
   }
 
-  const fields = ["first", "last", "email", "password", "password-repeat"]
+  const fields = [
+    "first",
+    "last",
+    "email",
+    "address",
+    "password",
+    "password-repeat",
+  ]
   for (let field of fields) {
     if (!formData.get(field)) {
       return {
@@ -79,11 +86,20 @@ export async function createAccount(formData: FormData) {
     }
   }
 
+  const address = String(formData.get("address"))
+
+  if (address.length > 255) {
+    return {
+      error: "Error: Address must be 255 characters or less.",
+      message: "",
+    }
+  }
+
   const number = String(formData.get("number"))
 
-  if (formData.get("number") && !number.match(/^\d{7,20}$/)) {
+  if (formData.get("number") && !number.match(/^\d{8,20}$/)) {
     return {
-      error: "Error: Phone number must be between 7-20 numbers.",
+      error: "Error: Phone number must be between 8-20 numbers.",
       message: "",
     }
   }
@@ -125,7 +141,7 @@ export async function createAccount(formData: FormData) {
     const salt = await genSalt()
     const hashedPassword = await hash(password, salt)
 
-    await sql`INSERT INTO users (first, last, email, password, number) VALUES (${first}, ${last}, ${email}, ${hashedPassword}, ${number})`
+    await sql`INSERT INTO users (first, last, email, password, number, address) VALUES (${first}, ${last}, ${email}, ${hashedPassword}, ${number}, ${address})`
 
     return { message: "Success.", error: "" }
   } catch (error) {
@@ -213,9 +229,14 @@ export async function signUpVolunteer(formData: FormData) {
   }
 
   const address = String(formData.get("address"))
+  const validAddress =
+    /^[a-zA-Z0-9\s]{1,217},\s[a-zA-Z0-9\s]{1,28},\s[a-zA-Z]{2}\s\d{5}$/i
 
-  if (address.length > 128) {
-    return { error: "Error: Address is too long.", message: "" }
+  if (!address.match(validAddress)) {
+    return {
+      error: "Error: Address must be: STREET, CITY, STATE ABBREVIATION ZIP",
+      message: "",
+    }
   }
 
   const number = String(formData.get("number"))

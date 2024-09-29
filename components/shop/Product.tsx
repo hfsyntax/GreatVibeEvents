@@ -1,7 +1,7 @@
 "use client"
 import type { ChangeEvent, MouseEvent, TouchEvent } from "react"
-import type { ProductVariant } from "@/actions/server"
-import type { ProductPrice } from "@/app/shop/products/[id]/page"
+import type { Product } from "@/types"
+import type { Stripe } from "stripe"
 import { getPriceDifference } from "@/lib/utils"
 import { storeCheckoutData } from "@/lib/session"
 import { Open_Sans, Playfair_Display } from "next/font/google"
@@ -17,35 +17,32 @@ import Image from "next/image"
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 
-type Product = {
-  id: string
-  name: string
-  metadata: { [key: string]: string }
-  images: string[]
-  created: number
-  description: string | null
-}
-
 type ProductProps = {
-  item: Product
-  prices: Array<ProductPrice>
-  variants: Array<ProductVariant>
+  prices: { [key: string]: Stripe.Price[] }
+  variants: Array<Product>
 }
 
-export default function Product({ item, prices, variants }: ProductProps) {
+type ProductObject = {
+  product: Product
+  currentPrice: {
+    id: string
+    name: string
+    amount: number | null
+  }
+}
+
+export default function Product({ prices, variants }: ProductProps) {
   const [url, setUrl] = useState<string | undefined>()
   const router = useRouter()
   const { data } = useCheckoutDataContext()
-  const [currentPrice, setCurrentPrice] = useState<ProductPrice>({
-    id: prices[0].id,
-    name: prices[0].name,
-    amount: prices[0].amount,
-  })
-  const [productVariant, setProductVariant] = useState<ProductVariant>({
-    name: data.variant?.name ? data.variant.name : variants[0].name,
-    image_url: data.variant?.image_url
-      ? data.variant.image_url
-      : item.images[0],
+  const initialVariant = data.product ? data.product : variants[0]
+  const [productVariant, setProductVariant] = useState<ProductObject>({
+    product: initialVariant,
+    currentPrice: {
+      id: prices[initialVariant.id][0].id,
+      name: prices[initialVariant.id][0].nickname ?? "default",
+      amount: prices[initialVariant.id][0].unit_amount,
+    },
   })
   const [productQuantity, setProductQuantity] = useState<number>(
     data.quantity ? data.quantity : 1,
@@ -89,16 +86,20 @@ export default function Product({ item, prices, variants }: ProductProps) {
     setImageTransform("none")
   }, [])
 
-  useEffect(() => {
-    console.log(variants)
-    console.log(data)
-  }, [])
-
   const setPriceLabel = (event: ChangeEvent<HTMLSelectElement>) => {
     const selectedName = event.target.value
-    const price = prices.find((price) => price.name === selectedName)
-    if (price && currentPrice.id !== price.id)
-      setCurrentPrice({ id: price.id, name: price.name, amount: price.amount })
+    const price = prices[productVariant.product.id].find(
+      (price) => price.nickname === selectedName,
+    )
+    if (price && productVariant.currentPrice.id !== price.id)
+      setProductVariant({
+        ...productVariant,
+        currentPrice: {
+          id: price.id,
+          name: price.nickname ?? "no name",
+          amount: price.unit_amount,
+        },
+      })
   }
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -109,16 +110,13 @@ export default function Product({ item, prices, variants }: ProductProps) {
   }
 
   const goToCheckout = async () => {
-    if (currentPrice.amount) {
+    if (productVariant.currentPrice.amount) {
       const shopData = {
-        amount: currentPrice.amount * productQuantity,
-        priceId: currentPrice.id,
-        productId: item.id,
-        variantName: productVariant.name,
+        priceId: productVariant.currentPrice.id,
         quantity: productQuantity,
       }
       await storeCheckoutData(shopData)
-      router.push(`/checkout?product_id=${item.id}`)
+      router.push(`/checkout?product_id=${productVariant.product.id}`)
     }
   }
 
@@ -137,7 +135,7 @@ export default function Product({ item, prices, variants }: ProductProps) {
         </span>
       </Link>
       <div className="mt-10 flex h-fit w-full flex-col md:flex-row">
-        {item && item.images.length > 0 && (
+        {productVariant.product && productVariant.product.images.length > 0 && (
           <div className="relative w-full flex-col overflow-hidden md:w-1/2">
             <div
               className={`relative ml-auto mr-auto h-[400px] w-full overflow-hidden hover:cursor-crosshair md:h-[500px] ${imageTransform !== "none" && "hide-scroll"}`}
@@ -147,8 +145,8 @@ export default function Product({ item, prices, variants }: ProductProps) {
               onTouchEnd={imageLeave}
             >
               <Image
-                src={productVariant.image_url}
-                alt={`product_${productVariant.name}`}
+                src={productVariant.product.images[0]}
+                alt={`product_${productVariant.product.name}`}
                 width={0}
                 height={0}
                 sizes="(max-width: 768px) 100vw, (min-width: 769px) 50vw"
@@ -160,21 +158,25 @@ export default function Product({ item, prices, variants }: ProductProps) {
               />
             </div>
 
-            {item.metadata?.defaultVariant && (
+            {variants.length > 1 && (
               <div className="mt-3 flex items-center justify-center gap-2">
                 {variants.map((variant, index) => (
                   <div
-                    className={`h-[50px] w-[50px] border ${productVariant.image_url === variant.image_url && "border-black"} cursor-pointer bg-transparent`}
+                    className={`h-[50px] w-[50px] border ${productVariant.product.images[0] === variant.images[0] && "border-black"} cursor-pointer bg-transparent`}
                     onClick={() =>
                       setProductVariant({
-                        name: variant.name,
-                        image_url: variant.image_url,
+                        product: variant,
+                        currentPrice: {
+                          id: prices[variant.id][0].id,
+                          name: prices[variant.id][0].nickname ?? "no name",
+                          amount: prices[variant.id][0].unit_amount,
+                        },
                       })
                     }
-                    key={`${item.name}_variant_${index}`}
+                    key={`${variant.name}_variant_${index}`}
                   >
                     <Image
-                      src={String(variant.image_url)}
+                      src={String(variant.images[0])}
                       alt={`variant_${variant.name}`}
                       width={50}
                       height={50}
@@ -190,56 +192,59 @@ export default function Product({ item, prices, variants }: ProductProps) {
           className={`flex w-full flex-col md:w-1/2 ${playfairDisplay.className}`}
         >
           <span className="mt-5 text-center text-4xl text-black md:mt-0 md:pl-6 md:text-left">
-            {item?.name}
+            {productVariant.product.name}
           </span>
-          {item && prices.length >= 1 && (
+          {prices[productVariant.product.id].length >= 1 && (
             <>
               <div className="text-center md:text-left">
-                {item?.metadata.original_price && (
+                {productVariant.product.metadata.original_price && (
                   <span
                     className={`text-2xl ${openSans.className} pl-6 text-[#474747B3] line-through`}
                   >
-                    ${item.metadata.original_price}
+                    ${productVariant.product.metadata.original_price}
                   </span>
                 )}
                 <span className={`text-2xl ${openSans.className} pl-6`}>
                   $
                   {parseFloat(
-                    String(Number(currentPrice.amount) / 100),
+                    String(Number(productVariant.currentPrice.amount) / 100),
                   ).toFixed(2)}
                 </span>
               </div>
-              {item.metadata.original_price &&
-                prices[0] &&
-                prices[0].amount && (
+              {productVariant.product.metadata.original_price &&
+                productVariant.currentPrice.amount && (
                   <span
                     className={`pl-6 text-lg text-red-500 ${openSans.className}`}
                   >
                     You save&nbsp;$
                     {
                       getPriceDifference(
-                        parseFloat(item.metadata.original_price),
-                        prices[0].amount / 100,
+                        parseFloat(
+                          productVariant.product.metadata.original_price,
+                        ),
+                        productVariant.currentPrice.amount / 100,
                       ).dollarAmount
                     }
                     &nbsp;(
                     {
                       getPriceDifference(
-                        parseFloat(item.metadata.original_price),
-                        prices[0].amount / 100,
+                        parseFloat(
+                          productVariant.product.metadata.original_price,
+                        ),
+                        productVariant.currentPrice.amount / 100,
                       ).percent
                     }
                     %)
                   </span>
                 )}
-              {item.metadata.shipping && (
+              {productVariant.product.metadata.shipping && (
                 <span
                   className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
                 >
                   FREE SHIPPING
                 </span>
               )}
-              {prices.length > 1 && (
+              {prices[productVariant.product.id].length > 1 && (
                 <>
                   <label className={`${openSans.className} mt-10 pl-6 text-lg`}>
                     Size
@@ -248,8 +253,10 @@ export default function Product({ item, prices, variants }: ProductProps) {
                     className={`ml-6 mt-2 h-[56px] border border-gray-200 outline-none ${openSans.className}`}
                     onChange={setPriceLabel}
                   >
-                    {prices.map((price) => (
-                      <option key={`${price.name}`}>{price.name}</option>
+                    {prices[productVariant.product.id].map((price) => (
+                      <option key={`${price.nickname}`}>
+                        {price.nickname}
+                      </option>
                     ))}
                   </select>
                 </>
@@ -297,7 +304,7 @@ export default function Product({ item, prices, variants }: ProductProps) {
               <span
                 className={`${openSans.className} mt-3 pl-6 pr-6 text-base text-[#5e5e5e] md:pr-0`}
               >
-                {item.description}
+                {productVariant.product.description}
               </span>
             </>
           )}

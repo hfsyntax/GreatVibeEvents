@@ -56,15 +56,14 @@ export default function EventTicket({
   }
 
   const goToCheckout = async () => {
-    let amount = parseFloat(totalAfterTip)
     customTipElement.current?.blur()
-    if (isNaN(amount)) return
-    amount = convertToSubcurrency(amount)
+    const tip =
+      label.name === "tip4"
+        ? Number(customTip.slice(1)) * 100
+        : label.amount * 100
     const data = {
-      amount: amount,
       priceId: String(selectedPrice?.id),
-      productId: productId,
-      variantName: null,
+      tip: tip,
       quantity: 1,
     }
     await storeCheckoutData(data)

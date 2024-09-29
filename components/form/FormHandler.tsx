@@ -1,15 +1,12 @@
 "use client"
 import type { FocusEvent, RefObject } from "react"
+import type { FormEntry } from "@/types"
 import Image from "next/image"
 import SignatureCanvas from "react-signature-canvas"
 import ReCAPTCHA from "react-google-recaptcha"
 import { useState, useRef, FormEvent, ChangeEvent, useEffect } from "react"
 import { handleEventForm } from "@/actions/user"
 import { normalizeDate } from "@/lib/utils"
-
-export type FormEntry = {
-  [key: string]: string
-}
 
 type ElementRefs = {
   "participant-name": RefObject<HTMLInputElement>
@@ -123,7 +120,7 @@ export default function FormHandler({
     /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
   const handleValueFocus = (
-    e: FocusEvent<HTMLInputElement | HTMLSelectElement>
+    e: FocusEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     let { name, value } = e.target
 
@@ -230,7 +227,7 @@ export default function FormHandler({
   }
 
   const handleValueChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     let { name, value } = e.target
     if (e.target.type === "checkbox") {
@@ -544,7 +541,7 @@ export default function FormHandler({
           `${elementRefs[key as keyof ElementRefs].current?.ariaDescription} must be 500 characters or less.`
       } else if (
         ["guardian-number", "emergency-number", "participant-number"].includes(
-          key
+          key,
         ) &&
         (value.trim().length > 20 || isNaN(parseInt(value)))
       ) {
@@ -651,15 +648,15 @@ export default function FormHandler({
   return (
     <form className="mt-3" onSubmit={handleSubmit}>
       <b>Participant’s General Information:</b>
-      <div className="flex flex-col lg:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 lg:flex-row">
         <label className="mr-2 whitespace-nowrap">First/Last Name:</label>
 
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="participant-name"
             placeholder="First/Last Name"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border ${errors["participant-name"] ? "border-red-500" : "border-gray-200"} box-border focus:${errors["participant-name"] ? "border-red-500" : "border-black"}`}
+            className={`h-[50px] w-full border pl-3 outline-none lg:flex-1 ${errors["participant-name"] ? "border-red-500" : "border-gray-200"} box-border focus:${errors["participant-name"] ? "border-red-500" : "border-black"}`}
             autoComplete="name"
             required
             onBlur={handleValueFocus}
@@ -669,14 +666,14 @@ export default function FormHandler({
             ref={elementRefs["participant-name"]}
           />
           {errors["participant-name"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
         <label className="ml-2 mr-2 whitespace-nowrap">Gender:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <select
             name="participant-gender"
-            className={`lg:flex-1 w-full outline-none border box-border h-[50px] ${errors["participant-gender"] ? "border-red-500 focus:border-red-500" : "focus:border-black"}`}
+            className={`box-border h-[50px] w-full border outline-none lg:flex-1 ${errors["participant-gender"] ? "border-red-500 focus:border-red-500" : "focus:border-black"}`}
             defaultValue={"select-participant-gender"}
             aria-description="Participant Gender"
             required
@@ -690,20 +687,20 @@ export default function FormHandler({
             <option value={"other"}>Other</option>
           </select>
           {errors["participant-gender"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
       </div>
-      <div className="flex flex-col lg:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 lg:flex-row">
         <label className="mr-2 whitespace-nowrap">
           Date of Birth(mm/dd/yyyy):
         </label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="date"
             name="participant-birthday"
             placeholder="Date of Birth(mm/dd/yyyy):"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] ${errors["participant-birthday"] ? "border-red-500 focus:border-red-500" : "focus:border-black"} border-gray-200 box-border`}
+            className={`h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["participant-birthday"] ? "border-red-500 focus:border-red-500" : "focus:border-black"} box-border border-gray-200`}
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
@@ -712,17 +709,17 @@ export default function FormHandler({
             ref={elementRefs["participant-birthday"]}
           />
           {errors["participant-birthday"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
 
         <label className="ml-2 mr-2 whitespace-nowrap">Cell #:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="participant-cell"
             placeholder="Cell #:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] ${errors["participant-cell"] ? "border-red-500" : "border-gray-200 focus:border-black"} box-border `}
+            className={`h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["participant-cell"] ? "border-red-500" : "border-gray-200 focus:border-black"} box-border`}
             autoComplete="tel"
             aria-description="Participant Cell #"
             required
@@ -731,20 +728,20 @@ export default function FormHandler({
             ref={elementRefs["participant-cell"]}
           />
           {errors["participant-cell"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be 20 numbers or less
             </span>
           )}
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 sm:flex-row">
         <label className="mr-2 whitespace-nowrap">Email:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="participant-email"
             placeholder=" Email:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] ${errors["participant-email"] ? "border-red-500" : "border-gray-200 focus:border-black"}  box-border`}
+            className={`h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["participant-email"] ? "border-red-500" : "border-gray-200 focus:border-black"} box-border`}
             autoComplete="email"
             aria-description="Participant Email"
             required
@@ -754,20 +751,20 @@ export default function FormHandler({
             ref={elementRefs["participant-email"]}
           />
           {errors["participant-email"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be a valid email
             </span>
           )}
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 sm:flex-row">
         <label className="mr-2 whitespace-nowrap">Address:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="participant-address"
             placeholder="Address:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["participant-address"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["participant-address"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="street-address"
             aria-description="Participant address"
             required
@@ -777,12 +774,12 @@ export default function FormHandler({
             ref={elementRefs["participant-address"]}
           />
           {errors["participant-address"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
       </div>
       <b className="mt-3 block">Participant’s Health History</b>
-      <div className="flex flex-wrap items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-wrap items-center gap-4">
         <label className="ml-2 mr-2 whitespace-nowrap">Autism</label>
         <input
           type="checkbox"
@@ -810,18 +807,18 @@ export default function FormHandler({
           onChange={handleValueChange}
         />
       </div>
-      <div className="flex flex-col lg:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 lg:flex-row">
         <label className="mr-2 whitespace-nowrap">Other, please specify:</label>
         <input
           type="text"
           name="participant-other-disorders"
           placeholder="Other, please specify:"
-          className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          className="box-border h-[50px] w-full border-[1px] border-b-gray-200 pl-3 outline-none focus:border-black lg:flex-1"
           maxLength={500}
           onChange={handleValueChange}
         />
       </div>
-      <div className="flex flex-col lg:flex-row  items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 lg:flex-row">
         <div className="w-full">
           <label
             className="ml-2 mr-2 whitespace-nowrap"
@@ -854,16 +851,16 @@ export default function FormHandler({
             <span className="block text-red-500">this field is required</span>
           )}
         </div>
-        <div className="w-full flex flex-col sm:flex-row items-center">
+        <div className="flex w-full flex-col items-center sm:flex-row">
           <label className="mr-2 whitespace-nowrap">
             Date of last seizure:
           </label>
-          <div className="lg:flex-1 w-full">
+          <div className="w-full lg:flex-1">
             <input
               type="date"
               name="participant-dols"
               placeholder="Date of Birth(mm/dd/yyyy):"
-              className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px]  box-border ${errors["participant-dols"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+              className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["participant-dols"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
               aria-description="Participant date of last seizure"
               onBlur={handleValueFocus}
               onChange={handleValueChange}
@@ -871,12 +868,12 @@ export default function FormHandler({
               ref={elementRefs["participant-dols"]}
             />
             {errors["participant-dols"] && (
-              <span className="text-red-500 block">this field is required</span>
+              <span className="block text-red-500">this field is required</span>
             )}
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap md:items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-wrap gap-4 md:items-center">
         <div>
           <label
             className="ml-2 mr-2 whitespace-nowrap"
@@ -886,7 +883,7 @@ export default function FormHandler({
             Does the participant require 1:1 attendant ratio?
           </label>
           {errors["participant-r11r"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
         <div>
@@ -912,13 +909,13 @@ export default function FormHandler({
           />
         </div>
       </div>
-      <div className="flex flex-col md:flex-row md:items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col gap-4 md:flex-row md:items-center">
         <div>
           <label className="ml-2 mr-2">
             Does the participant understand and follow directions?
           </label>
           {errors["participant-uafd"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
         <div>
@@ -951,13 +948,13 @@ export default function FormHandler({
         </div>
       </div>
       <label
-        className="block mt-3 font-bold"
+        className="mt-3 block font-bold"
         ref={elementRefs["participant-allergies"]}
         aria-description="Participant’s Allergies & Dietary Restrictions"
       >
         Participant’s Allergies & Dietary Restrictions
       </label>
-      <div className="flex items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full items-center gap-4">
         <label className="ml-2 mr-2 whitespace-nowrap">
           No Known Allergies
         </label>
@@ -984,7 +981,7 @@ export default function FormHandler({
       {errors["participant-allergies"] && (
         <span className="text-red-500">this field is required</span>
       )}
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">
           Medications, please list:
         </label>
@@ -992,12 +989,12 @@ export default function FormHandler({
           type="text"
           name="participant-medications"
           placeholder="Medications, please list:"
-          className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          className="box-border h-[50px] w-full border-[1px] border-b-gray-200 pl-3 outline-none focus:border-black lg:flex-1"
           maxLength={500}
           onChange={handleValueChange}
         />
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">
           Insect Bites or Stings(please describe)
         </label>
@@ -1005,22 +1002,22 @@ export default function FormHandler({
           type="text"
           name="participant-bites-or-stings"
           placeholder="Insect Bites or Stings(please describe)"
-          className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          className="box-border h-[50px] w-full border-[1px] border-b-gray-200 pl-3 outline-none focus:border-black lg:flex-1"
           onChange={handleValueChange}
         />
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">Food Allergies:</label>
         <input
           type="text"
           name="participant-food-allergies"
           placeholder="Food Allergies:"
-          className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          className="box-border h-[50px] w-full border-[1px] border-b-gray-200 pl-3 outline-none focus:border-black lg:flex-1"
           maxLength={255}
           onChange={handleValueChange}
         />
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">
           List any special dietary needs:
         </label>
@@ -1028,7 +1025,7 @@ export default function FormHandler({
           type="text"
           name="participant-special-dietary-needs"
           placeholder="List any special dietary needs:"
-          className="lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          className="box-border h-[50px] w-full border-[1px] border-b-gray-200 pl-3 outline-none focus:border-black lg:flex-1"
           maxLength={255}
           onChange={handleValueChange}
         />
@@ -1042,7 +1039,7 @@ export default function FormHandler({
         Does the participant have the capacity to consent to medical treatment
         on his or her behalf?
       </b>
-      <div className="flex items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full items-center gap-4">
         <label className="ml-2 mr-2 whitespace-nowrap">Yes</label>
         <input
           type="checkbox"
@@ -1068,32 +1065,32 @@ export default function FormHandler({
         <span className="text-red-500">this field is required</span>
       )}
       <b className="mt-3 block">Interest and Hobbies:</b>
-      <div className="flex flex-col md:flex-row w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">
           Please list all activities the participant enjoys:
         </label>
         <textarea
           name="participant-activity-interests"
           placeholder="Please list all activities the participant enjoys:"
-          className="lg:flex-1 w-full pl-3 h-[200px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          className="box-border h-[200px] w-full border-[1px] border-b-gray-200 pl-3 outline-none focus:border-black lg:flex-1"
           maxLength={500}
           onChange={handleValueChange}
         />
       </div>
-      <span className="block mt-3">
+      <span className="mt-3 block">
         Please provide additional information to enhance participant's enjoyment
         and positive experience:
       </span>
-      <div className="flex items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full items-center gap-4">
         <textarea
           name="participant-additional-enjoyment"
           placeholder="Please provide additional information to enhance participant's enjoyment and positive experience:"
-          className="flex-1 pl-3 h-[200px] outline-none border-[1px] border-b-gray-200 box-border focus:border-black"
+          className="box-border h-[200px] flex-1 border-[1px] border-b-gray-200 pl-3 outline-none focus:border-black"
           maxLength={500}
           onChange={handleValueChange}
         />
       </div>
-      <div className="flex flex-col items-center md:flex-row mt-3 ml-auto mr-auto w-fit">
+      <div className="ml-auto mr-auto mt-3 flex w-fit flex-col items-center md:flex-row">
         <Image
           src={"/img/logo.png"}
           priority
@@ -1102,25 +1099,25 @@ export default function FormHandler({
           height={200}
         />
         <div>
-          <b className="text-center w-full block">
+          <b className="block w-full text-center">
             PARTICIPATION AND RELEASE FORM
           </b>
-          <p className="w-full lg:w-[500px] ml-auto mr-auto">
+          <p className="ml-auto mr-auto w-full lg:w-[500px]">
             FORM MUST BE COMPLETED AND SIGNED BY ALL PARTIES PRIOR TO
             PARTICIPATING IN GREAT VIBE EVENTS ORGANIZED FUNCTIONS
           </p>
         </div>
       </div>
       <b className="block">Parent/Guardian General Information:</b>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">First & Last Name</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="guardian-name"
             placeholder="First & Last Name"
             autoComplete="name"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] ${errors["guardian-name"] ? "border-red-500" : "border-gray-200 focus:border-black"} box-border `}
+            className={`h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["guardian-name"] ? "border-red-500" : "border-gray-200 focus:border-black"} box-border`}
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
@@ -1129,18 +1126,18 @@ export default function FormHandler({
             ref={elementRefs["guardian-name"]}
           />
           {errors["guardian-name"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">Relationship</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="guardian-relationship"
             placeholder="Relationship"
-            className={`lg:flex-1 w-full  pl-3 h-[50px] outline-none border-[1px] box-border ${errors["guardian-relationship"] ? "border-red-500" : "border-gray-200 focus:border-black"} `}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["guardian-relationship"] ? "border-red-500" : "border-gray-200 focus:border-black"} `}
             required
             onBlur={handleValueFocus}
             onChange={handleValueChange}
@@ -1149,18 +1146,18 @@ export default function FormHandler({
             ref={elementRefs["guardian-relationship"]}
           />
           {errors["guardian-relationship"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">Cell #:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="guardian-number"
             placeholder="Cell #:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["guardian-number"] ? "border-red-500" : "border-gray-200 focus:border-black"} `}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["guardian-number"] ? "border-red-500" : "border-gray-200 focus:border-black"} `}
             autoComplete="tel"
             required
             onBlur={handleValueFocus}
@@ -1170,18 +1167,18 @@ export default function FormHandler({
             ref={elementRefs["guardian-number"]}
           />
           {errors["guardian-number"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be 20 numbers or less
             </span>
           )}
         </div>
         <label className="ml-2 mr-2 whitespace-nowrap">Email</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="guardian-email"
             placeholder="Email"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px]  box-border ${errors["guardian-email"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["guardian-email"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="email"
             required
             onBlur={handleValueFocus}
@@ -1191,20 +1188,20 @@ export default function FormHandler({
             ref={elementRefs["guardian-email"]}
           />
           {errors["guardian-email"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be a valid email
             </span>
           )}
         </div>
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">Address:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="guardian-address"
             placeholder="Address:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px]  box-border ${errors["guardian-address"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["guardian-address"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="street-address"
             required
             onBlur={handleValueFocus}
@@ -1214,18 +1211,18 @@ export default function FormHandler({
             ref={elementRefs["guardian-address"]}
           />
           {errors["guardian-address"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">Emergency contact:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="emergency-contact"
             placeholder="Emergency contact:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px]  box-border ${errors["emergency-contact"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["emergency-contact"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="name"
             required
             onBlur={handleValueFocus}
@@ -1235,16 +1232,16 @@ export default function FormHandler({
             ref={elementRefs["emergency-contact"]}
           />
           {errors["emergency-contact"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
         <label className="mr-2 whitespace-nowrap">Relationship</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="emergency-relationship"
             placeholder="Realtionship"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["emergency-relationship"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["emergency-relationship"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="name"
             required
             onBlur={handleValueFocus}
@@ -1254,18 +1251,18 @@ export default function FormHandler({
             ref={elementRefs["emergency-relationship"]}
           />
           {errors["emergency-relationship"] && (
-            <span className="text-red-500 block">this field is required</span>
+            <span className="block text-red-500">this field is required</span>
           )}
         </div>
       </div>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">Cell #:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="emergency-number"
             placeholder="Cell #:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["emergency-number"] ? "border-red-500" : "border-gray-200 focus:border-black"} `}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["emergency-number"] ? "border-red-500" : "border-gray-200 focus:border-black"} `}
             autoComplete="tel"
             required
             aria-description="Emergency cell #"
@@ -1275,18 +1272,18 @@ export default function FormHandler({
             ref={elementRefs["emergency-number"]}
           />
           {errors["emergency-number"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be 20 numbers or less
             </span>
           )}
         </div>
         <label className="mr-2 whitespace-nowrap">Email:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="emergency-email"
             placeholder="Email:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["emergency-email"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["emergency-email"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="email"
             required
             aria-description="Emergency email"
@@ -1296,36 +1293,36 @@ export default function FormHandler({
             ref={elementRefs["emergency-email"]}
           />
           {errors["emergency-email"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be a valid email
             </span>
           )}
         </div>
       </div>
-      <b className="block mt-3">
+      <b className="mt-3 block">
         Participant and Guardian Release: I agree to the following:
       </b>
       <ol className="list-inside font-bold">
-        <li className="mt-1 ml-4">
+        <li className="ml-4 mt-1">
           Ability to Participate. I am physically able to take part in Great
           Vibe Events activities.
         </li>
-        <li className="mt-1 ml-4">
+        <li className="ml-4 mt-1">
           Likeness Release. I give permission to Great Vibe Events to use my
           likeness, photo, video, name, voice, words, and biographical
           information to promote Great Vibe Events and raise funds for Great
           Vibe Events mission.
         </li>
-        <li className="mt-1 ml-4">
+        <li className="ml-4 mt-1">
           Risk of Injury. I know there is a risk of injury and I understand the
           risk of continuing to participate in active physical activities.
         </li>
-        <li className="mt-1 ml-4">
+        <li className="ml-4 mt-1">
           Emergency Care. If I am unable, or my guardian is unavailable, to
           consent or make medical decisions in an emergency, I authorize Great
           Vibe Events to seek medical care on my behalf.
         </li>
-        <li className="mt-1 ml-4">
+        <li className="ml-4 mt-1">
           Personal Information: I understand that Great Vibe Events will be
           collecting my personal information as part of my participation
           including my name, image, address, telephone number. I agree and
@@ -1333,12 +1330,12 @@ export default function FormHandler({
           communicating with me about Great Vibe Events
         </li>
       </ol>
-      <p className="mt-3 font-bold block">
+      <p className="mt-3 block font-bold">
         In consideration of being allowed to participate in any way in Great
         Vibe Events, competition or fundraising activities, the undersigned
         acknowledges, appreciates, and agrees that:
       </p>
-      <ol className="font-bold list-inside">
+      <ol className="list-inside font-bold">
         <li className="mt-1">
           Participation includes possible exposure to and illness from
           infectious and/or communicable diseases including but not limited to
@@ -1371,20 +1368,20 @@ export default function FormHandler({
           extent permitted by law.
         </li>
       </ol>
-      <p className="mt-3 font-bold block">
+      <p className="mt-3 block font-bold">
         I HAVE READ THIS RELEASE OF LIABILITY AND ASSUMPTION OF RISK AGREEMENT,
         FULLY UNDERSTAND ITS TERMS, UNDERSTAND THAT I HAVE GIVEN UP SUBSTANTIAL
         RIGHTS BY SIGNING IT, AND SIGN IF FREELY AND VOLUNTARILY WITHOUT ANY
         INDUCEMENT.
       </p>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">Name of participant:</label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="participant-name-confirm"
             placeholder="Name of participant:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["participant-name-confirm"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["participant-name-confirm"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="name"
             required
             onBlur={handleValueFocus}
@@ -1394,16 +1391,16 @@ export default function FormHandler({
             ref={elementRefs["participant-name-confirm"]}
           />
           {errors["participant-name-confirm"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must match Participant First/Last Name.
             </span>
           )}
         </div>
       </div>
       <b className="mt-2 block">Participant Signature</b>
-      <div className="flex gap-2 items-center lg:justify-center">
+      <div className="flex items-center gap-2 lg:justify-center">
         <div
-          className="w-full h-[100px] lg:w-[800px] select-none"
+          className="h-[100px] w-full select-none lg:w-[800px]"
           aria-description="Participant Signature"
           ref={elementRefs["participant-signature"]}
         >
@@ -1421,7 +1418,7 @@ export default function FormHandler({
         </div>
 
         <button
-          className="bg-black text-white p-3 h-fit w-fit"
+          className="h-fit w-fit bg-black p-3 text-white"
           type="button"
           onClick={clearParticipantSignature}
         >
@@ -1429,14 +1426,14 @@ export default function FormHandler({
         </button>
       </div>
 
-      <div className="flex items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full items-center gap-4">
         <label className="mr-2 whitespace-nowrap">Date Signed</label>
-        <div className="flex-1 w-full">
+        <div className="w-full flex-1">
           <input
             type="date"
             name="participant-date-signed"
             placeholder="Date of Birth(mm/dd/yyyy):"
-            className={`flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["participant-date-signed"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full flex-1 border-[1px] pl-3 outline-none ${errors["participant-date-signed"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             required
             aria-description="Paricipant date signed"
             onBlur={handleValueFocus}
@@ -1445,7 +1442,7 @@ export default function FormHandler({
             ref={elementRefs["participant-date-signed"]}
           />
           {errors["participant-date-signed"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be today todays date
             </span>
           )}
@@ -1466,16 +1463,16 @@ export default function FormHandler({
         provided above, EVEN IF ARISING FROM THEIR NEGLIGENCE, to the fullest
         extent provided by law.
       </p>
-      <div className="flex flex-col md:flex-row items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full flex-col items-center gap-4 md:flex-row">
         <label className="mr-2 whitespace-nowrap">
           Name of Parent/Guardian:
         </label>
-        <div className="lg:flex-1 w-full">
+        <div className="w-full lg:flex-1">
           <input
             type="text"
             name="guardian-name-confirm"
             placeholder="Name of Parent/Guardian:"
-            className={`lg:flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["guardian-name-confirm"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full border-[1px] pl-3 outline-none lg:flex-1 ${errors["guardian-name-confirm"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             autoComplete="name"
             required
             aria-description="Name of guardian before signature"
@@ -1485,16 +1482,16 @@ export default function FormHandler({
             ref={elementRefs["guardian-name-confirm"]}
           />
           {errors["guardian-name-confirm"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must match Guardian First/Last Name.
             </span>
           )}
         </div>
       </div>
-      <b className="block mt-2">Parent/Guardian Signature</b>
-      <div className="flex gap-2 items-center lg:justify-center">
+      <b className="mt-2 block">Parent/Guardian Signature</b>
+      <div className="flex items-center gap-2 lg:justify-center">
         <div
-          className="w-full h-[100px] lg:w-[800px] select-none"
+          className="h-[100px] w-full select-none lg:w-[800px]"
           aria-description="Parent/Guardian Signature"
           ref={elementRefs["guardian-signature"]}
         >
@@ -1511,7 +1508,7 @@ export default function FormHandler({
           )}
         </div>
         <button
-          className="bg-black text-white p-3 h-fit w-fit"
+          className="h-fit w-fit bg-black p-3 text-white"
           type="button"
           onClick={clearGuardianSignature}
         >
@@ -1519,14 +1516,14 @@ export default function FormHandler({
         </button>
       </div>
 
-      <div className="flex items-center w-full gap-4 mt-3">
+      <div className="mt-3 flex w-full items-center gap-4">
         <label className="mr-2 whitespace-nowrap">Date Signed</label>
-        <div className="flex-1 w-full">
+        <div className="w-full flex-1">
           <input
             type="date"
             name="guardian-date-signed"
             placeholder="Date of Birth(mm/dd/yyyy):"
-            className={`flex-1 w-full pl-3 h-[50px] outline-none border-[1px] box-border ${errors["guardian-date-signed"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
+            className={`box-border h-[50px] w-full flex-1 border-[1px] pl-3 outline-none ${errors["guardian-date-signed"] ? "border-red-500" : "border-gray-200 focus:border-black"}`}
             required
             aria-description="Guardian date signed"
             onBlur={handleValueFocus}
@@ -1535,7 +1532,7 @@ export default function FormHandler({
             ref={elementRefs["guardian-date-signed"]}
           />
           {errors["guardian-date-signed"] && (
-            <span className="text-red-500 block">
+            <span className="block text-red-500">
               this field must be todays date
             </span>
           )}
@@ -1543,7 +1540,7 @@ export default function FormHandler({
       </div>
       <input
         type="submit"
-        className="bg-black text-white p-3 block ml-auto mr-auto mt-3 cursor-pointer"
+        className="ml-auto mr-auto mt-3 block cursor-pointer bg-black p-3 text-white"
       />
       {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
         <ReCAPTCHA
@@ -1554,7 +1551,7 @@ export default function FormHandler({
       )}
       {errors &&
         Object.values(errors).map((value, index) => (
-          <span className="text-red-500 block" key={`form_error_${index}`}>
+          <span className="block text-red-500" key={`form_error_${index}`}>
             {value as string}
           </span>
         ))}
