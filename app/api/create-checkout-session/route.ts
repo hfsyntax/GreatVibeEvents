@@ -3,23 +3,21 @@ import {
   storeStripeCustomer,
   updateStripeCustomer,
 } from "@/actions/server"
-import { metadata } from "@/app/layout"
-import { getCheckoutData, getSession } from "@/lib/session"
+import { getSession } from "@/lib/session"
 import {
   getProductPrice,
   getProduct,
   createCustomer,
   getCustomerIdByEmail,
 } from "@/lib/stripe"
-import { NextApiRequest, NextApiResponse } from "next"
 import { NextRequest, NextResponse } from "next/server"
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // Create Checkout Sessions from body params.
-    const { priceId, quantity, tip } = await getCheckoutData()
+    const { priceId, quantity, tip } = await request.json()
     if (!priceId || !quantity) {
       return NextResponse.json({ error: "400 Bad Request" }, { status: 400 })
     }
@@ -153,9 +151,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(request: NextRequest) {
   try {
-    const url = new URL(req.url!)
+    const url = new URL(request.url)
     const searchParams = new URLSearchParams(url.searchParams)
     const sessionId = searchParams.get("session_id")
     const session = await stripe.checkout.sessions.retrieve(sessionId)

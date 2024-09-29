@@ -5,6 +5,7 @@ import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js"
+import { getCheckoutData } from "@/lib/session"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!)
 
@@ -17,6 +18,7 @@ export default function StripeLoader() {
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(await getCheckoutData()),
       })
       if (!response.ok) {
         return setError(true)
