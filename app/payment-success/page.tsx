@@ -1,4 +1,4 @@
-import RedirectToForm from "@/components/payment-success/RedirectToForm"
+import SuccessHandler from "@/components/payment-success/SuccessHandler"
 import { getCheckoutSession, listPurchasedProducts } from "@/lib/stripe"
 export default async function PaymentSuccess({
   searchParams,
@@ -37,17 +37,19 @@ export default async function PaymentSuccess({
           <span>
             Payment Reference: {String(checkoutSession.payment_intent)}
           </span>
-          {eventTicket && (
-            <>
+
+          <>
+            {eventTicket && (
               <span className="mt-5 block text-2xl">
                 do not close this window, redirecting to Participation and
                 Release Form...
               </span>
-              <RedirectToForm
-                payment_intent={String(checkoutSession.payment_intent)}
-              />
-            </>
-          )}
+            )}
+            <SuccessHandler
+              payment_intent={String(checkoutSession.payment_intent)}
+              redirectToForm={eventTicket ? true : false}
+            />
+          </>
         </div>
       </main>
     )

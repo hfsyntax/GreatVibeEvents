@@ -3,7 +3,7 @@ import type { ChangeEvent, MouseEvent, TouchEvent } from "react"
 import type { Product } from "@/types"
 import type { Stripe } from "stripe"
 import { getPriceDifference } from "@/lib/utils"
-import { storeCheckoutData } from "@/lib/session"
+import { getCheckoutData, storeCheckoutData } from "@/lib/session"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFacebook, faXTwitter } from "@fortawesome/free-brands-svg-icons"
@@ -33,8 +33,9 @@ type ProductObject = {
 
 export default function Product({ prices, variants }: ProductProps) {
   const [url, setUrl] = useState<string | undefined>()
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const { data } = useCheckoutDataContext()
+  const { data, setData } = useCheckoutDataContext()
   const initialVariant = data.product ? data.product : variants[0]
   const [productVariant, setProductVariant] = useState<ProductObject>({
     product: initialVariant,
@@ -109,11 +110,30 @@ export default function Product({ prices, variants }: ProductProps) {
     }
   }
 
+  const addToCart = async () => {
+    if (productVariant) {
+      const priceId = productVariant.currentPrice.id
+      const quantity = productQuantity
+      const checkoutData = await getCheckoutData()
+      const productExists = checkoutData.products.find(
+        (product) => product.priceId === priceId,
+      )
+      if (productExists) return setError("Product is already in your cart")
+      checkoutData.products.push({ priceId: priceId, quantity: quantity })
+      setData({ ...data, totalProducts: checkoutData.products.length })
+      await storeCheckoutData(checkoutData)
+    }
+  }
+
   const goToCheckout = async () => {
     if (productVariant.currentPrice.amount) {
       const shopData = {
-        priceId: productVariant.currentPrice.id,
-        quantity: productQuantity,
+        products: [
+          {
+            priceId: productVariant.currentPrice.id,
+            quantity: productQuantity,
+          },
+        ],
       }
       await storeCheckoutData(shopData)
       router.push(`/checkout?product_id=${productVariant.product.id}`)
@@ -197,7 +217,7 @@ export default function Product({ prices, variants }: ProductProps) {
           {prices[productVariant.product.id].length >= 1 && (
             <>
               <div className="text-center md:text-left">
-                {productVariant.product.metadata.original_price && (
+                {productVariant.product.metadata?.original_price && (
                   <span
                     className={`text-2xl ${openSans.className} pl-6 text-[#474747B3] line-through`}
                   >
@@ -211,7 +231,7 @@ export default function Product({ prices, variants }: ProductProps) {
                   ).toFixed(2)}
                 </span>
               </div>
-              {productVariant.product.metadata.original_price &&
+              {productVariant.product.metadata?.original_price &&
                 productVariant.currentPrice.amount && (
                   <span
                     className={`pl-6 text-lg text-red-500 ${openSans.className}`}
@@ -237,7 +257,7 @@ export default function Product({ prices, variants }: ProductProps) {
                     %)
                   </span>
                 )}
-              {productVariant.product.metadata.shipping && (
+              {productVariant.product.metadata?.shipping && (
                 <span
                   className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
                 >
@@ -277,13 +297,20 @@ export default function Product({ prices, variants }: ProductProps) {
                 >
                   B U Y &nbsp;N O W
                 </button>
-                <Link
-                  href={"#"}
+                <button
                   className={`ml-6 mr-6 h-[60px] bg-[#49740B] text-center leading-[60px] text-white md:ml-0 md:mr-0 md:w-[200px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+                  onClick={addToCart}
                 >
                   A D D &nbsp;T O &nbsp;C A R T
-                </Link>
+                </button>
               </div>
+              {error && (
+                <span
+                  className={`${openSans.className} pl-6 pt-2 text-red-500`}
+                >
+                  {error}
+                </span>
+              )}
               <div
                 className={`flex ${openSans.className} mt-5 items-center gap-2 pl-6`}
               >

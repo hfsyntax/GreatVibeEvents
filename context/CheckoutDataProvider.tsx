@@ -1,11 +1,13 @@
 "use client"
+import { getCheckoutData } from "@/lib/session"
 import type { Product } from "@/types"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 
 interface CheckoutData {
   product: Product | null
   variants: Array<Product> | null
   quantity: number | null
+  totalProducts: number
 }
 
 interface CheckoutDataContextType {
@@ -26,7 +28,14 @@ export const CheckoutDataProvider = ({
     product: null,
     variants: null,
     quantity: null,
+    totalProducts: 0,
   })
+
+  useEffect(() => {
+    getCheckoutData().then((response) => {
+      setData({ ...data, totalProducts: response.products.length })
+    })
+  }, [])
 
   return (
     <CheckoutDataContext.Provider value={{ data, setData }}>

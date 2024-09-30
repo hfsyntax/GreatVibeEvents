@@ -1,4 +1,5 @@
 "use server"
+import { Product } from "@/types"
 import Stripe from "stripe"
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -110,6 +111,24 @@ export async function getProductPrice(
 ): Promise<Stripe.Response<Stripe.Price>> {
   try {
     return await stripe.prices.retrieve(id, params, options)
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function getProductByPriceId(priceId: string) {
+  try {
+    const price = await stripe.prices.retrieve(priceId)
+    if (price.deleted) return null
+    const product = await stripe.products.retrieve(String(price.product))
+    const plainProduct: Product = {
+      id: product.id,
+      name: product.name,
+      images: product.images,
+      created: product.created,
+      description: product.description,
+    }
+    return { product: plainProduct, amount: price.unit_amount }
   } catch (error) {
     throw error
   }

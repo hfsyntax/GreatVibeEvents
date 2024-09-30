@@ -10,6 +10,7 @@ import {
   createCustomer,
   getCustomerIdByEmail,
 } from "@/lib/stripe"
+import { CheckoutData } from "@/types"
 import { NextRequest, NextResponse } from "next/server"
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
@@ -17,16 +18,23 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
 export async function POST(request: NextRequest) {
   try {
     // Create Checkout Sessions from body params.
-    const { priceId, quantity, tip } = await request.json()
-    if (!priceId || !quantity) {
+    const { products, tip }: CheckoutData = await request.json()
+    if (
+      products.some((product) => !product.priceId || !product.quantity) ||
+      products.length === 0
+    ) {
       return NextResponse.json({ error: "400 Bad Request" }, { status: 400 })
     }
 
-    const productPrice = await getProductPrice(priceId)
-    const product = await getProduct(String(productPrice.product))
+    const eventProduct = products.find(
+      (product) => product?.metadata?.type === "Event Ticket",
+    )
     const session = await getSession()
 
-    if (product.metadata.type === "Event Ticket" && !session) {
+    if (
+      products.some((product) => product?.metadata?.type === "Event Ticket") &&
+      !session
+    ) {
       return NextResponse.json({ error: "401 Unauthorized" }, { status: 401 })
     }
 
@@ -97,10 +105,10 @@ export async function POST(request: NextRequest) {
     const sessionObject: CheckoutSessionObject = {
       ui_mode: "embedded",
       line_items: [
-        {
-          price: priceId,
-          quantity: quantity,
-        },
+        ...products.map((product) => ({
+          price: product.priceId,
+          quantity: product.quantity,
+        })),
         ...(tip
           ? [
               {
@@ -124,15 +132,16 @@ export async function POST(request: NextRequest) {
         allowed_countries: ["US"],
       },
       ...(customerId !== null && { customer: customerId }),
-      ...(product.metadata.type === "Event Ticket" && {
-        payment_intent_data: {
-          metadata: {
-            userId: session.user.id,
-            productId: product.id,
-            formCompleted: "false",
+      ...(eventProduct &&
+        eventProduct.metadata && {
+          payment_intent_data: {
+            metadata: {
+              userId: session.user.id,
+              productId: eventProduct.metadata.productId,
+              formCompleted: "false",
+            },
           },
-        },
-      }),
+        }),
       return_url: `${process.env.NEXT_PUBLIC_STRIPE_PAYMENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
     }
 

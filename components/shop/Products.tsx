@@ -20,7 +20,7 @@ import Image from "next/image"
 import ProductList from "@/components/shop/ProductList"
 import { getProductVariants } from "@/actions/server"
 import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
-import { storeCheckoutData } from "@/lib/session"
+import { getCheckoutData, storeCheckoutData } from "@/lib/session"
 const openSans = Open_Sans({ subsets: ["latin"] })
 const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 
@@ -37,9 +37,10 @@ export default function Products({ items, prices }: ProductProps) {
   const productType = params.get("type")
   const sort = params.get("sort")
   const productsWithoutVariants = items.filter(
-    (item) => !item.metadata.productId,
+    (item) => !item.metadata?.productId,
   )
   const [products, setProducts] = useState(productsWithoutVariants)
+  const [error, setError] = useState<string | null>()
   const [loading, setLoading] = useState(true)
   const [productView, setProductView] = useState<boolean>(false)
   const { data, setData } = useCheckoutDataContext()
@@ -65,7 +66,7 @@ export default function Products({ items, prices }: ProductProps) {
     if (!product) {
       let variants: Array<Product> = []
       variants.push(newProduct)
-      if (newProduct.metadata.variants) {
+      if (newProduct.metadata?.variants) {
         const otherVariants = await getProductVariants(newProduct.id)
         variants = variants.concat(otherVariants)
       }
@@ -81,6 +82,7 @@ export default function Products({ items, prices }: ProductProps) {
         },
       })
       setData({
+        ...data,
         product: newProduct,
         variants: variants,
         quantity: 1,
@@ -90,6 +92,7 @@ export default function Products({ items, prices }: ProductProps) {
 
   const closeQuickView = () => {
     if (productView) setProductView(false)
+    if (error) setError(null)
     if (product) setProduct(null)
   }
 
@@ -113,18 +116,30 @@ export default function Products({ items, prices }: ProductProps) {
   }
 
   const goToCheckout = async () => {
-    if (
-      product &&
-      product.currentPrice.amount &&
-      product.quantity &&
-      product.currentVariant
-    ) {
-      const shopData = {
+    if (product) {
+      const checkoutData = await getCheckoutData()
+      checkoutData.products.push({
         priceId: product.currentPrice.id,
         quantity: product.quantity,
-      }
-      await storeCheckoutData(shopData)
-      router.push(`/checkout?product_id=${product.currentVariant.id}`)
+      })
+      await storeCheckoutData(checkoutData)
+      router.push("/checkout")
+    }
+  }
+
+  const addToCart = async () => {
+    if (product) {
+      const priceId = product.currentPrice.id
+      const quantity = product.quantity
+      const checkoutData = await getCheckoutData()
+      const productExists = checkoutData.products.find(
+        (product) => product.priceId === priceId,
+      )
+      if (productExists) return setError("Product is already in your cart")
+      checkoutData.products.push({ priceId: priceId, quantity: quantity })
+      setData({ ...data, totalProducts: checkoutData.products.length })
+      await storeCheckoutData(checkoutData)
+      closeQuickView()
     }
   }
 
@@ -217,7 +232,7 @@ export default function Products({ items, prices }: ProductProps) {
 
     if (productType) {
       updatedItems = updatedItems.filter(
-        (product) => product.metadata.type === productType,
+        (product) => product.metadata?.type === productType,
       )
     }
 
@@ -266,7 +281,7 @@ export default function Products({ items, prices }: ProductProps) {
   useEffect(() => {
     // clear previously set checkout context
     if (data) {
-      setData({ product: null, variants: null, quantity: null })
+      setData({ ...data, product: null, variants: null, quantity: null })
     }
   }, [])
 
@@ -301,7 +316,7 @@ export default function Products({ items, prices }: ProductProps) {
                   className="ml-auto mr-auto h-[500px] w-full object-contain"
                   priority
                 />
-                {product.variants[0].metadata.variants && (
+                {product.variants[0].metadata?.variants && (
                   <FontAwesomeIcon
                     icon={faCaretRight}
                     size="2xl"
@@ -326,7 +341,7 @@ export default function Products({ items, prices }: ProductProps) {
               prices[product.currentVariant.id].length >= 1 && (
                 <>
                   <div>
-                    {product.currentVariant.metadata.original_price && (
+                    {product.currentVariant.metadata?.original_price && (
                       <span
                         className={`text-2xl ${openSans.className} pl-6 text-[#474747B3] line-through`}
                       >
@@ -344,7 +359,7 @@ export default function Products({ items, prices }: ProductProps) {
                       ).toFixed(2)}
                     </span>
                   </div>
-                  {product.currentVariant.metadata.original_price &&
+                  {product.currentVariant.metadata?.original_price &&
                     prices[product.currentVariant.id][0].unit_amount && (
                       <span
                         className={`pl-6 text-lg text-red-500 ${openSans.className}`}
@@ -372,7 +387,7 @@ export default function Products({ items, prices }: ProductProps) {
                         %)
                       </span>
                     )}
-                  {product.currentVariant.metadata.shipping && (
+                  {product.currentVariant.metadata?.shipping && (
                     <span
                       className={`mt-4 pl-6 text-sm text-[#575757] ${openSans.className}`}
                     >
@@ -415,13 +430,20 @@ export default function Products({ items, prices }: ProductProps) {
                     >
                       B U Y &nbsp;N O W
                     </button>
-                    <Link
-                      href={"#"}
+                    <button
                       className={`h-[60px] w-[200px] bg-[#49740B] text-center leading-[60px] text-white ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+                      onClick={addToCart}
                     >
                       A D D &nbsp;T O &nbsp;C A R T
-                    </Link>
+                    </button>
                   </div>
+                  {error && (
+                    <span
+                      className={`${openSans.className} pl-6 pt-2 text-red-500`}
+                    >
+                      {error}
+                    </span>
+                  )}
                   <Link
                     href={`/shop/products/${product.variants[0].id}`}
                     className="mt-8 w-fit pl-6"
@@ -532,7 +554,7 @@ export default function Products({ items, prices }: ProductProps) {
                     className={`flex w-full flex-col ${openSans.className} lg:w-[200px] xl:w-[300px]`}
                   >
                     <div className="group relative flex flex-col">
-                      {product.metadata.original_price && (
+                      {product.metadata?.original_price && (
                         <span className="absolute right-0 top-0 ml-auto bg-[#49740B] pb-1 pl-4 pr-4 pt-1 text-xs text-white lg:pb-2 lg:pl-6 lg:pr-6 lg:pt-2 lg:text-sm">
                           sale
                         </span>
@@ -553,7 +575,7 @@ export default function Products({ items, prices }: ProductProps) {
                         priority
                       />
                     </div>
-                    {product.metadata.shipping && (
+                    {product.metadata?.shipping && (
                       <span className="text-sm text-[#575757]">
                         FREE SHIPPING
                       </span>
@@ -567,7 +589,7 @@ export default function Products({ items, prices }: ProductProps) {
                             String(Number(itemPrices[0].unit_amount) / 100),
                           ).toFixed(2)}
                         </span>
-                        {product.metadata.original_price && (
+                        {product.metadata?.original_price && (
                           <span>{product.metadata.original_price}</span>
                         )}
                         <span className="mt-4 text-sm text-[#595959]">
@@ -576,13 +598,13 @@ export default function Products({ items, prices }: ProductProps) {
                       </>
                     ) : (
                       <div>
-                        {product.metadata.original_price && (
+                        {product.metadata?.original_price && (
                           <span className="text-[#474747B3] line-through">
                             ${product.metadata.original_price}
                           </span>
                         )}
                         <span
-                          className={`text-base ${product.metadata.original_price && "ml-3"}`}
+                          className={`text-base ${product.metadata?.original_price && "ml-3"}`}
                         >
                           $
                           {parseFloat(

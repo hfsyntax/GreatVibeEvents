@@ -4,6 +4,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css"
 import { Inter } from "next/font/google"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
+import { CheckoutDataProvider } from "@/context/CheckoutDataProvider"
 import { getSession } from "@/lib/session"
 
 export const metadata: Metadata = {
@@ -21,29 +22,31 @@ export default async function RootLayout({
 }>) {
   const session = await getSession()
   return (
-    <html lang="en">
-      <body className={`${inter.className}`}>
-        <div className={`flex flex-col 2xl:flex-row`}>
-          <div
-            className={`box-border h-[90px] w-full border-2 border-yellow-500 bg-black 2xl:h-auto 2xl:w-[160px]`}
-          >
-            <span className="text-white">[ad container left]</span>
-          </div>
-          <div className="ml-auto mr-auto flex w-full flex-col xl:w-[1232px]">
-            <div className="hidden h-[90px] w-full bg-black 2xl:inline-block">
-              <span className="text-white">[ad container middle]</span>
+    <CheckoutDataProvider>
+      <html lang="en">
+        <body className={`${inter.className}`}>
+          <div className={`flex flex-col 2xl:flex-row`}>
+            <div
+              className={`box-border h-[90px] w-full border-2 border-yellow-500 bg-black 2xl:h-auto 2xl:w-[160px]`}
+            >
+              <span className="text-white">[ad container left]</span>
             </div>
-            <Navbar session={session} />
-            {children}
-            <Footer />
+            <div className="ml-auto mr-auto flex w-full flex-col xl:w-[1232px]">
+              <div className="hidden h-[90px] w-full bg-black 2xl:inline-block">
+                <span className="text-white">[ad container middle]</span>
+              </div>
+              <Navbar session={session} />
+              {children}
+              <Footer />
+            </div>
+            <div
+              className={`box-border h-[90px] w-full border-2 border-yellow-500 bg-black 2xl:h-auto 2xl:w-[160px]`}
+            >
+              <span className="text-white">[ad container right]</span>
+            </div>
           </div>
-          <div
-            className={`box-border h-[90px] w-full border-2 border-yellow-500 bg-black 2xl:h-auto 2xl:w-[160px]`}
-          >
-            <span className="text-white">[ad container right]</span>
-          </div>
-        </div>
-      </body>
-    </html>
+        </body>
+      </html>
+    </CheckoutDataProvider>
   )
 }

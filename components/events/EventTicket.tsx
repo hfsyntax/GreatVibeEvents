@@ -62,9 +62,14 @@ export default function EventTicket({
         ? Number(customTip.slice(1)) * 100
         : label.amount * 100
     const data = {
-      priceId: String(selectedPrice?.id),
+      products: [
+        {
+          priceId: String(selectedPrice?.id),
+          quantity: 1,
+          metadata: { type: "Event Ticket", productId: productId },
+        },
+      ],
       tip: tip,
-      quantity: 1,
     }
     await storeCheckoutData(data)
     router.push(`/checkout?product_id=${productId}`)

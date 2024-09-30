@@ -1,5 +1,6 @@
 "use client"
 import type { KeyboardEvent } from "react"
+import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
 import { useEffect, useState, useRef } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
@@ -17,6 +18,7 @@ import {
 import { logout } from "@/lib/session"
 
 export default function Navbar({ session }: { session: any }) {
+  const { data } = useCheckoutDataContext()
   const pathname = usePathname()
   const router = useRouter()
   const [navbar, showNavbar] = useState(false)
@@ -244,11 +246,21 @@ export default function Navbar({ session }: { session: any }) {
             ></input>
           </div>
         )}
-        <FontAwesomeIcon
-          icon={faCartShopping}
-          size="lg"
-          className={`cursor-pointer p-2 text-[#49740B] hover:text-black ${navbar && "!hidden"} xl:!inline`}
-        />
+        <Link href={"/shop/cart"}>
+          <div className="relative">
+            <FontAwesomeIcon
+              icon={faCartShopping}
+              size="lg"
+              className={`cursor-pointer p-2 text-[#49740B] hover:text-black ${navbar && "!hidden"} xl:!inline`}
+            />
+            {data.totalProducts > 0 && (
+              <span className="absolute left-0 top-0 rounded bg-black text-xs text-white">
+                {data.totalProducts}
+              </span>
+            )}
+          </div>
+        </Link>
+
         {!session ? (
           <Link
             href={"/login"}

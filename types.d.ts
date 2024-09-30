@@ -5,7 +5,7 @@ export type FormEntry = {
 export type Product = {
   id: string
   name: string
-  metadata: { [key: string]: string }
+  metadata?: { [key: string]: string }
   images: string[]
   created: number
   description?: string | null
@@ -18,9 +18,24 @@ export type ProductPrice = {
 }
 
 export type CheckoutData = {
-  priceId: string
-  quantity: number
+  products: Array<{
+    priceId: string
+    quantity: number
+    metadata?: {
+      [key: string]: string
+    }
+  }>
   tip?: number
+}
+
+export type CartItem = {
+  [priceId: string]: {
+    stripeProduct: {
+      product: Product
+      amount: number | null
+    } | null
+    quantity: number
+  }
 }
 
 export type GalleryImage = {

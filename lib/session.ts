@@ -164,11 +164,15 @@ export async function storeCheckoutData(data: CheckoutData) {
 export async function getCheckoutData() {
   try {
     const encryptedShopData = cookies().get("shopData")?.value
-    if (!encryptedShopData) return null
-    const decryptedData = await decrypt(encryptedShopData)
+    if (!encryptedShopData) return { products: [] }
+    const decryptedData: CheckoutData = await decrypt(encryptedShopData)
     return decryptedData
   } catch (error) {
     console.error(error)
-    return null
+    return { products: [] }
   }
+}
+
+export async function deleteCheckoutData() {
+  cookies().delete("shopData")
 }
