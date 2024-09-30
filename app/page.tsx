@@ -11,19 +11,19 @@ export default async function Home() {
   const imageUrls = await getGalleryImageUrls(9999)
   return (
     <>
-      <div className="w-full flex flex-col md:flex-row">
+      <div className="flex w-full flex-col md:flex-row">
         <Image
           src={"/img/logo_welcome.png"}
           height={0}
           width={0}
           sizes="(max-width: 768px) 100vw, 50vw"
           alt="logo_welcome"
-          className="w-1/2 h-auto mr-auto ml-auto object-contain"
+          className="ml-auto mr-auto h-auto w-1/2 object-contain"
           priority
         />
-        <div className="bg-[#DAFFC0] p-10 flex flex-col justify-center ml-auto mr-auto w-full md:w-1/2">
+        <div className="ml-auto mr-auto flex w-full flex-col justify-center bg-[#DAFFC0] p-10 md:w-1/2">
           <span
-            className={`${openSans.className} text-center text-lg mb-4 text-[#49740B]`}
+            className={`${openSans.className} mb-4 text-center text-lg text-[#49740B]`}
           >
             WELCOME
           </span>
@@ -36,13 +36,13 @@ export default async function Home() {
           </span>
           <Link
             href={"/about"}
-            className="m-6 bg-[#49740B] text-white text-base text-center block p-4 font-bold hover:bg-lime-600"
+            className="m-6 block bg-[#49740B] p-4 text-center text-base font-bold text-white hover:bg-lime-600"
           >
             LEARN MORE
           </Link>
         </div>
       </div>
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
+      <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
         <span>content ad space</span>
       </div>
       <Image
@@ -51,16 +51,16 @@ export default async function Home() {
         width={0}
         sizes="100vw"
         alt="logo_welcome"
-        className="w-full h-auto"
+        className="h-auto w-full"
         priority
       />
       <span
-        className={`text-lg mt-6 text-[#49740B] ${openSans.className} mb-8`}
+        className={`mt-6 text-lg text-[#49740B] ${openSans.className} mb-8`}
       >
         SATURDAY, OCTOBER 12TH, 2024
       </span>
-      <div className="flex flex-col mb-10 lg:flex-row">
-        <div className="w-full flex flex-col lg:w-[70%]">
+      <div className="mb-10 flex flex-col lg:flex-row">
+        <div className="flex w-full flex-col lg:w-[70%]">
           <span
             className={`mb-6 text-4xl ${playfairDisplay.className} text-[#49740B]`}
           >
@@ -89,7 +89,7 @@ export default async function Home() {
             Unity of Fairfax, 2854 Hunter Mill Road, Oakton, VA 22124
           </span>
           <span
-            className={`text-2xl mt-8 text-[#5e5e5e] ${openSans.className}`}
+            className={`mt-8 text-2xl text-[#5e5e5e] ${openSans.className}`}
           >
             Get ready for a night of spooky fun and fantastic festivities!
           </span>
@@ -97,7 +97,7 @@ export default async function Home() {
             Here’s what you can look forward to AT THE GVE SPOOKTACULAR:
           </strong>
           <ul
-            className={`text-2xl text-[#5e5e5e] list-inside ml-4 ${openSans.className}`}
+            className={`ml-4 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
           >
             <li>
               👻
@@ -134,13 +134,13 @@ export default async function Home() {
             </li>
           </ul>
           <span
-            className={`text-2xl text-[#5e5e5e] list-inside ml-4 mt-8 ${openSans.className}`}
+            className={`ml-4 mt-8 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
           >
             🎟
             <strong>&nbsp;Tickets:</strong>
           </span>
           <ul
-            className={`text-2xl text-[#5e5e5e] list-inside list-disc ml-4 ${openSans.className}`}
+            className={`ml-4 list-inside list-disc text-2xl text-[#5e5e5e] ${openSans.className}`}
           >
             <li className="ml-4">$45.00 per participant (includes meal)</li>
             <li className="ml-4">
@@ -161,41 +161,41 @@ export default async function Home() {
             </li>
           </ul>
           <span
-            className={`text-2xl text-[#5e5e5e] list-inside ml-4 mt-8 ${openSans.className}`}
+            className={`ml-4 mt-8 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
           >
             Mark your calendars, gather your friends and family, and join us for
             a Halloween party you won’t forget. Don’t miss out on this
             spooktacular event! See you there! 🎃👻
           </span>
           <span
-            className={`text-2xl text-[#5e5e5e] list-inside ml-4 ${openSans.className}`}
+            className={`ml-4 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
           >
             #HalloweenParty #Spooktacular #GreatVibeEvents #CostumeContest
             #DanceParty #Karaoke #ArtRoom #GameRoom #BingoBonanza
             #UnityOfFairfax #OaktonVA
           </span>
         </div>
-        <div className="w-full lg:w-[30%] pr-6 pl-6 h-fit bg-[#DAFFC0] flex flex-col justify-center">
+        <div className="flex h-fit w-full flex-col justify-center bg-[#DAFFC0] pl-6 pr-6 lg:w-[30%]">
           <span
-            className={`pl-8 pr-8 mt-8 block text-4xl lg:text-3xl xl:text-4xl text-[#49740B] mb-6 ${playfairDisplay.className}`}
+            className={`mb-6 mt-8 block pl-8 pr-8 text-4xl text-[#49740B] lg:text-3xl xl:text-4xl ${playfairDisplay.className}`}
           >
             GVE 2024 SPOOKTACULAR COSTOME PARTY
           </span>
           <Link
             href={"/events/prod_QoE4XMfgZmQF3K"}
-            className="mr-6 ml-6 mb-6 bg-[#49740B] text-white text-base block p-4 font-bold hover:bg-lime-600"
+            className="mb-6 ml-6 mr-6 block bg-[#49740B] p-4 text-base font-bold text-white hover:bg-lime-600"
           >
             PURCHASE TICKET
           </Link>
         </div>
       </div>
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
+      <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
         <span>content ad space</span>
       </div>
-      <span className={`text-[#49740B] text-lg ${openSans.className} mb-8`}>
+      <span className={`text-lg text-[#49740B] ${openSans.className} mb-8`}>
         GREAT TIMES AND GREAT PEOPLE CREATE GREAT VIBES!
       </span>
-      <div className="w-full h-[500px] flex overflow-auto gap-3">
+      <div className="flex h-[500px] w-full gap-3 overflow-auto">
         {imageUrls.items.map((imageUrl, index) => (
           <Image
             src={imageUrl.url}
@@ -203,35 +203,35 @@ export default async function Home() {
             width={0}
             sizes="(max-width: 768px) 50vw, 50vw"
             alt="logo_welcome"
-            className="w-full h-auto object-contain"
+            className="h-auto w-full object-contain"
             priority
             key={`galley_image_${index}`}
           />
         ))}
       </div>
-      <p className={`${openSans.className} text-lg mt-5`}>
+      <p className={`${openSans.className} mt-5 text-lg`}>
         [mission statement here]
       </p>
 
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
+      <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
         <span>content ad space</span>
       </div>
       <QuoteSlider />
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
+      <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
         <span>content ad space</span>
       </div>
       <span
-        className={`${playfairDisplay.className} w-full text-center text-4xl mb-8`}
+        className={`${playfairDisplay.className} mb-8 w-full text-center text-4xl`}
       >
         Sign up for gve's monthly news letter
       </span>
       <span
-        className={`${openSans.className} text-lg text-gray-500 mb-4 w-full text-center`}
+        className={`${openSans.className} mb-4 w-full text-center text-lg text-gray-500`}
       >
         Learn more about our upcoming events, fundraisers, and more!
       </span>
       <NewsletterForm />
-      <div className="bg-black text-white border-yellow-500 border-2 box-border w-full h-[90px] mt-8 mb-8">
+      <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
         <span>content ad space</span>
       </div>
       <ContactForm />

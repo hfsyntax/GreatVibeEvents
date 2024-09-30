@@ -180,17 +180,3 @@ export async function updateStripeCustomer(customerId: string) {
     throw error
   }
 }
-
-export async function validLoginCheckoutToken(token: string) {
-  try {
-    const validToken =
-      await sql`SELECT 1 FROM checkout_tokens WHERE token = ${token}`
-    if (validToken.rows.length === 1) {
-      await sql`DELETE FROM checkout_tokens WHERE token = ${token}`
-      return true
-    }
-    return false
-  } catch (error) {
-    throw error
-  }
-}
