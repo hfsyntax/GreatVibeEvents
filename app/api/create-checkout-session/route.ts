@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "400 Bad Request" }, { status: 400 })
     }
 
-    const eventProduct = products.find(
+    const eventProduct = products.filter(
       (product) => product?.metadata?.type === "Event Ticket",
     )
     const session = await getSession()
@@ -132,16 +132,17 @@ export async function POST(request: NextRequest) {
         allowed_countries: ["US"],
       },
       ...(customerId !== null && { customer: customerId }),
-      ...(eventProduct &&
-        eventProduct.metadata && {
-          payment_intent_data: {
-            metadata: {
-              userId: session.user.id,
-              productId: eventProduct.metadata.productId,
-              formCompleted: "false",
-            },
+      ...(eventProduct && {
+        payment_intent_data: {
+          metadata: {
+            userId: String(session?.user.id),
+            eventIds: eventProduct
+              .map((product) => product.metadata && product.metadata.productId)
+              .join(),
+            formCompleted: "false",
           },
-        }),
+        },
+      }),
       return_url: `${process.env.NEXT_PUBLIC_STRIPE_PAYMENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
     }
 

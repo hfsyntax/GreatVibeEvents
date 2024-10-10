@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import StripeLoader from "@/components/checkout/StripeLoader"
-import { getCheckoutData } from "@/lib/session"
-import EventTicket from "@/components/events/EventTicket"
+import { getCheckoutData, getSession } from "@/lib/session"
+import { getProduct } from "@/lib/stripe"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Checkout",
@@ -11,37 +11,37 @@ export const metadata: Metadata = {
 export default async function Checkout() {
   try {
     const checkoutData = await getCheckoutData()
-    if (!checkoutData || checkoutData.products.length === 0) {
-      return <span className="text-red-500">Invalid checkout data.</span>
-    }
-
-    const eventTicket = checkoutData.products.find(
-      (product) => product.metadata && product.metadata.type === "Event Ticket",
-    )
-
-    if (eventTicket && eventTicket.metadata) {
-      const eventDate = parseInt(eventTicket.metadata.starts)
-      const eventEnds = eventTicket.metadata.ends
-      const eventAddress = eventTicket.metadata.address
-      if (!eventDate || !eventEnds || !eventAddress) {
-        return (
-          <span className="text-red-500">
-            Event ticket is not available for purchase.
-          </span>
-        )
-      }
-
-      const now = Date.now()
-      if (now > eventDate) {
-        return (
-          <span className="text-red-500">
-            Event ticket is not available for purchase.
-          </span>
-        )
+    if (checkoutData && checkoutData.products.length > 0) {
+      const eventTicket = checkoutData.products.find(
+        (product) =>
+          product.metadata && product.metadata.type === "Event Ticket",
+      )
+      if (eventTicket && eventTicket.metadata) {
+        const eventProduct = await getProduct(eventTicket.metadata.productId)
+        const eventDate = parseInt(eventProduct.metadata.starts)
+        const eventEnds = eventProduct.metadata.ends
+        const eventAddress = eventProduct.metadata.address
+        if (!eventDate || !eventEnds || !eventAddress) {
+          return (
+            <span className="text-red-500">
+              Event ticket is not available for purchase.
+            </span>
+          )
+        }
+        const now = Date.now()
+        if (now > eventDate) {
+          return (
+            <span className="text-red-500">
+              Event ticket is not available for purchase.
+            </span>
+          )
+        }
       }
     }
 
-    return <StripeLoader />
+    const session = await getSession()
+
+    return <StripeLoader session={session} checkoutData={checkoutData} />
   } catch (error: any) {
     console.error(error)
     if (error.type === "StripeInvalidRequestError") {

@@ -1,7 +1,7 @@
 "use client"
 import type { Stripe } from "stripe"
 import type { ChangeEvent, MouseEvent } from "react"
-import type { Product } from "@/types"
+import type { CheckoutData, Product, Session } from "@/types"
 import { getPriceDifference } from "@/lib/utils"
 import { Open_Sans, Playfair_Display } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -27,9 +27,10 @@ const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 type ProductProps = {
   items: Product[]
   prices: { [key: string]: Stripe.Price[] }
+  session: Session | null
 }
 
-export default function Products({ items, prices }: ProductProps) {
+export default function Products({ items, prices, session }: ProductProps) {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
@@ -40,7 +41,7 @@ export default function Products({ items, prices }: ProductProps) {
     (item) => !item.metadata?.productId,
   )
   const [products, setProducts] = useState(productsWithoutVariants)
-  const [error, setError] = useState<string | null>()
+  const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState(true)
   const [productView, setProductView] = useState<boolean>(false)
   const { data, setData } = useCheckoutDataContext()
@@ -64,8 +65,7 @@ export default function Products({ items, prices }: ProductProps) {
     event.stopPropagation()
     event.preventDefault()
     if (!product) {
-      let variants: Array<Product> = []
-      variants.push(newProduct)
+      let variants: Array<Product> = [newProduct]
       if (newProduct.metadata?.variants) {
         const otherVariants = await getProductVariants(newProduct.id)
         variants = variants.concat(otherVariants)
@@ -81,18 +81,18 @@ export default function Products({ items, prices }: ProductProps) {
           amount: prices[newProduct.id][0].unit_amount,
         },
       })
-      setData({
-        ...data,
+      setData((prevData) => ({
+        ...prevData,
         product: newProduct,
         variants: variants,
         quantity: 1,
-      })
+      }))
     }
   }
 
   const closeQuickView = () => {
     if (productView) setProductView(false)
-    if (error) setError(null)
+    if (error) setError("")
     if (product) setProduct(null)
   }
 
@@ -103,13 +103,17 @@ export default function Products({ items, prices }: ProductProps) {
         (price) => price.nickname === selectedName,
       )
       if (price && product.currentPrice.id !== price.id) {
-        setProduct({
-          ...product,
-          currentPrice: {
-            id: price.id,
-            name: price.nickname ? price.nickname : "default",
-            amount: price.unit_amount,
-          },
+        setProduct((prevProduct) => {
+          if (!prevProduct) return prevProduct
+          return {
+            ...prevProduct,
+            currentPrice: {
+              ...prevProduct.currentPrice,
+              id: price.id,
+              name: price.nickname ? price.nickname : "default",
+              amount: price.unit_amount,
+            },
+          }
         })
       }
     }
@@ -117,12 +121,42 @@ export default function Products({ items, prices }: ProductProps) {
 
   const goToCheckout = async () => {
     if (product) {
-      const checkoutData = await getCheckoutData()
-      checkoutData.products.push({
-        priceId: product.currentPrice.id,
-        quantity: product.quantity,
-      })
-      await storeCheckoutData(checkoutData)
+      const priceId = product.currentPrice.id
+      const quantity = product.quantity
+      let checkoutData: undefined | CheckoutData | null
+      if (session) {
+        checkoutData = await getCheckoutData()
+        checkoutData = checkoutData
+          ? checkoutData
+          : { products: [], userId: session.user.id }
+      } else {
+        const guestCheckoutData = sessionStorage.getItem("shopData")
+        checkoutData = guestCheckoutData
+          ? await getCheckoutData(guestCheckoutData)
+          : null
+        checkoutData = checkoutData ? checkoutData : { products: [] }
+      }
+      const productExists = checkoutData.products.find(
+        (product) => product.priceId === priceId,
+      )
+      if (productExists) {
+        if (error) return
+        return setError("Product is already in your cart")
+      }
+      const updatedProducts = [
+        ...checkoutData.products,
+        { priceId: priceId, quantity: quantity },
+      ]
+      const updatedCheckoutData: CheckoutData = {
+        ...checkoutData,
+        products: updatedProducts,
+      }
+      const encryptedShopData = await storeCheckoutData(updatedCheckoutData)
+      if (!session) sessionStorage.setItem("shopData", encryptedShopData)
+      setData((prevData) => ({
+        ...prevData,
+        totalProducts: updatedCheckoutData.products.length,
+      }))
       router.push("/checkout")
     }
   }
@@ -131,14 +165,42 @@ export default function Products({ items, prices }: ProductProps) {
     if (product) {
       const priceId = product.currentPrice.id
       const quantity = product.quantity
-      const checkoutData = await getCheckoutData()
+      let checkoutData: undefined | CheckoutData | null
+      if (session) {
+        checkoutData = await getCheckoutData()
+        checkoutData = checkoutData
+          ? checkoutData
+          : { products: [], userId: session.user.id }
+      } else {
+        const guestCheckoutData = sessionStorage.getItem("shopData")
+        checkoutData = guestCheckoutData
+          ? await getCheckoutData(guestCheckoutData)
+          : null
+        checkoutData = checkoutData ? checkoutData : { products: [] }
+      }
+
       const productExists = checkoutData.products.find(
         (product) => product.priceId === priceId,
       )
-      if (productExists) return setError("Product is already in your cart")
-      checkoutData.products.push({ priceId: priceId, quantity: quantity })
-      setData({ ...data, totalProducts: checkoutData.products.length })
-      await storeCheckoutData(checkoutData)
+      if (productExists) {
+        if (error) return
+        return setError("Product is already in your cart")
+      }
+      const updatedProducts = [
+        ...checkoutData.products,
+        { priceId: priceId, quantity: quantity },
+      ]
+      const updatedCheckoutData: CheckoutData = {
+        ...checkoutData,
+        products: updatedProducts,
+      }
+
+      const encryptedShopData = await storeCheckoutData(updatedCheckoutData)
+      if (!session) sessionStorage.setItem("shopData", encryptedShopData)
+      setData((prevData) => ({
+        ...prevData,
+        totalProducts: updatedCheckoutData.products.length,
+      }))
       closeQuickView()
     }
   }
@@ -150,25 +212,32 @@ export default function Products({ items, prices }: ProductProps) {
       const nextVariantIndex =
         (product.currentVariantIndex + 1) % product.variants.length
       if (nextVariantIndex < product.variants.length) {
-        setProduct({
-          ...product,
-          currentVariantIndex: nextVariantIndex,
-          currentVariant: product.variants[nextVariantIndex],
-          quantity: 1,
-          currentPrice: {
-            id: prices[product.variants[nextVariantIndex].id][0].id,
-            name:
-              prices[product.variants[nextVariantIndex].id][0].nickname ??
-              "default",
-            amount:
-              prices[product.variants[nextVariantIndex].id][0].unit_amount,
-          },
+        setProduct((prevProduct) => {
+          if (!prevProduct) return prevProduct
+          return {
+            ...prevProduct,
+            currentVariantIndex: nextVariantIndex,
+            currentVariant: product.variants[nextVariantIndex],
+            quantity: 1,
+            currentPrice: {
+              id: prices[product.variants[nextVariantIndex].id][0].id,
+              name:
+                prices[product.variants[nextVariantIndex].id][0].nickname ??
+                "default",
+              amount:
+                prices[product.variants[nextVariantIndex].id][0].unit_amount,
+            },
+          }
         })
-        setData({
-          ...data,
+
+        if (error) {
+          setError("")
+        }
+        setData((prevData) => ({
+          ...prevData,
           product: product.variants[nextVariantIndex],
           quantity: 1,
-        })
+        }))
       }
     }
   }
@@ -179,25 +248,32 @@ export default function Products({ items, prices }: ProductProps) {
         (product.currentVariantIndex - 1 + product.variants.length) %
         product.variants.length
       if (previousVariantIndex < product.variants.length) {
-        setProduct({
-          ...product,
-          currentVariantIndex: previousVariantIndex,
-          currentVariant: product.variants[previousVariantIndex],
-          quantity: 1,
-          currentPrice: {
-            id: prices[product.variants[previousVariantIndex].id][0].id,
-            name:
-              prices[product.variants[previousVariantIndex].id][0].nickname ??
-              "default",
-            amount:
-              prices[product.variants[previousVariantIndex].id][0].unit_amount,
-          },
+        setProduct((prevProduct) => {
+          if (!prevProduct) return prevProduct
+          return {
+            ...prevProduct,
+            currentVariantIndex: previousVariantIndex,
+            currentVariant: product.variants[previousVariantIndex],
+            quantity: 1,
+            currentPrice: {
+              id: prices[product.variants[previousVariantIndex].id][0].id,
+              name:
+                prices[product.variants[previousVariantIndex].id][0].nickname ??
+                "default",
+              amount:
+                prices[product.variants[previousVariantIndex].id][0]
+                  .unit_amount,
+            },
+          }
         })
-        setData({
-          ...data,
+        if (error) {
+          setError("")
+        }
+        setData((prevData) => ({
+          ...prevData,
           product: product.variants[previousVariantIndex],
           quantity: 1,
-        })
+        }))
       }
     }
   }
@@ -205,8 +281,17 @@ export default function Products({ items, prices }: ProductProps) {
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
     if (product && Number.isInteger(parseFloat(value))) {
-      setProduct({ ...product, quantity: Number(value) })
-      setData({ ...data, quantity: Number(value) })
+      setProduct((prevProduct) => {
+        if (!prevProduct) return prevProduct
+        return {
+          ...prevProduct,
+          quantity: Number(value),
+        }
+      })
+      setData((prevData) => ({
+        ...prevData,
+        quantity: Number(value),
+      }))
     }
   }
 
@@ -281,7 +366,12 @@ export default function Products({ items, prices }: ProductProps) {
   useEffect(() => {
     // clear previously set checkout context
     if (data) {
-      setData({ ...data, product: null, variants: null, quantity: null })
+      setData((prevData) => ({
+        ...prevData,
+        product: null,
+        variants: null,
+        quantity: null,
+      }))
     }
   }, [])
 

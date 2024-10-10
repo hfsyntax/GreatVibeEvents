@@ -1,8 +1,11 @@
 import Image from "next/image"
 import { getProduct, listPrices } from "@/lib/stripe"
 import EventTicket from "@/components/events/EventTicket"
+import { getCheckoutData, getSession } from "@/lib/session"
+import { CheckoutData } from "@/types"
 export default async function EventId({ params }: { params: { id: string } }) {
   try {
+    const session = await getSession()
     const product = await getProduct(params.id)
     const eventTime = Number(parseInt(product.metadata.starts))
     if (isNaN(eventTime)) {
@@ -23,8 +26,17 @@ export default async function EventId({ params }: { params: { id: string } }) {
     })
 
     const sortedPrices = priceList.data.sort(
-      (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0)
+      (a, b) => (a.unit_amount ?? 0) - (b.unit_amount ?? 0),
     )
+
+    let checkoutData: CheckoutData | null = null
+    if (session) {
+      checkoutData = await getCheckoutData(`shopData_${session.user.id}`)
+      checkoutData = checkoutData
+        ? checkoutData
+        : { products: [], userId: session.user.id }
+    }
+
     return (
       <div className="flex flex-col items-center justify-center">
         {product.name.includes("Halloween") && (
@@ -35,13 +47,13 @@ export default async function EventId({ params }: { params: { id: string } }) {
               width={0}
               sizes="(max-width: 1023) 100vw, 50vw"
               alt="logo_welcome"
-              className="w-full lg:w-1/2 h-auto"
+              className="h-auto w-full lg:w-1/2"
               priority
             />
-            <span className="text-2xl mt-10 text-center">
+            <span className="mt-10 text-center text-2xl">
               Great Vibe Events 2024 Spooktacular
             </span>
-            <p className="pl-3 pr-3 text-lg text-[#5e5e5e] w-full lg:w-[800px] mt-4">
+            <p className="mt-4 w-full pl-3 pr-3 text-lg text-[#5e5e5e] lg:w-[800px]">
               The Halloween Costume Party of the Year! Show off your best
               costume and get ready for a night of spooky fun, fantastic
               festivities and an evening to meet new friends! When: Saturday
@@ -50,7 +62,12 @@ export default async function EventId({ params }: { params: { id: string } }) {
             </p>
           </>
         )}
-        <EventTicket priceList={sortedPrices} productId={params.id} />
+        <EventTicket
+          priceList={sortedPrices}
+          productId={params.id}
+          session={session}
+          checkoutData={checkoutData}
+        />
       </div>
     )
   } catch (error: any) {

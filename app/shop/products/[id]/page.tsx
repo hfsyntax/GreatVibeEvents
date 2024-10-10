@@ -1,4 +1,5 @@
 import { getProduct, listPrices } from "@/lib/stripe"
+import { getSession } from "@/lib/session"
 import type { Product } from "@/types"
 import ProductComponent from "@/components/shop/Product"
 import type { Stripe } from "stripe"
@@ -42,7 +43,14 @@ export default async function ShopId({ params }: { params: { id: string } }) {
       {} as { [key: string]: Stripe.Price[] },
     )
 
-    return <ProductComponent prices={pricesMap} variants={productVariants} />
+    const session = await getSession()
+    return (
+      <ProductComponent
+        prices={pricesMap}
+        variants={productVariants}
+        session={session}
+      />
+    )
   } catch (error: any) {
     console.error(error)
     if (error.type === "StripeInvalidRequestError") {

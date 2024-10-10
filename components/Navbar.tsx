@@ -15,10 +15,10 @@ import {
   faBars,
   faX,
 } from "@fortawesome/free-solid-svg-icons"
-import { logout } from "@/lib/session"
+import { getCheckoutData, logout } from "@/lib/session"
 
 export default function Navbar({ session }: { session: any }) {
-  const { data } = useCheckoutDataContext()
+  const { data, setData } = useCheckoutDataContext()
   const pathname = usePathname()
   const router = useRouter()
   const [navbar, showNavbar] = useState(false)
@@ -50,6 +50,14 @@ export default function Navbar({ session }: { session: any }) {
 
   const handleLogout = async () => {
     await logout()
+    const guestCheckoutData = sessionStorage.getItem("shopData")
+    const checkoutData = guestCheckoutData
+      ? await getCheckoutData(guestCheckoutData)
+      : null
+    setData({
+      ...data,
+      totalProducts: checkoutData ? checkoutData.products.length : 0,
+    })
     closeNavbar()
     showUserDropdown(false)
     router.push("/")
@@ -76,10 +84,32 @@ export default function Navbar({ session }: { session: any }) {
 
   useEffect(() => {
     document.addEventListener("mousedown", handleUserDropDown)
+    if (session) {
+      getCheckoutData().then((response) => {
+        if (response && response.products.length !== data.totalProducts)
+          setData((prevData) => ({
+            ...prevData,
+            totalProducts: response.products.length,
+          }))
+      })
+    } else {
+      const guestCheckoutData = sessionStorage.getItem("shopData")
+      if (guestCheckoutData) {
+        getCheckoutData(guestCheckoutData).then((response) => {
+          if (response && response.products.length !== data.totalProducts)
+            setData((prevData) => ({
+              ...prevData,
+              totalProducts: response.products.length,
+            }))
+        })
+      }
+    }
+
     return () => {
       document.removeEventListener("mousedown", handleUserDropDown)
     }
   }, [])
+
   useEffect(() => {
     userDropdownVisible.current = userDropdown
   }, [userDropdown])
@@ -254,7 +284,7 @@ export default function Navbar({ session }: { session: any }) {
               className={`cursor-pointer p-2 text-[#49740B] hover:text-black ${navbar && "!hidden"} xl:!inline`}
             />
             {data.totalProducts > 0 && (
-              <span className="absolute left-0 top-0 rounded bg-black text-xs text-white">
+              <span className="absolute left-0 top-0 rounded bg-red-500 pl-1 pr-1 text-xs text-white">
                 {data.totalProducts}
               </span>
             )}

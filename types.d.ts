@@ -17,6 +17,22 @@ export type ProductPrice = {
   amount: number | null
 }
 
+export type Session = {
+  user: {
+    email: string
+    firstName: string
+    lastName: string
+    password: string
+    type: "user" | "admin"
+    id: number
+    number: string
+    address: string
+  }
+  expires: Date
+  iat: number
+  exp: number
+}
+
 export type CheckoutData = {
   products: Array<{
     priceId: string
@@ -24,17 +40,21 @@ export type CheckoutData = {
     metadata?: {
       [key: string]: string
     }
+    tip?: number
   }>
   tip?: number
+  userId?: number
 }
 
 export type CartItem = {
   [priceId: string]: {
-    stripeProduct: {
-      product: Product
-      amount: number | null
-    } | null
+    product: Product
+    amount: number | null
     quantity: number
+    tip?: number
+    metadata?: {
+      [key: string]: string
+    }
   }
 }
 

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { getShopProducts } from "@/actions/server"
 import Products from "@/components/shop/Products"
 import { listPrices } from "@/lib/stripe"
+import { getSession } from "@/lib/session"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Shop",
@@ -34,9 +35,12 @@ export default async function Shop() {
     },
     {} as { [key: string]: Stripe.Price[] },
   )
+
+  const session = await getSession()
+
   return (
     <div className="mt-10 flex w-full">
-      <Products items={plainItems} prices={pricesMap} />
+      <Products items={plainItems} prices={pricesMap} session={session} />
     </div>
   )
 }

@@ -21,11 +21,11 @@ export default async function Form({
 
     const paymentIntent = await getPaymentIntent(payment_intent)
     const userId = Number(paymentIntent.metadata.userId)
-    const eventId = paymentIntent.metadata.productId
-    const event = await getProduct(eventId)
-    const eventDate = Number(event.metadata.starts)
+    const eventIds = paymentIntent.metadata.eventIds.split(",")
+    const events = await Promise.all(eventIds.map((id) => getProduct(id)))
+    const eventDate = Number(events[0].metadata.starts)
     const formCompleted = paymentIntent.metadata.formCompleted
-    if (!userId || !eventId || !eventDate || !formCompleted) {
+    if (!userId || !eventIds || !eventDate || !formCompleted) {
       return <span className="text-red-500">Invalid form data.</span>
     }
 

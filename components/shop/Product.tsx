@@ -1,6 +1,6 @@
 "use client"
 import type { ChangeEvent, MouseEvent, TouchEvent } from "react"
-import type { Product } from "@/types"
+import type { CheckoutData, Product, Session } from "@/types"
 import type { Stripe } from "stripe"
 import { getPriceDifference } from "@/lib/utils"
 import { getCheckoutData, storeCheckoutData } from "@/lib/session"
@@ -20,6 +20,7 @@ const playfairDisplay = Playfair_Display({ subsets: ["latin"] })
 type ProductProps = {
   prices: { [key: string]: Stripe.Price[] }
   variants: Array<Product>
+  session: Session | null
 }
 
 type ProductObject = {
@@ -31,9 +32,12 @@ type ProductObject = {
   }
 }
 
-export default function Product({ prices, variants }: ProductProps) {
+export default function Product({ prices, variants, session }: ProductProps) {
   const [url, setUrl] = useState<string | undefined>()
-  const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ error: string; message: string }>({
+    error: "",
+    message: "",
+  })
   const router = useRouter()
   const { data, setData } = useCheckoutDataContext()
   const initialVariant = data.product ? data.product : variants[0]
@@ -93,13 +97,16 @@ export default function Product({ prices, variants }: ProductProps) {
       (price) => price.nickname === selectedName,
     )
     if (price && productVariant.currentPrice.id !== price.id)
-      setProductVariant({
-        ...productVariant,
-        currentPrice: {
-          id: price.id,
-          name: price.nickname ?? "no name",
-          amount: price.unit_amount,
-        },
+      setProductVariant((prevVariant) => {
+        if (!prevVariant || !price) return prevVariant
+        return {
+          ...prevVariant,
+          currentPrice: {
+            id: price.id,
+            name: price.nickname ?? "no name",
+            amount: price.unit_amount,
+          },
+        }
       })
   }
 
@@ -114,34 +121,98 @@ export default function Product({ prices, variants }: ProductProps) {
     if (productVariant) {
       const priceId = productVariant.currentPrice.id
       const quantity = productQuantity
-      const checkoutData = await getCheckoutData()
+      let checkoutData: undefined | CheckoutData | null
+      if (session) {
+        checkoutData = await getCheckoutData()
+        checkoutData = checkoutData
+          ? checkoutData
+          : { products: [], userId: session.user.id }
+      } else {
+        const guestCheckoutData = sessionStorage.getItem("shopData")
+        checkoutData = guestCheckoutData
+          ? await getCheckoutData(guestCheckoutData)
+          : null
+        checkoutData = checkoutData ? checkoutData : { products: [] }
+      }
+
       const productExists = checkoutData.products.find(
         (product) => product.priceId === priceId,
       )
-      if (productExists) return setError("Product is already in your cart")
-      checkoutData.products.push({ priceId: priceId, quantity: quantity })
-      setData({ ...data, totalProducts: checkoutData.products.length })
-      await storeCheckoutData(checkoutData)
+      if (productExists) {
+        if (message.error) return
+        return setMessage({
+          message: "",
+          error: "Product is already in your cart",
+        })
+      }
+
+      const updatedProducts = [
+        ...checkoutData.products,
+        { priceId: priceId, quantity: quantity },
+      ]
+      const updatedCheckoutData: CheckoutData = {
+        ...checkoutData,
+        products: updatedProducts,
+      }
+      const encryptedShopData = await storeCheckoutData(updatedCheckoutData)
+      if (!session) sessionStorage.setItem("shopData", encryptedShopData)
+      setData((prevData) => ({
+        ...prevData,
+        totalProducts: updatedCheckoutData.products.length,
+      }))
+      if (!message.message) setMessage({ error: "", message: "Success" })
     }
   }
 
   const goToCheckout = async () => {
-    if (productVariant.currentPrice.amount) {
-      const shopData = {
-        products: [
-          {
-            priceId: productVariant.currentPrice.id,
-            quantity: productQuantity,
-          },
-        ],
+    if (productVariant) {
+      const priceId = productVariant.currentPrice.id
+      const quantity = productQuantity
+      let checkoutData: undefined | CheckoutData | null
+      if (session) {
+        checkoutData = await getCheckoutData()
+        checkoutData = checkoutData
+          ? checkoutData
+          : { products: [], userId: session.user.id }
+      } else {
+        const guestCheckoutData = sessionStorage.getItem("shopData")
+        checkoutData = guestCheckoutData
+          ? await getCheckoutData(guestCheckoutData)
+          : null
+        checkoutData = checkoutData ? checkoutData : { products: [] }
       }
-      await storeCheckoutData(shopData)
-      router.push(`/checkout?product_id=${productVariant.product.id}`)
+
+      const productExists = checkoutData.products.find(
+        (product) => product.priceId === priceId,
+      )
+      if (productExists) {
+        if (message.error) return
+        return setMessage({
+          message: "",
+          error: "Product is already in your cart",
+        })
+      }
+
+      const updatedProducts = [
+        ...checkoutData.products,
+        { priceId: priceId, quantity: quantity },
+      ]
+      const updatedCheckoutData: CheckoutData = {
+        ...checkoutData,
+        products: updatedProducts,
+      }
+      const encryptedShopData = await storeCheckoutData(updatedCheckoutData)
+      if (!session) sessionStorage.setItem("shopData", encryptedShopData)
+      setData((prevData) => ({
+        ...prevData,
+        totalProducts: updatedCheckoutData.products.length,
+      }))
+      router.push("/checkout")
     }
   }
 
   useEffect(() => {
-    if (typeof window !== undefined) {
+    if (typeof window !== "undefined") {
       setUrl(window.location.href)
     }
   }, [])
@@ -304,11 +375,18 @@ export default function Product({ prices, variants }: ProductProps) {
                   A D D &nbsp;T O &nbsp;C A R T
                 </button>
               </div>
-              {error && (
+              {message.error && (
                 <span
                   className={`${openSans.className} pl-6 pt-2 text-red-500`}
                 >
-                  {error}
+                  {message.error}
+                </span>
+              )}
+              {message.message && (
+                <span
+                  className={`${openSans.className} pl-6 pt-2 text-green-500`}
+                >
+                  {message.message}
                 </span>
               )}
               <div

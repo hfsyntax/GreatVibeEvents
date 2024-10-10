@@ -3,11 +3,22 @@ import type { FormEvent } from "react"
 import { createAccount } from "@/actions/user"
 import ReCAPTCHA from "react-google-recaptcha"
 import { useState, useRef, useEffect } from "react"
+import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Open_Sans } from "next/font/google"
-import { login } from "@/lib/session"
+import {
+  getCheckoutData,
+  getEventTicket,
+  login,
+  storeCheckoutData,
+} from "@/lib/session"
 const openSans = Open_Sans({ subsets: ["latin"] })
 
 export default function LoginHandler() {
+  const { data, setData } = useCheckoutDataContext()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const eventTicket = searchParams.get("eventTicket")
   const form = useRef<HTMLFormElement | null>(null)
   const recaptcha = useRef<ReCAPTCHA>(null)
   const [formResponse, setFormResponse] = useState({ message: "", error: "" })
@@ -67,8 +78,36 @@ export default function LoginHandler() {
 
       setFormDisabled(true)
       const response = await login(formData)
-      if (response && response.message) return
-      return setFormResponse(response)
+      if (response && response.userId) {
+        let checkoutData = await getCheckoutData()
+        checkoutData = checkoutData
+          ? checkoutData
+          : { products: [], userId: response.userId }
+        if (eventTicket) {
+          const decryptedTicket = await getEventTicket(eventTicket)
+          if (decryptedTicket) {
+            const eventTicketIndex = checkoutData.products.findIndex(
+              (product) =>
+                product.priceId === decryptedTicket.products[0].priceId,
+            )
+            if (eventTicketIndex === -1) {
+              checkoutData.products.push(decryptedTicket.products[0])
+            } else {
+              return router.push("/")
+            }
+            await storeCheckoutData(checkoutData)
+            // update the context here
+            setData({ ...data, totalProducts: checkoutData.products.length })
+            return router.push("/checkout")
+          }
+        }
+        setData({ ...data, totalProducts: checkoutData.products.length })
+        return router.push("/")
+      }
+      return setFormResponse({
+        error: response.error ?? "",
+        message: response.message ?? "",
+      })
     }
   }
 

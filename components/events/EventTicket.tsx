@@ -1,17 +1,32 @@
 "use client"
 import type { Stripe } from "stripe"
 import type { ChangeEvent } from "react"
-import { storeCheckoutData } from "@/lib/session"
-import { convertToSubcurrency, getPriceOfPercentage } from "@/lib/utils"
+import type { CheckoutData, Session } from "@/types"
+import { storeCheckoutData, encryptEventTicket } from "@/lib/session"
+import { getPriceOfPercentage } from "@/lib/utils"
+import { Open_Sans } from "next/font/google"
+import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+
+const openSans = Open_Sans({ subsets: ["latin"] })
+
 export default function EventTicket({
   priceList,
   productId,
+  session,
+  checkoutData,
 }: {
   priceList: Stripe.Price[]
   productId: string
+  session: Session | null
+  checkoutData: CheckoutData | null
 }) {
+  const { setData } = useCheckoutDataContext()
+  const [message, setMessage] = useState<{ error: string; message: string }>({
+    error: "",
+    message: "",
+  })
   const [priceId, setPriceId] = useState<string>(priceList[0].id)
   const [label, setLabel] = useState({ name: "tip0", amount: 0 })
   const customTipElement = useRef<HTMLInputElement | null>(null)
@@ -61,18 +76,108 @@ export default function EventTicket({
       label.name === "tip4"
         ? Number(customTip.slice(1)) * 100
         : label.amount * 100
-    const data = {
+    const eventTicket: CheckoutData = {
       products: [
         {
           priceId: String(selectedPrice?.id),
           quantity: 1,
           metadata: { type: "Event Ticket", productId: productId },
+          tip: tip,
         },
       ],
-      tip: tip,
     }
-    await storeCheckoutData(data)
-    router.push(`/checkout?product_id=${productId}`)
+    if (!session) {
+      const encryptedTicket = await encryptEventTicket(eventTicket)
+      router.push(`/checkout?eventTicket=${encryptedTicket}`)
+    } else {
+      if (checkoutData) {
+        const eventTicketIndex = checkoutData.products.findIndex(
+          (product) => product.priceId === selectedPrice?.id,
+        )
+        if (eventTicketIndex !== -1) {
+          return setMessage({
+            error: "Product is already in your cart",
+            message: "",
+          })
+        }
+        const updatedProducts = [
+          ...checkoutData.products,
+          eventTicket.products[0],
+        ]
+        const updatedCheckoutData: CheckoutData = {
+          ...checkoutData,
+          products: updatedProducts,
+        }
+        if (eventTicket.products[0].tip) {
+          updatedCheckoutData.tip = updatedCheckoutData.tip
+            ? updatedCheckoutData.tip + eventTicket.products[0].tip
+            : eventTicket.products[0].tip
+        }
+        await storeCheckoutData(updatedCheckoutData)
+        setData((prevData) => ({
+          ...prevData,
+          totalProducts: updatedCheckoutData.products.length,
+        }))
+        router.push(`/checkout`)
+      }
+    }
+  }
+
+  const addToCart = async () => {
+    customTipElement.current?.blur()
+    const tip =
+      label.name === "tip4"
+        ? Number(customTip.slice(1)) * 100
+        : label.amount * 100
+    const eventTicket: CheckoutData = {
+      products: [
+        {
+          priceId: String(selectedPrice?.id),
+          quantity: 1,
+          metadata: { type: "Event Ticket", productId: productId },
+          tip: tip,
+        },
+      ],
+    }
+    if (!session) {
+      const encryptedTicket = await encryptEventTicket(eventTicket)
+      router.push(`/checkout?eventTicket=${encryptedTicket}`)
+    } else {
+      if (checkoutData) {
+        const eventTicketIndex =
+          checkoutData.products.length > 0
+            ? checkoutData.products.findIndex(
+                (product) => product.priceId === selectedPrice?.id,
+              )
+            : -1
+        if (eventTicketIndex !== -1) {
+          return setMessage({
+            message: "",
+            error: "Product is already in your cart",
+          })
+        }
+        const updatedProducts = [
+          ...checkoutData.products,
+          eventTicket.products[0],
+        ]
+        const updatedCheckoutData: CheckoutData = {
+          ...checkoutData,
+          products: updatedProducts,
+        }
+
+        if (eventTicket.products[0].tip) {
+          updatedCheckoutData.tip = updatedCheckoutData.tip
+            ? eventTicket.products[0].tip + updatedCheckoutData.tip
+            : eventTicket.products[0].tip
+        }
+        await storeCheckoutData(updatedCheckoutData)
+        setData((prevData) => ({
+          ...prevData,
+          totalProducts: updatedCheckoutData.products.length,
+        }))
+        if (!message.message) setMessage({ error: "", message: "Success" })
+      }
+    }
   }
 
   return (
@@ -107,6 +212,7 @@ export default function EventTicket({
         <button
           className={`${label.name === "tip1" ? "bg-[#d8efef] text-[#09757a]" : "bg-[#F5F7F8]"} mt-3 pb-2 pl-4 pr-4 pt-2 sm:flex-1`}
           onClick={() => handleTipClick("tip1", 15)}
+          type="button"
         >
           15%
           <br />
@@ -120,6 +226,7 @@ export default function EventTicket({
         <button
           className={`${label.name === "tip2" ? "bg-[#d8efef] text-[#09757a]" : "bg-[#F5F7F8]"} mt-3 pb-2 pl-4 pr-4 pt-2 sm:flex-1`}
           onClick={() => handleTipClick("tip2", 18)}
+          type="button"
         >
           18%
           <br />
@@ -133,6 +240,7 @@ export default function EventTicket({
         <button
           className={`${label.name === "tip3" ? "bg-[#d8efef] text-[#09757a]" : "bg-[#F5F7F8]"} mt-3 pb-2 pl-4 pr-4 pt-2 sm:flex-1`}
           onClick={() => handleTipClick("tip3", 20)}
+          type="button"
         >
           20%
           <br />
@@ -146,12 +254,14 @@ export default function EventTicket({
         <button
           className={`${label.name === "tip0" ? "bg-[#d8efef] text-[#09757a]" : "bg-[#F5F7F8]"} mt-3 pb-2 pl-4 pr-4 pt-2 sm:flex-1`}
           onClick={() => handleTipClick("tip0", 0)}
+          type="button"
         >
           No Tip
         </button>
         <button
           className={`${label.name === "tip4" ? "bg-[#d8efef] text-[#09757a]" : "bg-[#F5F7F8]"} mt-3 pb-2 pl-4 pr-4 pt-2 sm:flex-1`}
           onClick={(event) => handleTipClick("tip4", 0)}
+          type="button"
         >
           Custom Tip
         </button>
@@ -187,9 +297,32 @@ export default function EventTicket({
         <b>Total</b>
         <b className="ml-auto">{totalAfterTip}</b>
       </div>
-      <button className="mt-3 bg-black p-3 text-white" onClick={goToCheckout}>
-        Proceed to Checkout
-      </button>
+      <div className="mt-5 flex w-full justify-center gap-7">
+        <button
+          className={`h-[60px] w-[30%] bg-[#49740B] text-center leading-[60px] text-white sm:w-[170px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+          onClick={goToCheckout}
+          type="button"
+        >
+          B U Y &nbsp;N O W
+        </button>
+        <button
+          className={`h-[60px] w-[50%] bg-[#49740B] text-center leading-[60px] text-white sm:w-[200px] ${openSans.className} mt-3 text-base font-bold hover:bg-lime-600`}
+          onClick={addToCart}
+          type="button"
+        >
+          A D D &nbsp;T O &nbsp;C A R T
+        </button>
+      </div>
+      {message.error && (
+        <span className={`${openSans.className} pl-6 pt-2 text-red-500`}>
+          {message.error}
+        </span>
+      )}
+      {message.message && (
+        <span className={`${openSans.className} pl-6 pt-2 text-green-500`}>
+          {message.message}
+        </span>
+      )}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 "use server"
-import type { CheckoutData } from "@/types"
+import type { CheckoutData, Session } from "@/types"
 import { SignJWT, jwtVerify } from "jose"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
@@ -14,11 +14,16 @@ const secretKey = process.env.JWT_SECRET_KEY
 const key = new TextEncoder().encode(secretKey)
 
 async function encrypt(payload: any, time: string = "60d") {
-  return await new SignJWT(payload)
+  const session = await getSession()
+  const jwt = new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(time)
-    .sign(key)
+
+  if (session) {
+    jwt.setExpirationTime(time)
+  }
+
+  return await jwt.sign(key)
 }
 
 async function decrypt(input: string): Promise<any> {
@@ -32,36 +37,30 @@ async function decrypt(input: string): Promise<any> {
   }
 }
 
-async function insertLoginToken(token: string) {
-  try {
-    await sql`INSERT INTO checkout_tokens (token) VALUES (${token})`
-  } catch (error) {
-    throw error
-  }
-}
-
-export async function login(formData: FormData) {
+export async function login(
+  formData: FormData,
+): Promise<{ error?: string; message?: string; userId?: number }> {
   // Verify credentials && get the user
   const email = String(formData.get("email"))
   const password = String(formData.get("password"))
   const token = String(formData.get("g-recaptcha-response"))
 
   if (!email || !password) {
-    return { error: "incorrect username or password", message: "" }
+    return { error: "incorrect username or password" }
   }
 
   if (email.length > 128 || password.length > 128) {
-    return { error: "incorrect username or password", message: "" }
+    return { error: "incorrect username or password" }
   }
 
   if (!token) {
-    return { error: "no reCAPTCHA token set.", message: "" }
+    return { error: "no reCAPTCHA token set." }
   }
 
   const recaptchaValidated = await validateRecaptcha(token)
 
   if (!recaptchaValidated) {
-    return { error: "reCAPTCHA validation failed", message: "" }
+    return { error: "reCAPTCHA validation failed" }
   }
 
   const dbUser =
@@ -93,28 +92,23 @@ export async function login(formData: FormData) {
         const expires = new Date(Date.now() + 60 * 60 * 24 * 60 * 1000)
         const session = await encrypt({ user, expires })
         cookies().set("session", session, { expires, httpOnly: true })
-        const headersList = headers()
-        const referer = headersList.get("referer")
-        if (referer) {
-          const refererUrl = new URL(referer)
-          const refererParams = refererUrl.searchParams
-          const productId = refererParams.get("product_id")
-          if (productId) {
-            return redirect(`/checkout?product_id=${productId}`)
-          }
+        // update checkout data cookie expiry
+        const checkoutData = await getCheckoutData()
+        if (checkoutData) await storeCheckoutData(checkoutData)
+        return {
+          message: "Success",
+          userId: user.id,
         }
-        return redirect("/")
       } else {
         return {
           error: "your account has been temporarily disabled",
-          message: "",
         }
       }
     } else {
-      return { error: "incorrect username or password", message: "" }
+      return { error: "incorrect username or password" }
     }
   } else {
-    return { error: "incorrect username or password", message: "" }
+    return { error: "incorrect username or password" }
   }
 }
 
@@ -124,7 +118,7 @@ export async function logout() {
   revalidatePath("/")
 }
 
-export async function getSession() {
+export async function getSession(): Promise<Session | null> {
   const session = cookies().get("session")?.value
   if (!session) return null
   return await decrypt(session)
@@ -136,7 +130,7 @@ export async function updateSession(request: NextRequest) {
     if (!session) {
       return
     }
-    const parsed = await decrypt(session)
+    const parsed: Session = await decrypt(session)
     parsed.expires = new Date(Date.now() + 60 * 60 * 24 * 60 * 1000)
     const res = NextResponse.next()
     res.cookies.set({
@@ -155,24 +149,66 @@ export async function updateSession(request: NextRequest) {
   }
 }
 
-export async function storeCheckoutData(data: CheckoutData) {
-  const encryptedShopData = await encrypt(data, "24h")
-  const expires = new Date(Date.now() + 60 * 60 * 24 * 1000)
-  cookies().set("shopData", encryptedShopData, { expires, httpOnly: true })
+/**
+ * Temporarily store the event ticket if the user is not logged in
+ */
+export async function encryptEventTicket(data: CheckoutData) {
+  const encryptedShopData = await encrypt(data)
+  return encryptedShopData
 }
 
-export async function getCheckoutData() {
+export async function getEventTicket(encryptedData: string) {
   try {
-    const encryptedShopData = cookies().get("shopData")?.value
-    if (!encryptedShopData) return { products: [] }
-    const decryptedData: CheckoutData = await decrypt(encryptedShopData)
+    const decryptedData: CheckoutData = await decrypt(encryptedData)
     return decryptedData
   } catch (error) {
     console.error(error)
-    return { products: [] }
+    return null
+  }
+}
+
+export async function storeCheckoutData(data: CheckoutData) {
+  const session = await getSession()
+  if (session) {
+    const encryptedShopData = await encrypt(data, "90d")
+    const expires = new Date(Date.now() + 60 * 60 * 24 * 90 * 1000)
+    cookies().set(`shopData_${session.user.id}`, encryptedShopData, {
+      expires,
+      httpOnly: true,
+    })
+    return encryptedShopData
+  } else {
+    const encryptedShopData = await encrypt(data)
+    return encryptedShopData
+  }
+}
+
+export async function getCheckoutData(encryptedShopData?: string) {
+  try {
+    const session = await getSession()
+    if (session) {
+      const encryptedShopData = cookies().get(
+        `shopData_${session.user.id}`,
+      )?.value
+      if (!encryptedShopData) return null
+      const decryptedData: CheckoutData = await decrypt(encryptedShopData)
+      return decryptedData
+    } else {
+      if (!encryptedShopData) return null
+      const decryptedData: CheckoutData = await decrypt(encryptedShopData)
+      return decryptedData
+    }
+  } catch (error) {
+    console.error(error)
+    return null
   }
 }
 
 export async function deleteCheckoutData() {
-  cookies().delete("shopData")
+  try {
+    const session = await getSession()
+    if (session) cookies().delete(`shopData_${session.user.id}`)
+  } catch (error) {
+    throw error
+  }
 }
