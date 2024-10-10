@@ -175,7 +175,7 @@ export async function updateStripeCustomer(customerId: string) {
   try {
     const session = await getSession()
     const userId = session?.user?.id
-    await sql`UPDATE CUSTOMERS SET customer_id = ${customerId} WHERE user_id = ${session.user.id}`
+    await sql`UPDATE CUSTOMERS SET customer_id = ${customerId} WHERE user_id = ${userId}`
   } catch (error) {
     throw error
   }
