@@ -277,7 +277,7 @@ export default function Navbar({ session }: { session: any }) {
           </div>
         )}
         <Link href={"/shop/cart"}>
-          <div className="relative">
+          <div className={`relative ${navbar && "hidden"} xl:block`}>
             <FontAwesomeIcon
               icon={faCartShopping}
               size="lg"
