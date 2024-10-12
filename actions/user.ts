@@ -1,7 +1,6 @@
 "use server"
 import type { FormEntry } from "@/types"
 import { getSession } from "@/lib/session"
-import { normalizeDate } from "@/lib/utils"
 import { sql } from "@vercel/postgres"
 import { genSalt, hash } from "bcryptjs"
 import { revalidatePath } from "next/cache"
@@ -494,8 +493,9 @@ export async function handleEventForm(
         }
       } else if (
         ["participant-date-signed", "guardian-date-signed"].includes(key) &&
-        normalizeDate(new Date(value.trim())).getTime() !==
-          normalizeDate(new Date()).getTime()
+        new Date(value.trim()).toLocaleDateString("en-US", {
+          timeZone: "UTC",
+        }) !== new Date().toLocaleDateString()
       ) {
         errors[key] = `${formValues[key]} must be todays date.`
       }
@@ -560,16 +560,32 @@ export async function handleEventForm(
     const participantSignature = String(formData.get("participant-signature"))
     const guardianSignature = String(formData.get("guardian-signature"))
     await sql`INSERT INTO event_form_data 
-    (user_id, participant_name, participant_gender, participant_birthday, participant_number, participant_email, participant_address, participant_other_disorders, participant_eaosh, participant_dols, participant_r11r, participant_uafd, participant_allergies, participant_medications, participant_bites_or_stings, participant_food_allergies, participant_special_dietary_needs, participant_ctctmt, participant_activity_interests, participant_additional_enjoyment, guardian_name, guardian_relationship, guardian_number, guardian_email, guardian_address, emergency_contact, emergency_relationship, emergency_number, emergency_email, participant_name_confirm, participant_date_signed, guardian_name_confirm, guardian_date_signed, participant_signed, guardian_signed) 
-    VALUES (${userId}, ${participantName}, ${participantGender}, ${participantBirthday}, ${participantCell}, ${participantEmail}, ${participantAddress}, ${participantOtherDisorders}, ${participantEaosh}, ${participantDols}, ${participantR11r}, ${participantUafd}, ${participantAllergies}, ${participantMedications}, ${participantBitesOrStrings}, ${participantFoodAllergies}, ${participantDietary}, ${participantCtctmt}, ${participantInterests}, ${participantEnjoyment}, ${guardianName}, ${guardianRelationship}, ${guardianCell}, ${guardianEmail}, ${guardianAddress}, ${emergencyContact}, ${emergencyRelationship}, ${emergencyCell}, ${emergencyEmail}, ${participantNameConfirm}, ${participantDateSigned}, ${guardianNameConfirm}, ${guardianDateSigned}, ${participantSignature}, ${guardianSignature})`
-    await updatePaymentIntent(paymentIntent, {
-      metadata: {
-        eventId: eventId,
-        eventName: eventName,
-        userId: userId,
-        formCompleted: "true",
-      },
-    })
+    (user_id, participant_name, participant_gender, participant_birthday, participant_number, participant_email, participant_address, participant_other_disorders, participant_eaosh, participant_dols, participant_r11r, participant_uafd, participant_allergies, participant_medications, participant_bites_or_stings, participant_food_allergies, participant_special_dietary_needs, participant_ctctmt, participant_activity_interests, participant_additional_enjoyment, guardian_name, guardian_relationship, guardian_number, guardian_email, guardian_address, emergency_contact, emergency_relationship, emergency_number, emergency_email, participant_name_confirm, participant_date_signed, guardian_name_confirm, guardian_date_signed, participant_signed, guardian_signed, payment_intent) 
+    VALUES (${userId}, ${participantName}, ${participantGender}, ${participantBirthday}, ${participantCell}, ${participantEmail}, ${participantAddress}, ${participantOtherDisorders}, ${participantEaosh}, ${participantDols}, ${participantR11r}, ${participantUafd}, ${participantAllergies}, ${participantMedications}, ${participantBitesOrStrings}, ${participantFoodAllergies}, ${participantDietary}, ${participantCtctmt}, ${participantInterests}, ${participantEnjoyment}, ${guardianName}, ${guardianRelationship}, ${guardianCell}, ${guardianEmail}, ${guardianAddress}, ${emergencyContact}, ${emergencyRelationship}, ${emergencyCell}, ${emergencyEmail}, ${participantNameConfirm}, ${participantDateSigned}, ${guardianNameConfirm}, ${guardianDateSigned}, ${participantSignature}, ${guardianSignature}, ${paymentIntent})`
+    const currentPaymentIntent = await getPaymentIntent(paymentIntent)
+    const ticketCount = Number(currentPaymentIntent.metadata.ticketCount)
+
+    if (isNaN(ticketCount)) {
+      errors["server-error"] = "Internal server error"
+      return errors
+    }
+
+    const formsCompleted =
+      await sql`SELECT id FROM event_form_data WHERE payment_intent = ${paymentIntent} AND user_id = ${session.user.id}`
+    console.log(`forms completed: ${formsCompleted.rowCount}`)
+    console.log(`ticket count: ${ticketCount}`)
+    if (ticketCount === formsCompleted.rowCount) {
+      await updatePaymentIntent(paymentIntent, {
+        metadata: {
+          ...currentPaymentIntent.metadata,
+          formCompleted: "true",
+        },
+      })
+    } else {
+      errors["more"] = "Please fill in the form again for the next participant."
+      return errors
+    }
+
     revalidatePath(`/form?payment_intent=${paymentIntent}`)
     return {}
   } catch (error: any) {

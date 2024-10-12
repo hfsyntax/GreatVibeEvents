@@ -83,6 +83,7 @@ export default function EventTicket({
           quantity: 1,
           metadata: { type: "Event Ticket", productId: productId },
           tip: tip,
+          description: selectedPrice?.nickname ?? undefined,
         },
       ],
     }

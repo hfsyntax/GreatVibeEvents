@@ -36,6 +36,7 @@ export type Session = {
 export type CheckoutData = {
   products: Array<{
     priceId: string
+    description?: string
     quantity: number
     metadata?: {
       [key: string]: string

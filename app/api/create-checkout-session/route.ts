@@ -26,9 +26,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "400 Bad Request" }, { status: 400 })
     }
 
-    const eventProduct = products.filter(
+    const eventProducts = products.filter(
       (product) => product?.metadata?.type === "Event Ticket",
     )
+
+    const totalTickets = eventProducts.reduce((total, product) => {
+      // Check if the product's description includes "2 Participants"
+      if (
+        product.description &&
+        product.description.includes("2 Participants")
+      ) {
+        return total + product.quantity + 1
+      }
+
+      return total + product.quantity
+    }, 0)
+
     const session = await getSession()
 
     if (
@@ -132,13 +145,12 @@ export async function POST(request: NextRequest) {
         allowed_countries: ["US"],
       },
       ...(customerId !== null && { customer: customerId }),
-      ...(eventProduct && {
+      ...(eventProducts && {
         payment_intent_data: {
           metadata: {
             userId: String(session?.user.id),
-            eventIds: eventProduct
-              .map((product) => product.metadata && product.metadata.productId)
-              .join(),
+            eventId: eventProducts[0]?.metadata?.productId ?? "none",
+            ticketCount: String(totalTickets),
             formCompleted: "false",
           },
         },

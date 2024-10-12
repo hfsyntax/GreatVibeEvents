@@ -21,21 +21,20 @@ export default async function Form({
 
     const paymentIntent = await getPaymentIntent(payment_intent)
     const userId = Number(paymentIntent.metadata.userId)
-    const eventIds = paymentIntent.metadata.eventIds.split(",")
-    const events = await Promise.all(eventIds.map((id) => getProduct(id)))
-    const eventDate = Number(events[0].metadata.starts)
+    const eventId = paymentIntent.metadata.eventId
+    const ticketCount = Number(paymentIntent.metadata.ticketCount)
     const formCompleted = paymentIntent.metadata.formCompleted
-    if (!userId || !eventIds || !eventDate || !formCompleted) {
+
+    if (isNaN(userId) || !eventId || isNaN(ticketCount) || !formCompleted) {
       return <span className="text-red-500">Invalid form data.</span>
     }
 
-    const session = await getSession()
+    const event = await getProduct(eventId)
+    const eventDate = Number(event.metadata.starts)
 
-    if (userId !== session?.user?.id) {
+    if (isNaN(eventDate)) {
       return <span className="text-red-500">Invalid form data.</span>
     }
-
-    const now = Date.now()
 
     if (formCompleted === "true") {
       return (
@@ -43,12 +42,20 @@ export default async function Form({
       )
     }
 
+    const now = Date.now()
+
     if (now > eventDate) {
       return (
         <span className="text-red-500">
           Form cannot be completed because the event has already started.
         </span>
       )
+    }
+
+    const session = await getSession()
+
+    if (userId !== session?.user?.id) {
+      return <span className="text-red-500">Invalid form data.</span>
     }
 
     return (

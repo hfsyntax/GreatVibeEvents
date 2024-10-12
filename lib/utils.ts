@@ -8,10 +8,6 @@ export function getPriceDifference(originalPrice: number, newPrice: number) {
   return { dollarAmount: difference.toFixed(2), percent: percentSaved }
 }
 
-export function normalizeDate(date: Date) {
-  return new Date(date.toISOString().split("T")[0])
-}
-
 export function convertToSubcurrency(amount: number, factor = 100) {
   return Math.round(amount * factor)
 }
