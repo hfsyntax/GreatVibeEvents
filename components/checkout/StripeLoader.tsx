@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { loadStripe } from "@stripe/stripe-js"
 import {
   EmbeddedCheckoutProvider,
@@ -17,7 +17,7 @@ export default function StripeLoader({
   session: Session | null
   checkoutData: CheckoutData | null
 }) {
-  const [error, setError] = useState<boolean>(false)
+  const [error, setError] = useState<boolean | undefined>()
   const fetchClientSecret = useCallback(async () => {
     try {
       let currentCheckoutData: CheckoutData | null = checkoutData
@@ -28,7 +28,7 @@ export default function StripeLoader({
         }
       }
 
-      if (!currentCheckoutData) return setError(true)
+      if (!currentCheckoutData || checkoutData?.products.length === 0) return
 
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -38,19 +38,26 @@ export default function StripeLoader({
         body: JSON.stringify(currentCheckoutData),
       })
       if (!response.ok) {
-        return setError(true)
+        return
       }
       const responseJson = await response.json()
       return responseJson.clientSecret
     } catch (err) {
-      setError(true)
       console.error(err)
     }
   }, [])
 
   const options = { fetchClientSecret }
 
-  return !error ? (
+  useEffect(() => {
+    fetchClientSecret().then((response) => {
+      response ? setError(false) : setError(true)
+    })
+  }, [])
+
+  return error === undefined ? (
+    <span>loading...</span>
+  ) : !error ? (
     <div id="checkout">
       <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
         <EmbeddedCheckout />

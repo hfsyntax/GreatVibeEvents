@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
     )
 
     const totalTickets = eventProducts.reduce((total, product) => {
-      // Check if the product's description includes "2 Participants"
       if (
         product.description &&
         product.description.includes("2 Participants")
