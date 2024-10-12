@@ -30,11 +30,12 @@ export default function EventTicket({
   const [priceId, setPriceId] = useState<string>(priceList[0].id)
   const [label, setLabel] = useState({ name: "tip0", amount: 0 })
   const customTipElement = useRef<HTMLInputElement | null>(null)
+  const [quantity, setQuantity] = useState(1)
   const [customTip, setCustomTip] = useState<string>("$0.00")
   const router = useRouter()
   const selectedPrice = priceList.find((price) => price.id === priceId)
   const formattedAmount = selectedPrice?.unit_amount
-    ? selectedPrice.unit_amount / 100
+    ? (selectedPrice.unit_amount / 100) * quantity
     : 0
   const totalBeforeTip = parseFloat(String(formattedAmount)).toFixed(2)
   const totalAfterTip =
@@ -70,6 +71,12 @@ export default function EventTicket({
     setCustomTip(event.target.value)
   }
 
+  const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value)
+    if (isNaN(value) || value <= 0) return
+    setQuantity(Number(event.target.value))
+  }
+
   const goToCheckout = async () => {
     customTipElement.current?.blur()
     const tip =
@@ -80,7 +87,7 @@ export default function EventTicket({
       products: [
         {
           priceId: String(selectedPrice?.id),
-          quantity: 1,
+          quantity: quantity,
           metadata: { type: "Event Ticket", productId: productId },
           tip: tip,
           description: selectedPrice?.nickname ?? undefined,
@@ -134,7 +141,7 @@ export default function EventTicket({
       products: [
         {
           priceId: String(selectedPrice?.id),
-          quantity: 1,
+          quantity: quantity,
           metadata: { type: "Event Ticket", productId: productId },
           tip: tip,
         },
@@ -266,6 +273,17 @@ export default function EventTicket({
         >
           Custom Tip
         </button>
+      </div>
+      <div className="ml-3 mt-3 flex items-center gap-2 md:ml-0">
+        <label>Quantity</label>
+        <input
+          type="number"
+          name="ticket-quantity"
+          value={quantity}
+          onChange={handleQuantityChange}
+          className="box-border h-[40px] w-[70px] border-[1px] border-gray-200 pl-3 outline-none focus:border-black"
+          required
+        />
       </div>
       {label.name === "tip4" && (
         <input
