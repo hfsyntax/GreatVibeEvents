@@ -19,3 +19,20 @@ export function militaryToTime(militaryTime: string) {
   hour = hour % 12 || 12
   return `${hour}:${minutes} ${ending}`
 }
+
+export function exactDate(dateString: string) {
+  let date = new Date(dateString)
+  date.setHours(date.getHours() + 4)
+  return date
+}
+
+export function isAdult(dateString: string) {
+  const date = exactDate(dateString)
+  const now = new Date()
+  const eighteenYears = new Date(
+    now.getFullYear() - 18,
+    now.getMonth(),
+    now.getDate(),
+  )
+  return date <= eighteenYears
+}

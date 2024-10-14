@@ -4,7 +4,8 @@ import { getSession } from "@/lib/session"
 import { sql } from "@vercel/postgres"
 import { genSalt, hash } from "bcryptjs"
 import { revalidatePath } from "next/cache"
-import { getPaymentIntent, updatePaymentIntent } from "@/lib/stripe"
+import { getPaymentIntent, getProduct, updatePaymentIntent } from "@/lib/stripe"
+import { exactDate, isAdult } from "@/lib/utils"
 
 export async function validateRecaptcha(token: string): Promise<boolean> {
   try {
@@ -328,7 +329,6 @@ export async function handleEventForm(
     const paymentData = await getPaymentIntent(paymentIntent)
     const eventId = paymentData.metadata?.eventId
     const userId = Number(paymentData.metadata?.userId)
-    const eventName = paymentData.metadata?.eventName
     if (!eventId)
       return {
         invalid_eventid: "Error: event id not found for payment.",
@@ -341,6 +341,19 @@ export async function handleEventForm(
 
     if (session?.user?.id !== userId) {
       return { no_user_id: "Error: not authenticated." }
+    }
+
+    const event = await getProduct(eventId)
+    const eventEnds = parseInt(event.metadata.ends)
+
+    if (!eventEnds) {
+      return { no_event_date: "Error: event end time not found for event." }
+    }
+
+    const now = Date.now()
+
+    if (now > eventEnds) {
+      return { event_ended: "Error: event has already ended." }
     }
 
     const formValues: FormEntry = {
@@ -397,7 +410,9 @@ export async function handleEventForm(
       const value = String(formData.get(key))
       const validEmail =
         /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
-
+      const validAddress =
+        /^[a-zA-Z0-9\s]{1,217},\s[a-zA-Z0-9\s]{1,28},\s[a-zA-Z]{2}\s\d{5}$/i
+      const validFullName = /^(?=.{3,255}$)[a-zA-Z]+ [a-zA-Z]+$/
       if (
         [
           "participant-food-allergies",
@@ -409,6 +424,7 @@ export async function handleEventForm(
           "participant-name",
           "guardian-address",
           "participant-address",
+          "participant-bites-or-stings",
         ].includes(key) &&
         value.trim().length > 255
       ) {
@@ -435,7 +451,6 @@ export async function handleEventForm(
           "participant-eaosh",
           "participant-r11r",
           "participant-uafd",
-          "participant-bites-or-stings",
           "participant-ctctmt",
         ].includes(key) &&
         value.trim().length > 3
@@ -462,6 +477,26 @@ export async function handleEventForm(
           errors[key] = `${formValues[key]} must be 255 characters or less.`
         }
       } else if (
+        ["participant-name", "guardian-name", "emergency-contact"].includes(key)
+      ) {
+        if (!value.trim().match(validFullName)) {
+          errors[key] =
+            `${formValues[key]} must be a full name of 255 characters or less.`
+        }
+      } else if (["participant-address", "guardian-address"].includes(key)) {
+        if (!value.trim().match(validAddress)) {
+          errors[key] =
+            `${formValues[key]} must be: STREET, CITY, STATE ABBREVIATION ZIP`
+        }
+      } else if (
+        ["participant-cell", "guardian-number", "emergency-number"].includes(
+          key,
+        )
+      ) {
+        if (value.length < 3 || value.length > 20 || isNaN(parseInt(value))) {
+          errors[key] = `${formValues[key]} must be between 3-20 numbers.`
+        }
+      } else if (
         ["emergency-relationship", "guardian-relationship"].includes(key) &&
         value.trim().length > 64
       ) {
@@ -476,6 +511,14 @@ export async function handleEventForm(
         !["latex", "no"].includes(value.trim())
       ) {
         errors[key] = `${formValues[key]} must be either latex or no.`
+      } else if (key === "participant-birthday") {
+        if (!isAdult(value.trim())) {
+          errors[key] = `${formValues[key]} is not at least 18 years old.`
+        }
+      } else if (key === "participant-dols") {
+        if (exactDate(value.trim()) > new Date()) {
+          errors[key] = `${formValues[key]} must be today or earlier.`
+        }
       } else if (
         key === "participant-gender" &&
         !["male", "female", "other"].includes(value.trim())
@@ -572,8 +615,6 @@ export async function handleEventForm(
 
     const formsCompleted =
       await sql`SELECT id FROM event_form_data WHERE payment_intent = ${paymentIntent} AND user_id = ${session.user.id}`
-    console.log(`forms completed: ${formsCompleted.rowCount}`)
-    console.log(`ticket count: ${ticketCount}`)
     if (ticketCount === formsCompleted.rowCount) {
       await updatePaymentIntent(paymentIntent, {
         metadata: {
