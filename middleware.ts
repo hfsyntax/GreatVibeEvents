@@ -25,6 +25,8 @@ export async function middleware(request: NextRequest) {
       )
     }
     return response
+  } else if (!session && pathname === "/profile") {
+    return NextResponse.redirect(new URL("/", request.url))
   } else {
     return response
   }

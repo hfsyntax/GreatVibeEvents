@@ -12,6 +12,8 @@ interface CheckoutData {
 interface CheckoutDataContextType {
   data: CheckoutData
   setData: React.Dispatch<React.SetStateAction<CheckoutData>>
+  eventForms: number
+  setEventForms: React.Dispatch<React.SetStateAction<number>>
 }
 
 const CheckoutDataContext = createContext<CheckoutDataContextType | undefined>(
@@ -30,8 +32,12 @@ export const CheckoutDataProvider = ({
     totalProducts: 0,
   })
 
+  let [eventForms, setEventForms] = useState(0)
+
   return (
-    <CheckoutDataContext.Provider value={{ data, setData }}>
+    <CheckoutDataContext.Provider
+      value={{ data, setData, eventForms, setEventForms }}
+    >
       {children}
     </CheckoutDataContext.Provider>
   )

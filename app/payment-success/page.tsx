@@ -1,3 +1,4 @@
+import { getUserEventForm, storeUserEventForms } from "@/actions/server"
 import SuccessHandler from "@/components/payment-success/SuccessHandler"
 import { getCheckoutSession, listPurchasedProducts } from "@/lib/stripe"
 export default async function PaymentSuccess({
@@ -22,9 +23,33 @@ export default async function PaymentSuccess({
       searchParams.session_id,
     )
 
-    const eventTicket = purchasedProducts.find(
+    const eventTickets = purchasedProducts.filter(
       (product) => product.metadata.type === "Event Ticket",
     )
+
+    let totalTickets = 0
+    for (let ticket of eventTickets) {
+      if (ticket.quantity && ticket.nickname) {
+        if (ticket.nickname.includes("2 Participants")) {
+          totalTickets += 2 * ticket.quantity
+        } else {
+          totalTickets += ticket.quantity
+        }
+      }
+    }
+
+    let userTicketAlreadyStored = false
+    if (totalTickets > 0) {
+      const previousTicket = await getUserEventForm(
+        String(checkoutSession.payment_intent),
+      )
+      if (!previousTicket) {
+        await storeUserEventForms(
+          totalTickets,
+          String(checkoutSession.payment_intent),
+        )
+      }
+    }
 
     return (
       <main className="m-10 mx-auto max-w-6xl rounded-md border bg-black p-10 text-center text-white">
@@ -39,7 +64,7 @@ export default async function PaymentSuccess({
           </span>
 
           <>
-            {eventTicket && (
+            {eventTickets.length > 0 && (
               <span className="mt-5 block text-2xl">
                 do not close this window, redirecting to Participation and
                 Release Form...
@@ -47,7 +72,10 @@ export default async function PaymentSuccess({
             )}
             <SuccessHandler
               payment_intent={String(checkoutSession.payment_intent)}
-              redirectToForm={eventTicket ? true : false}
+              redirectToForm={eventTickets.length > 0 ? true : false}
+              eventTicketCount={
+                !userTicketAlreadyStored ? eventTickets.length : 0
+              }
             />
           </>
         </div>

@@ -180,3 +180,80 @@ export async function updateStripeCustomer(customerId: string) {
     throw error
   }
 }
+
+export async function getUserLastUpdated(): Promise<string | null> {
+  try {
+    const session = await getSession()
+    const userLastUpdated =
+      await sql`SELECT updated_at FROM users WHERE id = ${session?.user.id}`
+    return userLastUpdated.rows.length > 0
+      ? new Date(userLastUpdated.rows[0].updated_at).toLocaleString()
+      : null
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+export async function getUserEventForm(
+  paymentIntent: string,
+): Promise<string | undefined> {
+  try {
+    const userEventForm =
+      await sql`SELECT form_count FROM user_event_forms WHERE payment_intent = ${paymentIntent}`
+    return userEventForm?.rows?.[0]?.form_count
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export async function getUserEventFormsCount() {
+  try {
+    const session = await getSession()
+    if (!session) return 0
+    const userId = session.user.id
+    const currentEventForms =
+      await sql`SELECT form_count FROM user_event_forms WHERE user_id = ${userId}`
+    let total = 0
+    for (let i = 0; i < currentEventForms.rows.length; i++) {
+      if (currentEventForms.rows[i] && currentEventForms.rows[i].form_count) {
+        total += Number(currentEventForms.rows[i].form_count)
+      }
+    }
+    return total
+  } catch (error) {
+    console.error(error)
+    return 0
+  }
+}
+
+export async function decrementUserEventFormCount(paymentIntent: string) {
+  try {
+    await sql`UPDATE user_event_forms SET form_count = form_count - 1 WHERE payment_intent = ${paymentIntent}`
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function deleteUserEventForm(paymentIntent: string) {
+  try {
+    await sql`DELETE FROM user_event_forms WHERE payment_intent = ${paymentIntent}`
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function storeUserEventForms(
+  count: number,
+  paymentIntent: string,
+) {
+  try {
+    const session = await getSession()
+    if (!session) return
+    const userId = session.user.id
+    await sql`INSERT INTO user_event_forms (user_id, payment_intent, form_count) VALUES (${userId}, ${paymentIntent}, ${count})`
+  } catch (error) {
+    console.error(error)
+  }
+}

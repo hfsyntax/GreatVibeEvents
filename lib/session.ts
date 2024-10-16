@@ -1,5 +1,5 @@
 "use server"
-import type { CheckoutData, Session } from "@/types"
+import type { CheckoutData, FormEntry, Session } from "@/types"
 import { SignJWT, jwtVerify } from "jose"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
@@ -7,7 +7,6 @@ import { redirect } from "next/navigation"
 import { NextRequest, NextResponse } from "next/server"
 import { compare } from "bcryptjs"
 import { sql } from "@vercel/postgres"
-import { headers } from "next/headers"
 import { validateRecaptcha } from "@/actions/user"
 
 const secretKey = process.env.JWT_SECRET_KEY
@@ -145,6 +144,76 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(new URL("/", request.url))
     } else {
       throw error
+    }
+  }
+}
+
+export async function updateSessionInfo(
+  newSession: Session,
+): Promise<FormEntry | undefined> {
+  try {
+    const errors: FormEntry = {}
+    if (!newSession.user.firstName)
+      errors["first"] = "First name cannot be empty."
+    if (!newSession.user.lastName) errors["last"] = "Last name cannot be empty."
+    if (!newSession.user.address) errors["address"] = "Address cannot be empty."
+    if (newSession.user.firstName.includes(" ")) {
+      errors["first"] = "First name cannot contain a space."
+    }
+    if (newSession.user.firstName.length > 63) {
+      errors["first"] = "First name cannot be longer than 63 characters."
+    }
+    if (newSession.user.lastName.includes(" ")) {
+      errors["last"] = "Last name cannot contain a space."
+    }
+    if (newSession.user.lastName.length > 63) {
+      errors["last"] = "Last name cannot be longer than 63 characters"
+    }
+    if (
+      newSession.user.number &&
+      (newSession.user.number.length > 20 || newSession.user.number.length < 3)
+    ) {
+      errors["number"] = "Phone number must be between 3-20 numbers."
+    }
+    const validAddress =
+      /^[a-zA-Z0-9\s]{1,217},\s[a-zA-Z0-9\s]{1,28},\s[a-zA-Z]{2}\s\d{5}$/i
+    if (!newSession.user.address.match(validAddress)) {
+      errors["address"] =
+        "Address must be: STREET, CITY, STATE ABBREVIATION ZIP."
+    }
+    if (errors && Object.keys(errors).length > 0) {
+      return errors
+    }
+    const currentSession = await getSession()
+    if (!currentSession) return { noSession: "Error: no session" }
+    const expires = new Date(Date.now() + 60 * 60 * 24 * 60 * 1000)
+    const user = {
+      email: currentSession.user.email,
+      firstName: newSession.user.firstName,
+      lastName: newSession.user.lastName,
+      password: currentSession.user.password,
+      type: currentSession.user.type,
+      id: currentSession.user.id,
+      number: newSession.user.number,
+      address: newSession.user.address,
+    }
+    const updatedSession = await encrypt({ user, expires })
+    cookies().set("session", updatedSession, { expires, httpOnly: true })
+    await sql`UPDATE users 
+    SET first = ${newSession.user.firstName},
+    last = ${newSession.user.lastName},
+    number = ${newSession.user.number},
+    address = ${newSession.user.address},
+    updated_at = ${new Date().toISOString()}
+    WHERE id = ${currentSession.user.id}`
+    return {}
+  } catch (error: any) {
+    if (error?.name === "JWTExpired") {
+      revalidatePath("/")
+      return redirect("/")
+    } else {
+      console.error(error)
+      return { updateSession: "Internal server error." }
     }
   }
 }

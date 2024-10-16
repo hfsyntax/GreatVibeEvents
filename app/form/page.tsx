@@ -36,12 +36,6 @@ export default async function Form({
       return <span className="text-red-500">Invalid form data.</span>
     }
 
-    if (formCompleted === "true") {
-      return (
-        <span className="text-green-500">You have completed this form.</span>
-      )
-    }
-
     const now = Date.now()
 
     if (now > eventDate) {
@@ -59,14 +53,10 @@ export default async function Form({
     }
 
     return (
-      <>
-        <b className="text-center">PARTICIPATION AND RELEASE FORM</b>
-        <p className="ml-auto mr-auto w-full lg:w-[500px]">
-          FORM MUST BE COMPLETED AND SIGNED BY ALL PARTIES PRIOR TO
-          PARTICIPATING IN GREAT VIBE EVENTS ORGANIZED FUNCTIONS
-        </p>
-        <FormHandler paymentIntent={payment_intent} />
-      </>
+      <FormHandler
+        paymentIntent={payment_intent}
+        formCompleted={formCompleted === "true" ? true : false}
+      />
     )
   } catch (error: any) {
     console.error(error)

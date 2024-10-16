@@ -5,6 +5,7 @@ import { exactDate, isAdult } from "@/lib/utils"
 import Image from "next/image"
 import SignatureCanvas from "react-signature-canvas"
 import ReCAPTCHA from "react-google-recaptcha"
+import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
 import { useState, useRef, useEffect } from "react"
 import { handleEventForm } from "@/actions/user"
 
@@ -40,9 +41,12 @@ type ElementRefs = {
 
 export default function FormHandler({
   paymentIntent,
+  formCompleted,
 }: {
   paymentIntent: string
+  formCompleted: boolean
 }) {
+  const { eventForms, setEventForms } = useCheckoutDataContext()
   const [errors, setErrors] = useState<FormEntry>({})
   const currentForm = useRef<HTMLFormElement | null>(null)
   const elementRefs: ElementRefs = {
@@ -404,10 +408,10 @@ export default function FormHandler({
           ? value === "yes"
             ? "no"
             : checkboxes.current[9]?.checked
-              ? "yes"
+              ? "latex"
               : ""
           : value === "yes"
-            ? "yes"
+            ? "latex"
             : checkboxes.current[8]?.checked
               ? "no"
               : ""
@@ -663,7 +667,13 @@ export default function FormHandler({
     }
 
     const response = await handleEventForm(formData, paymentIntent)
-    if (Object.keys(response).length === 0) return setErrors({})
+    if (Object.keys(response).length === 0) {
+      if (eventForms > 0) setEventForms((prevForms) => prevForms - 1)
+      return setErrors({})
+    }
+    if (response["more"]) {
+      setEventForms((prevForms) => prevForms - 1)
+    }
     setErrors(response)
   }
 
@@ -675,8 +685,13 @@ export default function FormHandler({
     }
   }, [errors])
 
-  return (
+  return !formCompleted ? (
     <>
+      <b className="text-center">PARTICIPATION AND RELEASE FORM</b>
+      <p className="ml-auto mr-auto w-full lg:w-[500px]">
+        FORM MUST BE COMPLETED AND SIGNED BY ALL PARTIES PRIOR TO PARTICIPATING
+        IN GREAT VIBE EVENTS ORGANIZED FUNCTIONS
+      </p>
       <form className="mt-3" onSubmit={handleSubmit} ref={currentForm}>
         <b>Participant’s General Information:</b>
         <div className="mt-3 flex w-full flex-col items-center gap-4 lg:flex-row">
@@ -1609,5 +1624,7 @@ export default function FormHandler({
           </span>
         ))}
     </>
+  ) : (
+    <span className="text-green-500">You have completed this form.</span>
   )
 }

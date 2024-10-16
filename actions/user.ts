@@ -6,6 +6,11 @@ import { genSalt, hash } from "bcryptjs"
 import { revalidatePath } from "next/cache"
 import { getPaymentIntent, getProduct, updatePaymentIntent } from "@/lib/stripe"
 import { exactDate, isAdult } from "@/lib/utils"
+import {
+  decrementUserEventFormCount,
+  deleteUserEventForm,
+  getUserEventForm,
+} from "@/actions/server"
 
 export async function validateRecaptcha(token: string): Promise<boolean> {
   try {
@@ -623,8 +628,18 @@ export async function handleEventForm(
         },
       })
     } else {
-      errors["more"] = "Please fill in the form again for the next participant."
-      return errors
+      await decrementUserEventFormCount(paymentIntent)
+      const eventTicketCount = await getUserEventForm(paymentIntent)
+      if (eventTicketCount) {
+        const ticketCount = Number(eventTicketCount)
+        if (ticketCount === 0) {
+          await deleteUserEventForm(paymentIntent)
+        } else {
+          errors["more"] =
+            "Please fill in the form again for the next participant."
+          return errors
+        }
+      }
     }
 
     revalidatePath(`/form?payment_intent=${paymentIntent}`)

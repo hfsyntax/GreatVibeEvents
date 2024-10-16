@@ -160,12 +160,20 @@ export async function listPurchasedProducts(checkoutSessionId: string) {
       checkoutSessionId,
       { limit: 100 },
     )
-    const productsIds = productList.data.map(
-      (product) => product.price?.product,
+
+    const plainProducts = productList.data.map((item) => ({
+      product: item.price?.product,
+      quantity: item.quantity,
+      nickname: item.price?.nickname,
+    }))
+
+    const productPromises = plainProducts.map(
+      async ({ product, quantity, nickname }) => {
+        const stripeProduct = await stripe.products.retrieve(String(product))
+        return { ...stripeProduct, quantity, nickname }
+      },
     )
-    const productPromises = productsIds.map((productId) =>
-      stripe.products.retrieve(String(productId)),
-    )
+
     const products = await Promise.all(productPromises)
     return products
   } catch (error) {

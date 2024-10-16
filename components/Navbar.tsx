@@ -16,9 +16,10 @@ import {
   faX,
 } from "@fortawesome/free-solid-svg-icons"
 import { getCheckoutData, logout } from "@/lib/session"
+import { getUserEventFormsCount } from "@/actions/server"
 
 export default function Navbar({ session }: { session: any }) {
-  const { data, setData } = useCheckoutDataContext()
+  const { data, setData, eventForms, setEventForms } = useCheckoutDataContext()
   const pathname = usePathname()
   const router = useRouter()
   const [navbar, showNavbar] = useState(false)
@@ -32,7 +33,12 @@ export default function Navbar({ session }: { session: any }) {
 
   const handleUserDropDown = (event: MouseEvent) => {
     const target = event.target as HTMLElement
-    if (target.id === "loginLink" || target.id === "logoffLink") return
+    if (
+      target.id === "loginLink" ||
+      target.id === "logoffLink" ||
+      target.id === "profileLink"
+    )
+      return
     if (target.id === "userIcon" || target?.parentElement?.id === "userIcon") {
       showUserDropdown(!userDropdownVisible.current)
     } else if (userDropdownVisible.current) {
@@ -91,6 +97,11 @@ export default function Navbar({ session }: { session: any }) {
             ...prevData,
             totalProducts: response.products.length,
           }))
+      })
+      getUserEventFormsCount().then((response) => {
+        if (response > 0) {
+          setEventForms(response)
+        }
       })
     } else {
       const guestCheckoutData = sessionStorage.getItem("shopData")
@@ -300,23 +311,42 @@ export default function Navbar({ session }: { session: any }) {
             Login
           </Link>
         ) : (
-          <span
-            className={`hidden ${navbar && `!inline text-black xl:!hidden ${openSans.className} mr-auto cursor-pointer text-2xl uppercase hover:!text-green-700`}`}
-            onClick={handleLogout}
-          >
-            logout
-          </span>
+          <>
+            <Link
+              href={"/profile"}
+              className={`hidden pb-6 ${navbar && `!inline text-black xl:!hidden ${openSans.className} mr-auto cursor-pointer text-2xl uppercase hover:!text-green-700`}`}
+              onClick={() => showNavbar(false)}
+            >
+              profile
+            </Link>
+            <span
+              className={`hidden ${navbar && `!inline text-black xl:!hidden ${openSans.className} mr-auto cursor-pointer text-2xl uppercase hover:!text-green-700`}`}
+              onClick={handleLogout}
+            >
+              logout
+            </span>
+          </>
         )}
-        <FontAwesomeIcon
-          id="userIcon"
-          icon={faUser}
-          size="lg"
-          className={`cursor-pointer p-2 text-[#49740B] hover:text-black ${navbar ? "!hidden xl:!inline-block" : "!hidden md:!inline-block"}`}
-        />
+        <div
+          className={`${navbar ? "!hidden xl:!inline-block" : "!hidden md:!inline-block"} relative`}
+        >
+          <FontAwesomeIcon
+            id="userIcon"
+            icon={faUser}
+            size="lg"
+            className={`cursor-pointer p-2 text-[#49740B] hover:text-black`}
+          />
+          {eventForms > 0 && (
+            <span className="absolute left-0 top-0 rounded bg-red-500 pl-1 pr-1 text-xs text-white">
+              {eventForms}
+            </span>
+          )}
+        </div>
+
         {userDropdown && (
           <ul
             id="userDropdown"
-            className={`hidden ${navbar ? "xl:inline-block" : "md:inline-block"} absolute top-full w-full bg-white p-4 shadow-md`}
+            className={`hidden ${navbar ? "xl:inline-block" : "md:inline-block"} absolute left-[-130px] top-full w-[240px] bg-white p-4 text-lg shadow-md ${openSans.className}`}
           >
             {!session && (
               <Link href={"/login"} onClick={() => showUserDropdown(false)}>
@@ -326,13 +356,23 @@ export default function Navbar({ session }: { session: any }) {
               </Link>
             )}
             {session && (
-              <li
-                id="logoffLink"
-                className="cursor-pointer text-[#49740B]"
-                onClick={handleLogout}
-              >
-                Logoff
-              </li>
+              <>
+                <Link
+                  href={"/profile"}
+                  id="profileLink"
+                  className="z-10 block w-full cursor-pointer text-[#49740B]"
+                  onClick={() => showUserDropdown(false)}
+                >
+                  Profile
+                </Link>
+                <li
+                  id="logoffLink"
+                  className="mt-2 cursor-pointer text-[#49740B]"
+                  onClick={handleLogout}
+                >
+                  Logoff
+                </li>
+              </>
             )}
           </ul>
         )}
