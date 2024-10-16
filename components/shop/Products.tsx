@@ -143,6 +143,10 @@ export default function Products({ items, prices, session }: ProductProps) {
         if (error) return
         return setError("Product is already in your cart")
       }
+      if (checkoutData.products.length === 100) {
+        if (error) return
+        return setError("Shopping Cart has reached the limit of 100 items.")
+      }
       const updatedProducts = [
         ...checkoutData.products,
         { priceId: priceId, quantity: quantity },
@@ -185,6 +189,10 @@ export default function Products({ items, prices, session }: ProductProps) {
       if (productExists) {
         if (error) return
         return setError("Product is already in your cart")
+      }
+      if (checkoutData.products.length === 100) {
+        if (error) return
+        return setError("Shopping Cart has reached the limit of 100 items.")
       }
       const updatedProducts = [
         ...checkoutData.products,

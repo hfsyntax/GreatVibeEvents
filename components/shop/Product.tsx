@@ -138,11 +138,20 @@ export default function Product({ prices, variants, session }: ProductProps) {
       const productExists = checkoutData.products.find(
         (product) => product.priceId === priceId,
       )
+
       if (productExists) {
         if (message.error) return
         return setMessage({
           message: "",
           error: "Product is already in your cart",
+        })
+      }
+
+      if (checkoutData.products.length === 100) {
+        if (message.error) return
+        return setMessage({
+          error: "Shopping Cart has reached the limit of 100 items.",
+          message: "",
         })
       }
 
@@ -190,6 +199,14 @@ export default function Product({ prices, variants, session }: ProductProps) {
         return setMessage({
           message: "",
           error: "Product is already in your cart",
+        })
+      }
+
+      if (checkoutData.products.length === 100) {
+        if (message.error) return
+        return setMessage({
+          error: "Shopping Cart has reached the limit of 100 items.",
+          message: "",
         })
       }
 
