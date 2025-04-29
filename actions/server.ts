@@ -56,7 +56,10 @@ export async function getShopProducts() {
       })
 
     const filteredProducts = response.data.filter(
-      (product) => product.metadata.type !== "Event Ticket",
+      (product) =>
+        product.metadata.type !== "Event Ticket" &&
+        !product.deleted &&
+        product.active,
     )
 
     products = products.concat(filteredProducts)

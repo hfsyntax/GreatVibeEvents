@@ -182,7 +182,7 @@ export default async function Home() {
             GVE 2024 SPOOKTACULAR COSTOME PARTY
           </span>
           <Link
-            href={"/events/prod_QoE4XMfgZmQF3K"}
+            href={"/events/prod_QvP3Ey33H6SPYZ"}
             className="mb-6 ml-6 mr-6 block bg-[#49740B] p-4 text-base font-bold text-white hover:bg-lime-600"
           >
             PURCHASE TICKET

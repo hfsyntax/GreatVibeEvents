@@ -111,10 +111,9 @@ export default function Product({ prices, variants, session }: ProductProps) {
   }
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value
-    if (Number.isInteger(parseFloat(value))) {
-      setProductQuantity(Number(value))
-    }
+    const quantity = parseInt(event.target.value)
+    if (isNaN(quantity) || quantity < 1) return
+    setProductQuantity(quantity)
   }
 
   const addToCart = async () => {
@@ -135,7 +134,7 @@ export default function Product({ prices, variants, session }: ProductProps) {
         checkoutData = checkoutData ? checkoutData : { products: [] }
       }
 
-      const productExists = checkoutData.products.find(
+      const productExists = checkoutData.products.some(
         (product) => product.priceId === priceId,
       )
 
@@ -191,7 +190,7 @@ export default function Product({ prices, variants, session }: ProductProps) {
         checkoutData = checkoutData ? checkoutData : { products: [] }
       }
 
-      const productExists = checkoutData.products.find(
+      const productExists = checkoutData.products.some(
         (product) => product.priceId === priceId,
       )
       if (productExists) {

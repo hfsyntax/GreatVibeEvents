@@ -136,7 +136,7 @@ export default function Products({ items, prices, session }: ProductProps) {
           : null
         checkoutData = checkoutData ? checkoutData : { products: [] }
       }
-      const productExists = checkoutData.products.find(
+      const productExists = checkoutData.products.some(
         (product) => product.priceId === priceId,
       )
       if (productExists) {
@@ -183,7 +183,7 @@ export default function Products({ items, prices, session }: ProductProps) {
         checkoutData = checkoutData ? checkoutData : { products: [] }
       }
 
-      const productExists = checkoutData.products.find(
+      const productExists = checkoutData.products.some(
         (product) => product.priceId === priceId,
       )
       if (productExists) {
@@ -287,20 +287,19 @@ export default function Products({ items, prices, session }: ProductProps) {
   }
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value
-    if (product && Number.isInteger(parseFloat(value))) {
-      setProduct((prevProduct) => {
-        if (!prevProduct) return prevProduct
-        return {
-          ...prevProduct,
-          quantity: Number(value),
-        }
-      })
-      setData((prevData) => ({
-        ...prevData,
-        quantity: Number(value),
-      }))
-    }
+    const quantity = parseInt(event.target.value)
+    if (isNaN(quantity) || quantity < 1) return
+    setProduct((prevProduct) => {
+      if (!prevProduct) return prevProduct
+      return {
+        ...prevProduct,
+        quantity: quantity,
+      }
+    })
+    setData((prevData) => ({
+      ...prevData,
+      quantity: quantity,
+    }))
   }
 
   const sortDescriptions = {

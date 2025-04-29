@@ -1,6 +1,6 @@
 "use client"
 import type { Stripe } from "stripe"
-import type { ChangeEvent } from "react"
+import type { ChangeEvent, FocusEvent } from "react"
 import type { CheckoutData, Session } from "@/types"
 import { storeCheckoutData, encryptEventTicket } from "@/lib/session"
 import { getPriceOfPercentage } from "@/lib/utils"
@@ -31,8 +31,9 @@ export default function EventTicket({
   const [label, setLabel] = useState({ name: "tip0", amount: 0 })
   const customTipElement = useRef<HTMLInputElement | null>(null)
   const [quantity, setQuantity] = useState(1)
-  const [customTip, setCustomTip] = useState<string>("$0.00")
+  const [customTip, setCustomTip] = useState<string>("0.00")
   const router = useRouter()
+  const validPrice = /^\d{1,4}(\.\d{0,2})?$/
   const selectedPrice = priceList.find((price) => price.id === priceId)
   const formattedAmount = selectedPrice?.unit_amount
     ? (selectedPrice.unit_amount / 100) * quantity
@@ -40,9 +41,7 @@ export default function EventTicket({
   const totalBeforeTip = parseFloat(String(formattedAmount)).toFixed(2)
   const totalAfterTip =
     label.name === "tip4"
-      ? parseFloat(
-          String(formattedAmount + Number(customTip.slice(1))),
-        ).toFixed(2)
+      ? parseFloat(String(formattedAmount + Number(customTip))).toFixed(2)
       : parseFloat(String(formattedAmount + label.amount)).toFixed(2)
 
   const handleTicketChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -51,24 +50,32 @@ export default function EventTicket({
   }
 
   const handleTipClick = (tipName: string, tipPercentage: number) => {
-    if (customTip !== "$0.00") setCustomTip("$0.00")
+    if (customTip !== "0.00") setCustomTip("0.00")
     setLabel({
       name: tipName,
       amount: getPriceOfPercentage(formattedAmount, tipPercentage),
     })
   }
 
-  const handleCustomTipBlur = () => {
-    const validPrice = /^\d{1,8}(\.\d{1,4})?$/
-    if (!customTip?.match(validPrice)) {
-      setCustomTip("$0.00")
+  const handleCustomTipFocus = (event: FocusEvent<HTMLInputElement>) => {
+    if (event.target.value === "$0.00") {
+      setCustomTip("")
+    }
+  }
+
+  const handleCustomTipBlur = (event: FocusEvent<HTMLInputElement>) => {
+    const rawValue = event.target.value.replace("$", "")
+    if (!validPrice.test(rawValue)) {
+      setCustomTip("0.00")
     } else {
-      setCustomTip(`$${parseFloat(customTip).toFixed(2)}`)
+      const formattedAmount = parseFloat(rawValue).toFixed(2)
+      setCustomTip(formattedAmount)
     }
   }
 
   const handleCustomTipChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setCustomTip(event.target.value)
+    const raw = event.target.value.replace(/[^0-9.]/g, "")
+    if (raw === "" || validPrice.test(raw)) setCustomTip(raw)
   }
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -80,9 +87,7 @@ export default function EventTicket({
   const goToCheckout = async () => {
     customTipElement.current?.blur()
     const tip =
-      label.name === "tip4"
-        ? Number(customTip.slice(1)) * 100
-        : label.amount * 100
+      label.name === "tip4" ? Number(customTip) * 100 : label.amount * 100
     const eventTicket: CheckoutData = {
       products: [
         {
@@ -142,9 +147,7 @@ export default function EventTicket({
   const addToCart = async () => {
     customTipElement.current?.blur()
     const tip =
-      label.name === "tip4"
-        ? Number(customTip.slice(1)) * 100
-        : label.amount * 100
+      label.name === "tip4" ? Number(customTip) * 100 : label.amount * 100
     const eventTicket: CheckoutData = {
       products: [
         {
@@ -305,8 +308,8 @@ export default function EventTicket({
         <input
           type="text"
           name="custom-tip"
-          value={customTip}
-          onFocus={() => setCustomTip("")}
+          value={`$${customTip}`}
+          onFocus={handleCustomTipFocus}
           onBlur={handleCustomTipBlur}
           onChange={handleCustomTipChange}
           className="mt-3 box-border h-[50px] border-[1px] border-gray-200 pl-3 outline-none focus:border-black"
@@ -323,7 +326,7 @@ export default function EventTicket({
         <span className="ml-auto">
           $
           {label.name === "tip4"
-            ? customTip.slice(1)
+            ? customTip
             : parseFloat(String(label.amount)).toFixed(2)}
         </span>
       </div>

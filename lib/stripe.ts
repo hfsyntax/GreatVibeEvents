@@ -119,7 +119,6 @@ export async function getProductPrice(
 export async function getProductByPriceId(priceId: string) {
   try {
     const price = await stripe.prices.retrieve(priceId)
-    if (price.deleted) return null
     const product = await stripe.products.retrieve(String(price.product))
     const plainProduct: Product = {
       id: product.id,
@@ -127,10 +126,15 @@ export async function getProductByPriceId(priceId: string) {
       images: product.images,
       created: product.created,
       description: product.description,
+      deleted:
+        "deleted" in product ||
+        !product.active ||
+        !price.active ||
+        "deleted" in price,
     }
     return { product: plainProduct, amount: price.unit_amount }
   } catch (error) {
-    throw error
+    return null
   }
 }
 

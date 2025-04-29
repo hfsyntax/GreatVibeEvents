@@ -1,7 +1,11 @@
 "use client"
 import type { CartItem, CheckoutData, Session } from "@/types"
 import type { ChangeEvent } from "react"
-import { getCheckoutData, storeCheckoutData } from "@/lib/session"
+import {
+  deleteCheckoutData,
+  getCheckoutData,
+  storeCheckoutData,
+} from "@/lib/session"
 import { Open_Sans } from "next/font/google"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons"
@@ -21,14 +25,13 @@ export default function Cart({
   session: Session | null
 }) {
   const [items, setItems] = useState<CartItem | null | undefined>(products)
-  const { setData } = useCheckoutDataContext()
+  const { setData, data } = useCheckoutDataContext()
   const router = useRouter()
   const totalItems = items ? Object.keys(items).length : 0
-  const totalTip = items
-    ? Object.values(items).reduce((accumulator, item) => {
-        return accumulator + (item.tip ?? 0)
-      }, 0)
-    : undefined
+  const deletedItemExists = items
+    ? Object.keys(items).some((item) => items[item].product.deleted)
+    : false
+
   const total = items
     ? (
         Object.values(items).reduce((accumulator, item) => {
@@ -41,31 +44,8 @@ export default function Cart({
     const updatedItems = { ...items }
     if (updatedItems) {
       updatedItems[priceId] = { ...updatedItems[priceId] }
-      const deletedTip = updatedItems?.[priceId].tip ?? 0
       delete updatedItems?.[priceId]
-      const updatedTip = totalTip
-        ? totalTip - deletedTip > 0
-          ? totalTip - deletedTip
-          : undefined
-        : undefined
-      const updatedCheckoutData: CheckoutData = {
-        products: Object.entries(updatedItems).map(([priceId, item]) => ({
-          priceId: priceId,
-          quantity: item.quantity,
-          tip: item.tip ?? 0,
-          metadata: item.metadata,
-        })),
-        tip: updatedTip,
-      }
-      const encryptedCheckoutData = await storeCheckoutData(updatedCheckoutData)
-      if (!session) {
-        sessionStorage.setItem("shopData", encryptedCheckoutData)
-      }
-      setData((prevData) => ({
-        ...prevData,
-        totalProducts: prevData.totalProducts - 1,
-      }))
-      setItems({ ...updatedItems })
+      updateCheckoutData(updatedItems)
     }
   }
 
@@ -89,27 +69,58 @@ export default function Cart({
 
   const goToCheckout = async () => {
     if (items) {
-      const updatedCheckoutData: CheckoutData = {
-        products: Object.entries(items).map(([priceId, item]) => ({
-          priceId,
-          quantity: item.quantity,
-          tip: item.tip,
-          metadata: item.metadata,
-        })),
-        tip: totalTip,
-      }
-      await storeCheckoutData(updatedCheckoutData)
+      await updateCheckoutData(items)
       router.push("/checkout")
     }
   }
 
+  const updateCheckoutData = async (items: CartItem) => {
+    let updatedCheckoutData: CheckoutData = {
+      products: [],
+    }
+    let tip = 0
+    for (let priceId in items) {
+      if (items[priceId].tip) {
+        tip += items[priceId].tip
+      }
+      const newProduct = {
+        priceId: priceId,
+        description: items[priceId].product.description ?? undefined,
+        quantity: items[priceId].quantity,
+        metadata: items[priceId].metadata,
+        tip: items[priceId].tip,
+      }
+      updatedCheckoutData.products.push(newProduct)
+    }
+    if (tip > 0) updatedCheckoutData.tip = tip
+    if (updatedCheckoutData.products.length === 0) {
+      if (!session) sessionStorage.removeItem("shopData")
+      await deleteCheckoutData()
+    } else {
+      const encryptedCheckoutData = await storeCheckoutData(updatedCheckoutData)
+      if (!session) {
+        sessionStorage.setItem("shopData", encryptedCheckoutData)
+      }
+    }
+    if (updatedCheckoutData.products.length !== data.totalProducts) {
+      setData((prevData) => ({
+        ...prevData,
+        totalProducts: updatedCheckoutData.products.length,
+      }))
+    }
+    setItems(items)
+  }
+
   useEffect(() => {
-    if (items === null) {
+    // for no session
+    if (!session && items === null) {
+      // get checkout data from session storeage
       const guestItems = sessionStorage.getItem("shopData")
       if (guestItems) {
         getCheckoutData(guestItems).then((response) => {
           if (response) {
             let newItems: CartItem = {}
+            // validate product price
             Promise.all(
               response.products.map(async (product) => {
                 const stripeProduct = await getProductByPriceId(product.priceId)
@@ -122,7 +133,13 @@ export default function Cart({
                   }
                 }
               }),
-            ).then(() => setItems(newItems))
+            ).then(async () => {
+              // update checkout data on data mismatch
+              if (response.products.length !== Object.keys(newItems).length) {
+                await updateCheckoutData(newItems)
+              }
+              setItems(newItems)
+            })
           } else {
             setItems(undefined)
           }
@@ -173,34 +190,61 @@ export default function Cart({
                   <Fragment key={`shop_item_${priceId}`}>
                     <div className="flex w-full flex-row items-center justify-between gap-3">
                       <div className="flex flex-1 flex-col items-center sm:flex-row sm:gap-3">
-                        <Image
-                          src={`${product.images[0]}`}
-                          alt={`${product.name}`}
-                          width={0}
-                          height={0}
-                          sizes="(max-width: 1023px) 300px, (min-width: 1024px) 200px, (min-width: 1280px) 300px"
-                          className="h-[100px] w-[100px] object-contain lg:h-[200px] lg:w-[200px] xl:h-[300px] xl:w-[300px]"
-                          priority
-                        />
-                        <span className="flex-1 text-center text-lg sm:text-left">
+                        {product.deleted ? (
+                          <div className="relative h-[100px] w-[100px] lg:h-[200px] lg:w-[200px] xl:h-[300px] xl:w-[300px]">
+                            <span className="absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2 text-[10px] text-black sm:text-xs lg:text-base">
+                              this product has been deleted.
+                            </span>
+                            <Image
+                              src={`${product.images[0]}`}
+                              alt={`${product.name}`}
+                              width={0}
+                              height={0}
+                              sizes="(max-width: 1023px) 300px, (min-width: 1024px) 200px, (min-width: 1280px) 300px"
+                              className="h-full w-full object-contain opacity-50"
+                              priority
+                            />
+                          </div>
+                        ) : (
+                          <Image
+                            src={`${product.images[0]}`}
+                            alt={`${product.name}`}
+                            width={0}
+                            height={0}
+                            sizes="(max-width: 1023px) 300px, (min-width: 1024px) 200px, (min-width: 1280px) 300px"
+                            className="h-[100px] w-[100px] object-contain lg:h-[200px] lg:w-[200px] xl:h-[300px] xl:w-[300px]"
+                            priority
+                          />
+                        )}
+
+                        <span
+                          className={`flex-1 text-center text-lg sm:text-left ${product.deleted && "text-gray-300"}`}
+                        >
                           {product.name}
                         </span>
                       </div>
 
                       <div className="flex w-[100px] flex-col sm:w-[200px] sm:flex-row">
-                        <span className="w-full text-left text-lg sm:w-1/2">
+                        <span
+                          className={`w-full text-left text-lg sm:w-1/2 ${product.deleted && "text-gray-300"}`}
+                        >
                           ${(amount / 100).toFixed(2)}
                         </span>
                         <input
-                          className="box-border w-full border text-left text-lg sm:w-1/2"
+                          className="box-border w-full border text-left text-lg disabled:text-gray-300 sm:w-1/2"
                           type="number"
                           value={quantity}
                           onChange={(e) => updateItemQuantity(e, priceId)}
+                          disabled={product.deleted}
                         />
                       </div>
 
                       <div className="w-[105px] text-left text-lg">
-                        <span>${((quantity * amount) / 100).toFixed(2)}</span>
+                        <span
+                          className={`${product.deleted && "text-gray-300"}`}
+                        >
+                          ${((quantity * amount) / 100).toFixed(2)}
+                        </span>
 
                         <FontAwesomeIcon
                           icon={faCircleXmark}
@@ -221,8 +265,9 @@ export default function Cart({
           <span className="ml-3 mr-3 xl:mr-0">${total}</span>
         </div>
         <button
-          className="ml-auto mr-auto h-[50px] w-[80%] bg-[#49740B] text-white hover:bg-lime-600"
+          className="ml-auto mr-auto h-[50px] w-[80%] bg-[#49740B] text-white hover:bg-lime-600 disabled:bg-gray-300"
           onClick={goToCheckout}
+          disabled={deletedItemExists}
         >
           Proceed to checkout
         </button>

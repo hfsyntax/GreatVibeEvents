@@ -15,6 +15,11 @@ export default async function ShopId({ params }: { params: { id: string } }) {
   try {
     let productVariants: Array<Product> = []
     const product = await getProduct(params.id)
+
+    if (product.deleted || !product.active) {
+      return <span className="text-red-500">Product has been deleted.</span>
+    }
+
     const plainProduct = {
       images: product.images,
       metadata: product.metadata,

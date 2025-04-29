@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import StripeLoader from "@/components/checkout/StripeLoader"
 import { getCheckoutData, getSession } from "@/lib/session"
-import { getProduct } from "@/lib/stripe"
+import { getProduct, getProductByPriceId } from "@/lib/stripe"
 
 export const metadata: Metadata = {
   title: "Great Vibe Events - Checkout",
@@ -10,36 +10,58 @@ export const metadata: Metadata = {
 
 export default async function Checkout() {
   try {
+    const session = await getSession()
     const checkoutData = await getCheckoutData()
-    if (checkoutData && checkoutData.products.length > 0) {
-      const eventTicket = checkoutData.products.find(
-        (product) =>
-          product.metadata && product.metadata.type === "Event Ticket",
-      )
-      if (eventTicket && eventTicket.metadata) {
-        const eventProduct = await getProduct(eventTicket.metadata.productId)
-        const eventDate = parseInt(eventProduct.metadata.starts)
-        const eventEnds = eventProduct.metadata.ends
-        const eventAddress = eventProduct.metadata.address
-        if (!eventDate || !eventEnds || !eventAddress) {
+    if (session) {
+      if (checkoutData && checkoutData.products.length > 0) {
+        let deletedProductExists = false
+        for (let product of checkoutData.products) {
+          const stripeProduct = await getProductByPriceId(product.priceId)
+          if (stripeProduct?.product.deleted) {
+            deletedProductExists = true
+            break
+          }
+        }
+
+        if (deletedProductExists) {
           return (
             <span className="text-red-500">
-              Event ticket is not available for purchase.
+              Cart contains a deleted product.
             </span>
           )
         }
-        const now = Date.now()
-        if (now > eventDate) {
-          return (
-            <span className="text-red-500">
-              Event ticket is not available for purchase.
-            </span>
-          )
+
+        const eventTicket = checkoutData.products.find(
+          (product) =>
+            product.metadata && product.metadata.type === "Event Ticket",
+        )
+        if (eventTicket && eventTicket.metadata) {
+          const eventProduct = await getProduct(eventTicket.metadata.productId)
+          const eventDate = parseInt(eventProduct.metadata.starts)
+          const eventEnds = eventProduct.metadata.ends
+          const eventAddress = eventProduct.metadata.address
+          if (!eventDate || !eventEnds || !eventAddress) {
+            return (
+              <span className="text-red-500">
+                Cart contains an event ticket that is not available for
+                purchase.
+              </span>
+            )
+          }
+          const now = Date.now()
+          if (now > eventDate) {
+            return (
+              <span className="text-red-500">
+                Cart contains an event ticket that is not available for
+                purchase.
+              </span>
+            )
+          }
         }
+      } else {
+        return <span className="text-red-500">Cart is empty.</span>
       }
     }
-
-    const session = await getSession()
 
     return <StripeLoader session={session} checkoutData={checkoutData} />
   } catch (error: any) {

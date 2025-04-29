@@ -9,6 +9,7 @@ export type Product = {
   images: string[]
   created: number
   description?: string | null
+  deleted?: boolean
 }
 
 export type ProductPrice = {

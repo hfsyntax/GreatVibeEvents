@@ -1,7 +1,6 @@
 import type { CartItem } from "@/types"
 import { getCheckoutData, getSession } from "@/lib/session"
 import { getProductByPriceId } from "@/lib/stripe"
-import { Open_Sans } from "next/font/google"
 import Cart from "@/components/shop/Cart"
 
 export default async function CartPage() {
