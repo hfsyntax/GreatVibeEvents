@@ -570,7 +570,9 @@ export default function Products({ items, prices, session }: ProductProps) {
             ? productType
               ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
               : "All Products"
-            : `0 results found for "${search}"`}
+            : search
+              ? `0 results found for "${search}"`
+              : "invalid product type"}
         </span>
         <ProductList itemCount={products.length} />
         <div className="flex w-full flex-col">
@@ -579,7 +581,9 @@ export default function Products({ items, prices, session }: ProductProps) {
               ? productType
                 ? `${productType.charAt(0).toUpperCase()}${productType.slice(1)}`
                 : "All Products"
-              : `0 results found for "${search}"`}
+              : search
+                ? `0 results found for "${search}"`
+                : "invalid product type"}
           </span>
           <div className="relative mt-8 flex w-full flex-col justify-center gap-2 lg:flex-row lg:flex-wrap lg:justify-normal">
             {products.length > 1 && (
