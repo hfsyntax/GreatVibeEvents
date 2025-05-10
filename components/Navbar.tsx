@@ -1,58 +1,59 @@
 "use client"
 import type { KeyboardEvent } from "react"
 import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
-import { useEffect, useState, useRef } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { getCheckoutData, logout } from "@/lib/session"
+import { getUserEventFormsCount } from "@/actions/server"
 import { Open_Sans } from "next/font/google"
 const openSans = Open_Sans({ subsets: ["latin"] })
+import { usePathname, useRouter } from "next/navigation"
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faCartShopping,
+  faFacebook,
+  faInstagram,
+  faXTwitter,
+  faYoutube,
+} from "@fortawesome/free-brands-svg-icons"
+import {
   faMagnifyingGlass,
+  faCartShopping,
   faUser,
   faBars,
   faX,
 } from "@fortawesome/free-solid-svg-icons"
-import { getCheckoutData, logout } from "@/lib/session"
-import { getUserEventFormsCount } from "@/actions/server"
+import { useEffect, useRef, useState, useCallback } from "react"
+import Link from "next/link"
+import Image from "next/image"
 
 export default function Navbar({ session }: { session: any }) {
   const { data, setData, eventForms, setEventForms } = useCheckoutDataContext()
   const pathname = usePathname()
   const router = useRouter()
-  const [navbar, showNavbar] = useState(false)
   const [search, showSearch] = useState(false)
-  const [userDropdown, showUserDropdown] = useState(false)
-  const userDropdownVisible = useRef(userDropdown)
+  const [userDropdownVisible, setUserDropdownVisible] = useState(false)
+  const [mobileNavbarVisible, setMobileNavbarVisible] = useState(false)
+  const userDropdown = useRef<HTMLUListElement>(null)
   const searchBar = useRef<HTMLInputElement>(null)
   const mobileSearchBar = useRef<HTMLInputElement>(null)
+  const userIcon = useRef<SVGSVGElement>(null)
 
   const toggleSearch = () => showSearch(!search)
 
-  const handleUserDropDown = (event: MouseEvent) => {
-    const target = event.target as HTMLElement
-    if (
-      target.id === "loginLink" ||
-      target.id === "logoffLink" ||
-      target.id === "profileLink"
-    )
-      return
-    if (target.id === "userIcon" || target?.parentElement?.id === "userIcon") {
-      showUserDropdown(!userDropdownVisible.current)
-    } else if (userDropdownVisible.current) {
-      showUserDropdown(false)
-    }
-  }
-
-  const openNavbar = () => {
-    showNavbar(true)
-  }
-
-  const closeNavbar = () => {
-    if (navbar) showNavbar(false)
-  }
+  const handleUserDropDown = useCallback(
+    (event: MouseEvent) => {
+      const target = event.target
+      if (
+        target instanceof Node &&
+        userDropdown.current &&
+        !userDropdown.current.contains(target) &&
+        userIcon.current &&
+        !userIcon.current.contains(target)
+      ) {
+        setUserDropdownVisible(false)
+      }
+    },
+    [userDropdown, userIcon, setUserDropdownVisible],
+  )
 
   const handleLogout = async () => {
     await logout()
@@ -64,32 +65,43 @@ export default function Navbar({ session }: { session: any }) {
       ...data,
       totalProducts: checkoutData ? checkoutData.products.length : 0,
     })
-    closeNavbar()
-    showUserDropdown(false)
-    router.push("/")
+
+    router.push("/login")
   }
 
-  const handleSearchEnter = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      router.push(`/shop?search=${searchBar.current?.value}`)
-      toggleSearch()
+  const handleSearch = (value?: string) => {
+    if (value && value.length < 255) {
+      router.push(`/shop?search=${value}`)
+      if (pathname === "/shop") {
+        if (search) showSearch(false)
+        if (mobileNavbarVisible) setMobileNavbarVisible(false)
+      }
     }
   }
 
-  const handleMobileSearchClick = () => {
-    closeNavbar()
-    router.push(`/shop?search=${mobileSearchBar.current?.value}`)
-  }
-
-  const handleMobileSearchEnter = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      closeNavbar()
-      router.push(`/shop?search=${mobileSearchBar.current?.value}`)
+  const closeElementsOnMainPage = () => {
+    if (pathname === "/") {
+      if (userDropdownVisible) setUserDropdownVisible(false)
+      if (mobileNavbarVisible) setMobileNavbarVisible(false)
+      if (search) showSearch(false)
     }
   }
 
   useEffect(() => {
-    document.addEventListener("mousedown", handleUserDropDown)
+    if (search && searchBar.current) {
+      searchBar.current.focus()
+    }
+  }, [search])
+
+  useEffect(() => {
+    console.log(session)
+  }, [])
+
+  useEffect(() => {
+    if (userDropdownVisible) {
+      document.addEventListener("mousedown", handleUserDropDown)
+    }
+
     if (session) {
       getCheckoutData().then((response) => {
         if (response && response.products.length !== data.totalProducts)
@@ -117,26 +129,23 @@ export default function Navbar({ session }: { session: any }) {
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleUserDropDown)
+      if (userDropdownVisible) {
+        document.removeEventListener("mousedown", handleUserDropDown)
+      }
     }
-  }, [])
+  }, [userDropdownVisible, handleUserDropDown])
 
   useEffect(() => {
-    userDropdownVisible.current = userDropdown
-  }, [userDropdown])
-  useEffect(() => {
-    if (search) {
-      searchBar.current?.focus()
-    }
-  }, [search])
+    if (userDropdownVisible) setUserDropdownVisible(false)
+    if (mobileNavbarVisible) setMobileNavbarVisible(false)
+    if (search) showSearch(false)
+  }, [pathname])
+
   return (
     <nav
-      className={`z-10 mt-8 flex w-full select-none items-center ${navbar ? "mobile-navbar" : "top-auto flex-row bg-transparent"} ml-auto mr-auto xl:relative xl:top-auto xl:!mt-8 xl:flex xl:h-fit xl:w-[1232px] xl:flex-row xl:bg-transparent`}
+      className={`z-10 ml-auto mr-auto mt-8 flex w-full select-none flex-row bg-transparent xl:w-[1232px] xl:flex-row`}
     >
-      <Link
-        href={"/"}
-        className={`${navbar ? "hidden" : "inline-flex"} xl:inline-flex`}
-      >
+      <Link href="/">
         <Image
           src={"/img/logo.png"}
           priority
@@ -145,237 +154,252 @@ export default function Navbar({ session }: { session: any }) {
           height={200}
         />
       </Link>
-      {search && (
-        <input
-          type="text"
-          placeholder="Search Products"
-          className={`hidden grow pl-3 xl:inline-block`}
-          ref={searchBar}
-          spellCheck={false}
-          onKeyDown={handleSearchEnter}
-        />
-      )}
-      <ul
-        className={`${openSans.className} font-sans text-2xl ${navbar ? "flex w-full flex-col" : "hidden"} xl:text-lg xl:${search ? "hidden" : "flex"} xl:w-auto xl:flex-row`}
+      <div
+        className={`${mobileNavbarVisible && "mobile-navbar no-scrollbar fixed right-0 top-0 z-10 h-full w-[95%] overflow-auto bg-[#D8FAFA]"} flex flex-grow flex-col ${!mobileNavbarVisible && "pr-10"} lg:relative lg:left-auto lg:top-auto lg:h-auto lg:w-auto lg:overflow-hidden lg:bg-transparent lg:pr-10`}
       >
         <FontAwesomeIcon
           icon={faX}
-          size="lg"
-          className={`ml-auto mr-3 mt-3 cursor-pointer hover:text-[#49740B] xl:!hidden`}
-          onClick={closeNavbar}
+          size="xl"
+          className={`${mobileNavbarVisible ? "ml-auto mr-3 mt-3 !inline cursor-pointer hover:text-[#2f4f4f]" : "!hidden"} lg:!hidden`}
+          onClick={() => setMobileNavbarVisible(false)}
         />
-        <li
-          className={`${navbar && "mt-24 pb-6"} pl-16 xl:mt-0 xl:pb-0 xl:pl-10`}
+        <div
+          className={`ml-auto ${mobileNavbarVisible && "mr-auto"} ${search ? "lg:ml-0" : "lg:ml-auto"} flex min-h-12 items-center gap-5 lg:relative lg:mr-0`}
         >
+          {!search && (
+            <>
+              <Link
+                href="https://www.facebook.com/188549064338074"
+                target="_blank"
+                className={`${mobileNavbarVisible ? "!inline" : "!hidden"} lg:!inline`}
+              >
+                <FontAwesomeIcon
+                  icon={faFacebook}
+                  size="lg"
+                  className="text-[#1877F2]"
+                />
+              </Link>
+              <Link
+                href="https://www.instagram.com/greatvibeevent"
+                target="_blank"
+                className={`${mobileNavbarVisible ? "!inline" : "!hidden"} lg:!inline`}
+              >
+                <FontAwesomeIcon
+                  icon={faInstagram}
+                  size="lg"
+                  className="text-[#E1306C]"
+                />
+              </Link>
+              <Link
+                href="https://www.x.com/greatvibeevents"
+                target="_blank"
+                className={`${mobileNavbarVisible ? "!inline" : "!hidden"} lg:!inline`}
+              >
+                <FontAwesomeIcon icon={faXTwitter} size="lg" />
+              </Link>
+              <Link
+                href="https://www.youtube.com/@greatvibeevents"
+                target="_blank"
+                className={`${mobileNavbarVisible ? "!inline" : "!hidden"} lg:!inline`}
+              >
+                <FontAwesomeIcon
+                  icon={faYoutube}
+                  size="lg"
+                  className="text-[#FF0000]"
+                />
+              </Link>
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                size="lg"
+                className="ml-4 !hidden text-[#2f4f4f] hover:cursor-pointer hover:text-black lg:!inline-flex"
+                onClick={toggleSearch}
+              />
+            </>
+          )}
+
+          {search && (
+            <>
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                size="1x"
+                className={`relative left-10 !hidden cursor-pointer text-[#2f4f4f] ${search && "lg:!inline"}`}
+                onClick={() => handleSearch(searchBar.current?.value)}
+              />
+              <input
+                type="text"
+                placeholder="Search Products"
+                className={`hidden ${search && "lg:inline"} box-border h-full flex-grow border border-[#2f4f4f] border-l-transparent border-r-transparent border-t-transparent pl-8 text-[#2f4f4f] outline-none placeholder:pb-2 placeholder:text-[#2f4f4f] focus:border-b-2 focus:border-[#2f4f4f]`}
+                ref={searchBar}
+                spellCheck={false}
+                onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
+                  if (event.key === "Enter")
+                    handleSearch(searchBar.current?.value)
+                }}
+              />
+              <FontAwesomeIcon
+                icon={faX}
+                size="lg"
+                className={`!hidden text-[#2f4f4f] hover:cursor-pointer hover:text-black ${search && "lg:!inline"}`}
+                onClick={toggleSearch}
+              />
+            </>
+          )}
+
           <Link
-            href={"/"}
-            onClick={closeNavbar}
-            className={
-              pathname === "/"
-                ? "font-bold hover:text-green-700 xl:box-border xl:border-b-2 xl:border-black xl:font-normal"
-                : "hover:text-green-700"
-            }
+            href="/shop/cart"
+            className={`${mobileNavbarVisible && "!hidden"} relative lg:inline-flex`}
           >
-            HOME
-          </Link>
-        </li>
-        <li className={`pl-16 xl:pb-0 xl:pl-8 ${navbar && "pb-6"}`}>
-          <Link
-            href={"/events"}
-            onClick={closeNavbar}
-            className={
-              pathname === "/events"
-                ? "font-bold hover:text-green-700 xl:box-border xl:border-b-2 xl:border-black xl:font-normal"
-                : "hover:text-green-700"
-            }
-          >
-            EVENTS
-          </Link>
-        </li>
-        <li className={`pl-16 ${navbar && "pb-6"} xl:pb-0 xl:pl-8`}>
-          <Link
-            href={"/shop"}
-            onClick={closeNavbar}
-            className={
-              pathname === "/shop"
-                ? "font-bold hover:text-green-700 xl:box-border xl:border-b-2 xl:border-black xl:font-normal"
-                : "hover:text-green-700"
-            }
-          >
-            SHOP
-          </Link>
-        </li>
-        <li className={`pl-16 ${navbar && "pb-6"} xl:pb-0 xl:pl-8`}>
-          <Link
-            href={"/about"}
-            onClick={closeNavbar}
-            className={
-              pathname === "/about"
-                ? "font-bold hover:text-green-700 xl:box-border xl:border-b-2 xl:border-black xl:font-normal"
-                : "hover:text-green-700"
-            }
-          >
-            ABOUT
-          </Link>
-        </li>
-        <li className={`pl-16 ${navbar && "pb-6"} xl:pb-0 xl:pl-8`}>
-          <Link
-            href={"/gallery"}
-            onClick={closeNavbar}
-            className={
-              pathname === "/gallery"
-                ? "font-bold hover:text-green-700 xl:box-border xl:border-b-2 xl:border-black xl:font-normal"
-                : "hover:text-green-700"
-            }
-          >
-            GALLERY
-          </Link>
-        </li>
-        <li className={`pl-16 ${navbar && "pb-6"} xl:pb-0 xl:pl-8`}>
-          <Link
-            href={"/volunteer"}
-            onClick={closeNavbar}
-            className={
-              pathname === "/volunteer"
-                ? "font-bold hover:text-green-700 xl:box-border xl:border-b-2 xl:border-black xl:font-normal"
-                : "hover:text-green-700"
-            }
-          >
-            VOLUNTEER
-          </Link>
-        </li>
-        <li className={`pl-16 ${navbar && "pb-6"} xl:pb-0 xl:pl-8`}>
-          <Link
-            href={"/#contact"}
-            className="cursor-pointer hover:text-green-700"
-            onClick={closeNavbar}
-          >
-            CONTACT
-          </Link>
-        </li>
-      </ul>
-      <div
-        className={`relative flex ${navbar ? "mobile-search-container ml-16 mr-auto flex-col xl:ml-auto xl:mr-0" : "ml-auto flex-row"} items-center xl:w-fit xl:flex-row`}
-      >
-        <FontAwesomeIcon
-          icon={faBars}
-          size="lg"
-          className={`cursor-pointer p-2 text-[#49740B] hover:text-black xl:!hidden ${navbar && "!hidden"}`}
-          onClick={openNavbar}
-        />
-        <FontAwesomeIcon
-          icon={search ? faX : faMagnifyingGlass}
-          size="lg"
-          className={`!hidden cursor-pointer p-2 text-[#49740B] hover:text-black xl:!inline`}
-          onClick={toggleSearch}
-        />
-        {navbar && (
-          <div className="relative w-full">
-            <FontAwesomeIcon
-              icon={faMagnifyingGlass}
-              size="lg"
-              className={`absolute top-5 ml-3 ${navbar ? "z-10 !block cursor-pointer" : "!hidden"} xl:!hidden`}
-              onClick={handleMobileSearchClick}
-            />
-            <input
-              type="text"
-              placeholder="Search Products"
-              className="relative mb-6 box-border w-full border-[1px] border-transparent bg-[#FFFFFF26] pb-4 pl-10 pr-10 pt-4 outline-none focus:border-black xl:hidden"
-              spellCheck={false}
-              onKeyDown={handleMobileSearchEnter}
-              ref={mobileSearchBar}
-            ></input>
-          </div>
-        )}
-        <Link href={"/shop/cart"}>
-          <div className={`relative ${navbar && "hidden"} xl:block`}>
             <FontAwesomeIcon
               icon={faCartShopping}
               size="lg"
-              className={`cursor-pointer p-2 text-[#49740B] hover:text-black ${navbar && "!hidden"} xl:!inline`}
+              className="text-[#2f4f4f] hover:text-black"
             />
             {data.totalProducts > 0 && (
-              <span className="absolute left-0 top-0 rounded bg-red-500 pl-1 pr-1 text-xs text-white">
+              <span className="absolute left-0 top-[-10px] rounded bg-red-500 pl-1 pr-1 text-xs text-white">
                 {data.totalProducts}
               </span>
             )}
-          </div>
-        </Link>
-
-        {!session ? (
-          <Link
-            href={"/login"}
-            className={`hidden ${pathname === "/login" && "font-bold"} ${navbar && `!inline text-black xl:!hidden ${openSans.className} mr-auto text-2xl uppercase hover:!text-green-700`}`}
-            onClick={closeNavbar}
-          >
-            Login
           </Link>
-        ) : (
-          <>
-            <Link
-              href={"/profile"}
-              className={`hidden pb-6 ${navbar && `!inline text-black xl:!hidden ${openSans.className} mr-auto cursor-pointer text-2xl uppercase hover:!text-green-700`}`}
-              onClick={() => showNavbar(false)}
-            >
-              profile
-            </Link>
-            <span
-              className={`hidden ${navbar && `!inline text-black xl:!hidden ${openSans.className} mr-auto cursor-pointer text-2xl uppercase hover:!text-green-700`}`}
-              onClick={handleLogout}
-            >
-              logout
-            </span>
-          </>
-        )}
-        <div
-          className={`${navbar ? "!hidden xl:!inline-block" : "!hidden md:!inline-block"} relative`}
-        >
+
           <FontAwesomeIcon
-            id="userIcon"
             icon={faUser}
             size="lg"
-            className={`cursor-pointer p-2 text-[#49740B] hover:text-black`}
+            ref={userIcon}
+            className="!hidden text-[#2f4f4f] hover:cursor-pointer hover:text-black lg:!inline-flex"
+            onClick={() => setUserDropdownVisible(!userDropdownVisible)}
           />
-          {eventForms > 0 && (
-            <span className="absolute left-0 top-0 rounded bg-red-500 pl-1 pr-1 text-xs text-white">
-              {eventForms}
-            </span>
+          <FontAwesomeIcon
+            icon={faBars}
+            size="lg"
+            className={`${mobileNavbarVisible && "!hidden"} text-[#2f4f4f] hover:cursor-pointer hover:text-black lg:!hidden`}
+            onClick={() => setMobileNavbarVisible(true)}
+          />
+          {userDropdownVisible && (
+            <ul
+              className={`absolute right-0 top-full w-[240px] bg-white p-4 text-lg shadow-md ${openSans.className}`}
+              ref={userDropdown}
+            >
+              {session ? (
+                <>
+                  <Link href={"/profile"}>
+                    <li className="text-[#2f4f4f]">profile</li>
+                  </Link>
+                  <li
+                    className="cursor-pointer text-[#2f4f4f]"
+                    onClick={handleLogout}
+                  >
+                    logoff
+                  </li>
+                </>
+              ) : (
+                <Link href="/login">
+                  <li className="text-[#2f4f4f]">Sign In</li>
+                </Link>
+              )}
+            </ul>
           )}
         </div>
 
-        {userDropdown && (
-          <ul
-            id="userDropdown"
-            className={`hidden ${navbar ? "xl:inline-block" : "md:inline-block"} absolute left-[-130px] top-full w-[240px] bg-white p-4 text-lg shadow-md ${openSans.className}`}
+        <ul
+          className={`${mobileNavbarVisible ? "flex flex-col gap-6 text-2xl" : "hidden text-sm"} mt-4 tracking-[0.214em] lg:flex lg:h-full lg:flex-row lg:gap-8 lg:text-sm ${openSans.className} lg:ml-auto lg:mr-auto 2xl:text-base`}
+        >
+          <Link
+            href={"/"}
+            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
           >
-            {!session && (
-              <Link href={"/login"} onClick={() => showUserDropdown(false)}>
-                <li id="loginLink" className="text-[#49740B]">
-                  Sign In
-                </li>
-              </Link>
-            )}
-            {session && (
-              <>
+            <li className="uppercase">home</li>
+          </Link>
+          <Link
+            href="/events"
+            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+          >
+            <li className="uppercase">events</li>
+          </Link>
+          <Link
+            href="/shop"
+            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+          >
+            <li className="uppercase">shop</li>
+          </Link>
+          {mobileNavbarVisible && (
+            <div className="relative ml-5 mr-5 lg:hidden">
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                size="1x"
+                className={`absolute left-2 top-1/2 -translate-y-1/2 text-[#2f4f4f] ${mobileNavbarVisible ? "!inline" : "!hidden"} cursor-pointer lg:!hidden`}
+                onClick={() => handleSearch(mobileSearchBar.current?.value)}
+              />
+              <input
+                type="text"
+                placeholder="Search Products"
+                className={`${mobileNavbarVisible ? "inline" : "hidden"} box-border w-full border border-transparent bg-[#D8FAFA] pb-3 pl-10 pt-3 text-lg tracking-normal text-[#2f4f4f] outline-none placeholder:text-[#2f4f4f] focus:border-[#2f4f4f] lg:hidden`}
+                ref={mobileSearchBar}
+                onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
+                  if (event.key === "Enter")
+                    handleSearch(mobileSearchBar.current?.value)
+                }}
+              />
+            </div>
+          )}
+
+          <Link
+            href="/about"
+            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+          >
+            <li className="uppercase">about</li>
+          </Link>
+          <Link
+            href="/gallery"
+            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+          >
+            <li className="uppercase">gallery</li>
+          </Link>
+          <Link
+            href="/volunteer"
+            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+          >
+            <li className="uppercase">volunteer</li>
+          </Link>
+          <Link
+            href="/#contact"
+            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+            onClick={() => closeElementsOnMainPage()}
+          >
+            <li className="uppercase">contact</li>
+          </Link>
+          {mobileNavbarVisible && (
+            <>
+              <li
+                className={`ml-10 mr-10 border-b border-b-gray-300 pb-1 text-base tracking-normal text-gray-500 lg:hidden`}
+              >
+                Account
+              </li>
+
+              {session ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:hidden`}
+                  >
+                    <li className="uppercase">profile</li>
+                  </Link>
+                  <li
+                    className={`${mobileNavbarVisible && "inline pb-6 pl-10 uppercase hover:cursor-pointer hover:text-[#2f4f4f]"} lg:hidden`}
+                  >
+                    logoff
+                  </li>
+                </>
+              ) : (
                 <Link
-                  href={"/profile"}
-                  id="profileLink"
-                  className="z-10 block w-full cursor-pointer text-[#49740B]"
-                  onClick={() => showUserDropdown(false)}
+                  href="/login"
+                  className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#49740B] lg:hidden`}
                 >
-                  Profile
+                  <li className="uppercase">sign in</li>
                 </Link>
-                <li
-                  id="logoffLink"
-                  className="mt-2 cursor-pointer text-[#49740B]"
-                  onClick={handleLogout}
-                >
-                  Logoff
-                </li>
-              </>
-            )}
-          </ul>
-        )}
+              )}
+            </>
+          )}
+        </ul>
       </div>
     </nav>
   )
