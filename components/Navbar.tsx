@@ -305,19 +305,19 @@ export default function Navbar({ session }: { session: any }) {
         >
           <Link
             href={"/"}
-            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+            className={`${pathname === "/" && "font-bold lg:box-border lg:border lg:border-b-black lg:border-l-transparent lg:border-r-transparent lg:border-t-transparent lg:pb-1 lg:font-normal"} ${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
           >
             <li className="uppercase">home</li>
           </Link>
           <Link
             href="/events"
-            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+            className={`${pathname === "/events" && "font-bold lg:box-border lg:border lg:border-b-black lg:border-l-transparent lg:border-r-transparent lg:border-t-transparent lg:pb-1 lg:font-normal"} ${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
           >
             <li className="uppercase">events</li>
           </Link>
           <Link
             href="/shop"
-            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+            className={`${pathname === "/shop" && "font-bold lg:box-border lg:border lg:border-b-black lg:border-l-transparent lg:border-r-transparent lg:border-t-transparent lg:pb-1 lg:font-normal"} ${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
           >
             <li className="uppercase">shop</li>
           </Link>
@@ -344,19 +344,19 @@ export default function Navbar({ session }: { session: any }) {
 
           <Link
             href="/about"
-            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+            className={`${pathname === "/about" && "font-bold lg:box-border lg:border lg:border-b-black lg:border-l-transparent lg:border-r-transparent lg:border-t-transparent lg:pb-1 lg:font-normal"} ${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
           >
             <li className="uppercase">about</li>
           </Link>
           <Link
             href="/gallery"
-            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+            className={`${pathname === "/gallery" && "font-bold lg:box-border lg:border lg:border-b-black lg:border-l-transparent lg:border-r-transparent lg:border-t-transparent lg:pb-1 lg:font-normal"} ${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
           >
             <li className="uppercase">gallery</li>
           </Link>
           <Link
             href="/volunteer"
-            className={`${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
+            className={`${pathname === "/volunteer" && "font-bold lg:box-border lg:border lg:border-b-black lg:border-l-transparent lg:border-r-transparent lg:border-t-transparent lg:pb-1 lg:font-normal"} ${mobileNavbarVisible && "pl-10"} h-fit hover:text-[#2f4f4f] lg:pl-0`}
           >
             <li className="uppercase">volunteer</li>
           </Link>
