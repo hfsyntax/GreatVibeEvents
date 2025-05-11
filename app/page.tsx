@@ -11,189 +11,147 @@ export default async function Home() {
   const imageUrls = await getGalleryImageUrls(9999)
   return (
     <>
-      <div className="flex w-full flex-col md:flex-row">
+      <div className="flex w-full flex-col md:relative md:flex-row">
         <Image
-          src={"/img/logo_welcome.png"}
+          src={"/img/welcome.png"}
           height={0}
           width={0}
-          sizes="(max-width: 768px) 100vw, 50vw"
+          sizes="(max-width: 767px) 100vw, (min-width: 768px) 100%"
           alt="logo_welcome"
-          className="ml-auto mr-auto h-auto w-1/2 object-contain"
+          className="ml-auto mr-auto h-auto w-full object-cover md:w-[533px] md:flex-grow"
           priority
         />
-        <div className="ml-auto mr-auto flex w-full flex-col justify-center bg-[#DAFFC0] p-10 md:w-1/2">
+        <div className="ml-auto mr-auto flex w-full flex-col justify-center bg-[#274343] p-10 md:w-[360px] md:p-5 lg:w-[388px] lg:p-10">
           <span
-            className={`${openSans.className} mb-4 text-center text-lg text-[#49740B]`}
+            className={`${playfairDisplay.className} mb-4 text-3xl text-[#a6fc28] md:text-4xl xl:text-5xl`}
           >
-            WELCOME
+            Welcome
           </span>
-          <span className={`text-5xl ${playfairDisplay.className} mb-4`}>
-            Inclusive Events for people with physical and intellectual
-            disabilities 18+
+          <span
+            className={`text-sm uppercase 2xl:text-base ${openSans.className} mb-4 text-white`}
+          >
+            Inclusive Social Events for Adults with Intellectual & physical
+            Disabiliies
           </span>
-          <span className={`text-xl text-[#575757] ${openSans.className}`}>
-            Where phenomenal people get together for Great Times!
+          <span
+            className={`text-xl text-white ${openSans.className} font-bold`}
+          >
+            Where phenomenal people get together for Great Vibes!
           </span>
           <Link
-            href={"/about"}
-            className="m-6 block bg-[#49740B] p-4 text-center text-base font-bold text-white hover:bg-lime-600"
+            href="/events"
+            className="group mt-8 flex h-[56px] w-fit cursor-pointer select-none items-center justify-center gap-1 border border-white pb-2 pl-4 pr-4 pt-2 hover:bg-white"
           >
-            LEARN MORE
+            <hr className="w-4 group-hover:border-black" />
+            <span
+              className={`${openSans.className} text-sm font-bold uppercase tracking-widest text-white group-hover:text-black`}
+            >
+              event details
+            </span>
+            <hr className="w-4 group-hover:border-black" />
           </Link>
         </div>
       </div>
       <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
         <span>content ad space</span>
       </div>
-      <Image
-        src={"/img/halloween-event.png"}
-        height={0}
-        width={0}
-        sizes="100vw"
-        alt="logo_welcome"
-        className="h-auto w-full"
-        priority
-      />
+      <h1 className={`${openSans.className} text-2xl md:text-3xl 2xl:text-4xl`}>
+        Great Vibe Events an organization created with Faith
+      </h1>
+      <div className="mt-8 flex flex-col gap-10 lg:flex-row">
+        <div
+          className={`flex flex-col text-[18px] ${openSans.className} order-2 text-center lg:order-1`}
+        >
+          <span className="text-[#5d5d5d]">
+            Susan and Jim Boone, along with their sons Jimmy, Andy, and Mark,
+            have dedicated their lives to serving individuals with disabilities.
+          </span>
+          <span className="text-[#5d5d5d]">
+            Their commitment stems from the profound love for their daughter and
+            sister, Faith, who was born with Down Syndrome and passed away at
+            age three from complication with heart disease. Though her time was
+            short, Faith's impact on the family was immeasurable. Their journey
+            began with volunteering at Best Buddies, where they found joy in
+            mentoring and witnessing their buddies' achievements, while also
+            gaining invaluable lessons in compassion and determination.
+          </span>
+          <span className="text-[#5d5d5d]">
+            Recognizing a need for social opportunities for adults with
+            disabilities, they founded Great Vibes Events. GVE provides a safe
+            and vibrant space for adults 18 and older to connect, learn, and
+            participate in inclusive activities, honoring Faith's memory by
+            fostering a supportive and compassionate community.{" "}
+          </span>
+          <b className={`mt-14 text-2xl ${openSans.className}`}>
+            Great Vibe Events Summer Vibes Kick Off
+          </b>
+          <span className="text-lg text-[#5d5d5d]">
+            <b>Date:</b> Saturday, May 17th
+          </span>
+          <span className="text-lg text-[#5d5d5d]">
+            <b>Time:</b> 4:00 PM - 7:00 PM
+          </span>
+          <span className="text-[#5d5d5d]">
+            <b>📍New Location: Floris United Methodist Church</b>- 13600 Frying
+            Pan Road, Herndon, VA 20171
+          </span>
+          <b className="mt-8 text-lg text-[#5d5d5d]">
+            Get ready to kick off your summer fun with GVE fantastic
+            festivities! Here’s just a little of what you can look forward to:
+          </b>
+          <span className="mt-8 text-lg text-[#5d5d5d]">
+            <b>🕺 Dance the Night Away:</b> Our DJ will be spinning the hottest
+            tracks, creating an irresistible groove that’ll have you moving and
+            shaking. Whether you’re a seasoned dancer or just love to sway, this
+            is your moment!
+          </span>
+          <span className="mt-8 text-lg text-[#5d5d5d]">
+            <b>🎤 Karaoke Fun:</b> Unleash your inner superstar in our Karaoke
+            Room! Sing your heart out to your favorite tunes and enjoy the
+            spotlight.
+          </span>
+          <span className="mt-8 text-lg text-[#5d5d5d]">
+            <b>🎨 Ignite Your Inner Artist:</b> Step into our Art Room, where
+            creativity knows no bounds. We’ve got all the materials you need to
+            become a shining artist. Paint, sketch, or sculpt—express yourself
+            freely!
+          </span>
+          <span className="mt-8 text-lg text-[#5d5d5d]">
+            <b>🎮 Game On!: </b>
+            Our Game Room is a gamer’s paradise. Dive into a world of excitement
+            with hundreds of video and board games. Challenge your friends,
+            discover new favorites, and let the games begin!
+          </span>
+          <span className="mt-8 text-lg text-[#5d5d5d]">
+            <b>🔢 Bingo Bonanza: </b>
+            Feeling lucky? Our Bingo Room is where fortunes can change in an
+            instant. Grab your cards, listen for those numbers, and shout
+            “Bingo!” as you win fabulous prizes.
+          </span>
+          <Link
+            href="/events"
+            className="ml-auto mr-auto mt-8 w-fit font-bold text-[#161616]"
+          >
+            <u>PURCHASE TICKETS NOW</u>
+          </Link>
+        </div>
+        <Image
+          src={"/img/faith.png"}
+          height={0}
+          width={0}
+          sizes="(max-width: 1023px) 100vw, 378px"
+          alt="logo_welcome"
+          className="order-1 mb-auto ml-auto mr-auto h-auto w-full object-contain lg:order-2 lg:w-[378px]"
+          priority
+        />
+      </div>
+      <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
+        <span>content ad space</span>
+      </div>
       <span
-        className={`mt-6 text-lg text-[#49740B] ${openSans.className} mb-8`}
+        className={`text-base text-[#8f6e6e] ${openSans.className} mb-8 uppercase`}
       >
-        SATURDAY, OCTOBER 12TH, 2024
-      </span>
-      <div className="mb-10 flex flex-col lg:flex-row">
-        <div className="flex w-full flex-col lg:w-[70%]">
-          <span
-            className={`mb-6 text-4xl ${playfairDisplay.className} text-[#49740B]`}
-          >
-            2024 GREAT VIBE EVENTS (GVE) SPOOKTACULAR COSTUME PARTY
-          </span>
-          <strong className={`text-2xl text-[#5e5e5e] ${openSans.className}`}>
-            DON'T MISS THE HALLOWEEN EVENT OF THE YEAR!
-          </strong>
-          <p className={`text-2xl text-[#5e5e5e] ${openSans.className}`}>
-            🎃&nbsp;
-            <strong>
-              Join Us for the 2024 Great Vibe Events Spooktacular Halloween
-              Costume Party!
-            </strong>
-            &nbsp;🎃
-          </p>
-          <span className="text-2xl text-[#5e5e5e]">
-            🗓<strong>Date:</strong>Saturday, October 12th
-          </span>
-          <span className="text-2xl text-[#5e5e5e]">
-            🕓 <strong>Time:</strong>4:00 PM - 7:00 PM
-          </span>
-          <span className="text-2xl text-[#5e5e5e]">
-            📍
-            <strong>Location:</strong>
-            Unity of Fairfax, 2854 Hunter Mill Road, Oakton, VA 22124
-          </span>
-          <span
-            className={`mt-8 text-2xl text-[#5e5e5e] ${openSans.className}`}
-          >
-            Get ready for a night of spooky fun and fantastic festivities!
-          </span>
-          <strong className={`text-2xl text-[#5e5e5e] ${openSans.className}`}>
-            Here’s what you can look forward to AT THE GVE SPOOKTACULAR:
-          </strong>
-          <ul
-            className={`ml-4 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
-          >
-            <li>
-              👻
-              <strong>&nbsp;Costume Contest:</strong>Show off your best
-              Halloween costume with prizes for the best dressed! Whether you’re
-              spooky, funny, or downright creative, we want to see your best
-              look.
-            </li>
-            <li className="mt-8">
-              🕺
-              <strong>&nbsp;Dance the Night Away:</strong>
-              Our DJ will be spinning the hottest tracks, creating an
-              irresistible groove that’ll have you moving and shaking.
-            </li>
-            <li className="mt-8">
-              🎤
-              <strong>&nbsp;Karaoke Fun:</strong>
-              Unleash your inner superstar in our Karaoke Room! Sing your heart
-              out to your favorite tunes and enjoy the spotlight.
-            </li>
-            <li className="mt-8">
-              🎨
-              <strong>&nbsp;Unleash Your Inner Artist:</strong>
-              Step into our Art Room, where creativity knows no bounds. We’ve
-              got all the materials you need to become a shining artist. Paint,
-              sketch, draw, —express yourself freely!
-            </li>
-            <li className="mt-8">
-              🎮
-              <strong>&nbsp;Game On!:</strong>
-              Our Game Room is a gamer’s paradise. Dive into a world of
-              excitement with hundreds of video and board games. Challenge your
-              friends, discover new favorites, and let the games begin!
-            </li>
-          </ul>
-          <span
-            className={`ml-4 mt-8 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
-          >
-            🎟
-            <strong>&nbsp;Tickets:</strong>
-          </span>
-          <ul
-            className={`ml-4 list-inside list-disc text-2xl text-[#5e5e5e] ${openSans.className}`}
-          >
-            <li className="ml-4">$45.00 per participant (includes meal)</li>
-            <li className="ml-4">
-              $55.00 for 1 participant and 1 caretaker/PARENT (includes
-              CARETAKER/PARENT meal)
-            </li>
-            <li className="ml-4">
-              $65.00 for 1 participant and 2 caretakers/PARENTS (includes
-              CARETAKER/PARENTS meals)
-            </li>
-            <li className="ml-4">
-              $100.00 for 2 participants and 1 caretaker (includes CARETAKER
-              meal)
-            </li>
-            <li className="ml-4">
-              $110.00 for 2 participants and 2 caretakers (includes
-              CARETAKER/PARENTS meals)
-            </li>
-          </ul>
-          <span
-            className={`ml-4 mt-8 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
-          >
-            Mark your calendars, gather your friends and family, and join us for
-            a Halloween party you won’t forget. Don’t miss out on this
-            spooktacular event! See you there! 🎃👻
-          </span>
-          <span
-            className={`ml-4 list-inside text-2xl text-[#5e5e5e] ${openSans.className}`}
-          >
-            #HalloweenParty #Spooktacular #GreatVibeEvents #CostumeContest
-            #DanceParty #Karaoke #ArtRoom #GameRoom #BingoBonanza
-            #UnityOfFairfax #OaktonVA
-          </span>
-        </div>
-        <div className="flex h-fit w-full flex-col justify-center bg-[#DAFFC0] pl-6 pr-6 lg:w-[30%]">
-          <span
-            className={`mb-6 mt-8 block pl-8 pr-8 text-4xl text-[#49740B] lg:text-3xl xl:text-4xl ${playfairDisplay.className}`}
-          >
-            GVE 2024 SPOOKTACULAR COSTOME PARTY
-          </span>
-          <Link
-            href={"/events/prod_QvP3Ey33H6SPYZ"}
-            className="mb-6 ml-6 mr-6 block bg-[#49740B] p-4 text-base font-bold text-white hover:bg-lime-600"
-          >
-            PURCHASE TICKET
-          </Link>
-        </div>
-      </div>
-      <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">
-        <span>content ad space</span>
-      </div>
-      <span className={`text-lg text-[#49740B] ${openSans.className} mb-8`}>
-        GREAT TIMES AND GREAT PEOPLE CREATE GREAT VIBES!
+        great times - great people - great vibes!
       </span>
       <div className="flex h-[500px] w-full gap-3 overflow-auto">
         {imageUrls.items.map((imageUrl, index) => (
@@ -221,14 +179,14 @@ export default async function Home() {
         <span>content ad space</span>
       </div>
       <span
-        className={`${playfairDisplay.className} mb-8 w-full text-center text-4xl`}
+        className={`${playfairDisplay.className} mb-8 w-full text-center text-[28px] uppercase md:text-[30px] xl:text-[32px] 2xl:text-4xl`}
       >
-        Sign up for gve's monthly news letter
+        sign up for the gve newsletter
       </span>
       <span
         className={`${openSans.className} mb-4 w-full text-center text-lg text-gray-500`}
       >
-        Learn more about our upcoming events, fundraisers, and more!
+        Find out about our upcoming events, fundraisers, and more!
       </span>
       <NewsletterForm />
       <div className="mb-8 mt-8 box-border h-[90px] w-full border-2 border-yellow-500 bg-black text-white">

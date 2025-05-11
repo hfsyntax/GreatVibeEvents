@@ -31,7 +31,7 @@ export default async function RootLayout({
             >
               <span className="text-white">[ad container left]</span>
             </div>
-            <div className="ml-auto mr-auto flex w-full flex-col xl:w-[1232px]">
+            <div className="ml-auto mr-auto flex w-full flex-col pl-6 pr-6 lg:w-[1000px] xl:w-[1160px] 2xl:w-[1232px]">
               <div className="hidden h-[90px] w-full bg-black 2xl:inline-block">
                 <span className="text-white">[ad container middle]</span>
               </div>

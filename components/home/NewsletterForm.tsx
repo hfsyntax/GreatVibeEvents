@@ -1,5 +1,8 @@
 "use client"
+
 import type { FormEvent } from "react"
+import { Open_Sans } from "next/font/google"
+const openSans = Open_Sans({ subsets: ["latin"] })
 import { useState, useEffect, useRef } from "react"
 import { signUpForNewsletter } from "@/actions/user"
 import ReCAPTCHA from "react-google-recaptcha"
@@ -70,7 +73,7 @@ export default function NewsletterForm() {
 
   return (
     <form
-      className="ml-auto mr-auto w-full lg:w-fit"
+      className="ml-auto mr-auto flex w-full flex-col md:flex-row md:gap-4 md:pl-24 md:pr-24 lg:w-fit"
       onSubmit={
         (e) =>
           e.preventDefault() /*(disabled until sendgrid activated) setProcessForm({ event: e, ready: true })*/
@@ -81,16 +84,19 @@ export default function NewsletterForm() {
         type="text"
         name="email"
         placeholder="Email address"
-        className="box-border block h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 outline-none focus:border-black lg:mr-6 lg:inline lg:w-[600px]"
+        className="mt-auto box-border block h-[50px] w-full border-[1px] border-b-gray-200 border-l-transparent border-r-transparent border-t-transparent pl-3 text-[#767676] outline-none placeholder:text-[#5e5e5e] focus:border-black md:flex-grow lg:mr-6 lg:inline lg:w-[600px]"
         autoComplete="email"
         required
       />
-      <input
-        type="submit"
-        value={formButton.text}
-        className="h-[50px] w-full cursor-pointer bg-[#49740B] font-bold text-white hover:bg-lime-600 lg:w-[150px]"
-        disabled={formButton.disabled}
-      />
+      <div className="group mt-8 flex h-[56px] cursor-pointer select-none items-center justify-center gap-1 border border-black pb-2 pl-4 pr-4 pt-2 transition-colors delay-[50ms] ease-in-out hover:bg-black md:min-w-[150px]">
+        <hr className="w-4 border-black group-hover:border-white" />
+        <span
+          className={`${openSans.className} text-sm font-bold uppercase tracking-widest text-black group-hover:text-white`}
+        >
+          {formButton.text}
+        </span>
+        <hr className="w-4 border-black group-hover:border-white" />
+      </div>
       {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY &&
         processForm.event &&
         processForm.ready && (

@@ -10,13 +10,9 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 export default function Footer() {
   return (
-    <div className="flex flex-col mt-14 ml-auto mr-auto w-full xl:w-[1232px]">
-      <div className="flex flex-col mb-14 sm:flex-row">
-        <span className={`${openSans.className} text-sm text-gray-500 ml-1`}>
-          COPYRIGHT © {new Date().getFullYear()} GREAT VIBE EVENTS - ALL RIGHTS
-          RESERVED.
-        </span>
-        <div className="mr-auto ml-auto sm:ml-auto sm:mr-28">
+    <div className="ml-auto mr-auto mt-14 flex w-full flex-col">
+      <div className="mb-14 flex flex-col">
+        <div className="ml-auto mr-auto">
           <Link
             href={"https://www.facebook.com/188549064338074"}
             target="_blank"
@@ -54,23 +50,35 @@ export default function Footer() {
             />
           </Link>
         </div>
+        <span
+          className={`${openSans.className} mt-6 text-center text-sm text-gray-500`}
+        >
+          COPYRIGHT © {new Date().getFullYear()} GREAT VIBE EVENTS - ALL RIGHTS
+          RESERVED.
+        </span>
       </div>
       <div
-        className={`flex flex-col items-center gap-6 justify-center mb-14 text-lg ${openSans.className} md:flex-row`}
+        className={`mb-14 flex flex-col items-center justify-center gap-6 text-lg 2xl:text-xl ${openSans.className} text-[#8f6e6e] md:flex-row`}
       >
-        <Link className="text-[#49740B] hover:text-black" href={"/"}>
+        <Link className="hover:text-black" href={"/"}>
           HOME
         </Link>
-        <Link className="text-[#49740B] hover:text-black" href={"#"}>
+        <Link className="hover:text-black" href={"#"}>
           FORMS
         </Link>
-        <Link className="text-[#49740B] hover:text-black" href={"#"}>
+        <Link className="hover:text-black" href={"/events"}>
+          CALENDAR
+        </Link>
+        <Link className="uppercase hover:text-black" href={"/gallery"}>
+          gve gallery
+        </Link>
+        <Link className="hover:text-black" href={"#"}>
           Privacy Policy
         </Link>
-        <Link className="text-[#49740B] hover:text-black" href={"#"}>
+        <Link className="hover:text-black" href={"#"}>
           Terms And Conditions
         </Link>
-        <Link className="text-[#49740B] hover:text-black" href={"/#contact"}>
+        <Link className="hover:text-black" href={"/#contact"}>
           Contact Us
         </Link>
       </div>

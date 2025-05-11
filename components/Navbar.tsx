@@ -143,7 +143,7 @@ export default function Navbar({ session }: { session: any }) {
 
   return (
     <nav
-      className={`z-10 ml-auto mr-auto mt-8 flex w-full select-none flex-row bg-transparent xl:w-[1232px] xl:flex-row`}
+      className={`z-10 ml-auto mr-auto mt-8 flex w-full select-none flex-row bg-transparent xl:flex-row`}
     >
       <Link href="/">
         <Image
