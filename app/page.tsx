@@ -40,7 +40,7 @@ export default async function Home() {
           </span>
           <Link
             href="/events"
-            className="group mt-8 flex h-[56px] w-fit cursor-pointer select-none items-center justify-center gap-1 border border-white pb-2 pl-4 pr-4 pt-2 hover:bg-white"
+            className="group mt-8 flex h-[56px] w-fit cursor-pointer select-none items-center justify-center gap-1 border border-white pb-2 pl-4 pr-4 pt-2 transition-colors delay-[50] ease-in-out hover:bg-white"
           >
             <hr className="w-4 group-hover:border-black" />
             <span
