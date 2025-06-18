@@ -3,8 +3,6 @@ import type { KeyboardEvent } from "react"
 import { useCheckoutDataContext } from "@/context/CheckoutDataProvider"
 import { getCheckoutData, logout } from "@/lib/session"
 import { getUserEventFormsCount } from "@/actions/server"
-import { Open_Sans } from "next/font/google"
-const openSans = Open_Sans({ subsets: ["latin"] })
 import { usePathname, useRouter } from "next/navigation"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -276,7 +274,7 @@ export default function Navbar({ session }: { session: any }) {
           />
           {userDropdownVisible && (
             <ul
-              className={`absolute right-0 top-full w-[240px] bg-white p-4 text-lg shadow-md ${openSans.className}`}
+              className={`absolute right-0 top-full w-[240px] bg-white p-4 text-lg shadow-md`}
               ref={userDropdown}
             >
               {session ? (
@@ -301,7 +299,7 @@ export default function Navbar({ session }: { session: any }) {
         </div>
 
         <ul
-          className={`${mobileNavbarVisible ? "flex flex-col gap-6 text-2xl" : "hidden text-sm"} mt-4 tracking-[0.214em] lg:flex lg:h-full lg:flex-row lg:gap-8 lg:text-sm ${openSans.className} lg:ml-auto lg:mr-auto 2xl:text-base`}
+          className={`${mobileNavbarVisible ? "flex flex-col gap-6 text-2xl" : "hidden text-sm"} mt-4 tracking-[0.214em] lg:ml-auto lg:mr-auto lg:flex lg:h-full lg:flex-row lg:gap-8 lg:text-sm 2xl:text-base`}
         >
           <Link
             href={"/"}
